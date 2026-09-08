@@ -424,9 +424,32 @@
     </div>
   </div>
 
+  <!-- O'QITUVCHI TASDIG'I / PAROL MODALI (7777) -->
+  <div id="passwordPromptModal" class="modal-overlay" style="z-index: 1050;">
+    <div class="modal-box" style="max-width: 380px;">
+      <div class="modal-icon-wrapper danger">
+        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      </div>
+      <h3 class="modal-title" style="font-size: 1.15rem;">O'qituvchi Tasdig'i</h3>
+      <div class="modal-body" style="margin-bottom: 1rem; font-size: 0.86rem;">
+        Barcha test natijalarini keshdan o'chirish uchun parolni kiriting:
+        <input type="password" id="clearPasswordInput" class="form-input" placeholder="Parol" maxlength="8" autocomplete="off" style="text-align: center; letter-spacing: 5px; font-size: 1.25rem; font-weight: 800; margin-top: 0.75rem; padding: 0.55rem;">
+        <div id="clearPasswordError" style="color: var(--danger); font-size: 0.78rem; font-weight: 750; margin-top: 0.4rem; display: none;">Parol noto'g'ri! Faqat o'qituvchi o'chira oladi.</div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" id="btnCancelClearPassword" class="btn btn-secondary">
+          Bekor qilish
+        </button>
+        <button type="button" id="btnConfirmClearPassword" class="btn btn-danger">
+          O'chirish
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Skriptlar -->
-  <script src="../js/config.js?v=20260908_4"></script>
-  <script src="../js/questions.js?v=20260908_4"></script>
-  <script src="../js/quiz.js?v=20260908_4"></script>
+  <script src="../js/config.js?v=20260908_5"></script>
+  <script src="../js/questions.js?v=20260908_5"></script>
+  <script src="../js/quiz.js?v=20260908_5"></script>
 </body>
 </html>

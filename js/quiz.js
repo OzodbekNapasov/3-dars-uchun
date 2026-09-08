@@ -84,6 +84,13 @@
   const statTopGrades = document.getElementById('statTopGrades');
   const statMaxScore = document.getElementById('statMaxScore');
 
+  // Parol modali elementlari (Keshni tozalash uchun 7777)
+  const passwordPromptModal = document.getElementById('passwordPromptModal');
+  const clearPasswordInput = document.getElementById('clearPasswordInput');
+  const clearPasswordError = document.getElementById('clearPasswordError');
+  const btnCancelClearPassword = document.getElementById('btnCancelClearPassword');
+  const btnConfirmClearPassword = document.getElementById('btnConfirmClearPassword');
+
   // Holat o'zgaruvchilari
   let currentStudent = null;
   let quizQuestions = [];
@@ -189,7 +196,8 @@
           (!noticeModal || !noticeModal.classList.contains('active')) &&
           (!confirmModal || !confirmModal.classList.contains('active')) &&
           (!fullscreenWarningModal || !fullscreenWarningModal.classList.contains('active')) &&
-          (!historyModal || !historyModal.classList.contains('active'))) {
+          (!historyModal || !historyModal.classList.contains('active')) &&
+          (!passwordPromptModal || !passwordPromptModal.classList.contains('active'))) {
 
         const now = Date.now();
         const diff = now - lastMinusPressTime;
@@ -1020,29 +1028,80 @@
     URL.revokeObjectURL(url);
   }
 
-  function clearHistoryCache() {
+  function openClearPasswordModal() {
     const list = getHistoryList();
     if (list.length === 0) {
       showNotice("Kesh bo'sh", "Keshda tozalanadigan test natijalari mavjud emas.", "warning");
       return;
     }
 
-    if (confirm("Haqiqatan ham barcha saqlangan test natijalarini keshdan tozalashni xohlaysizmi?")) {
-      try {
-        localStorage.removeItem('TEST_RESULTS_BACKUP');
-        localStorage.removeItem('TEST_PENDING_SUBMISSIONS');
-      } catch (e) {}
-      renderHistoryTable();
-      updateHistoryBadge();
-      showNotice("Muvaffaqiyatli", "Barcha test natijalari keshdan o'chirildi.", "primary");
+    const modal = passwordPromptModal || document.getElementById('passwordPromptModal');
+    const input = clearPasswordInput || document.getElementById('clearPasswordInput');
+    const err = clearPasswordError || document.getElementById('clearPasswordError');
+
+    if (input) {
+      input.value = '';
+      input.classList.remove('input-error');
     }
+    if (err) err.style.display = 'none';
+
+    if (modal) {
+      modal.classList.add('active');
+      setTimeout(() => {
+        if (input) input.focus();
+      }, 100);
+    }
+  }
+
+  function closeClearPasswordModal() {
+    const modal = passwordPromptModal || document.getElementById('passwordPromptModal');
+    const input = clearPasswordInput || document.getElementById('clearPasswordInput');
+    const err = clearPasswordError || document.getElementById('clearPasswordError');
+
+    if (modal) modal.classList.remove('active');
+    if (input) {
+      input.value = '';
+      input.classList.remove('input-error');
+    }
+    if (err) err.style.display = 'none';
+  }
+
+  function executeClearHistoryWithPassword() {
+    const input = clearPasswordInput || document.getElementById('clearPasswordInput');
+    const err = clearPasswordError || document.getElementById('clearPasswordError');
+    const entered = (input ? input.value : '').trim();
+
+    if (entered !== '7777') {
+      if (err) {
+        err.textContent = "Parol noto'g'ri! Faqat o'qituvchi o'chira oladi.";
+        err.style.display = 'block';
+      }
+      if (input) {
+        input.classList.add('input-error');
+        input.value = '';
+        input.focus();
+      }
+      return;
+    }
+
+    // Parol to'g'ri (7777)
+    try {
+      localStorage.removeItem('TEST_RESULTS_BACKUP');
+      localStorage.removeItem('TEST_PENDING_SUBMISSIONS');
+    } catch (e) {}
+
+    closeClearPasswordModal();
+    renderHistoryTable();
+    updateHistoryBadge();
+    showNotice("Kesh tozalandi", "Barcha test natijalari muvaffaqiyatli o'chirildi.", "primary");
   }
 
   // Global window ga eksport qilamiz (Inline onclick ham ishlashi uchun)
   window.openHistoryModal = openHistoryModal;
   window.closeHistoryModal = closeHistoryModal;
   window.exportHistoryToCSV = exportHistoryToCSV;
-  window.clearHistoryCache = clearHistoryCache;
+  window.clearHistoryCache = openClearPasswordModal;
+  window.closeClearPasswordModal = closeClearPasswordModal;
 
   const btnOpenH = btnOpenHistory || document.getElementById('btnOpenHistory');
   const btnResH = btnResultHistory || document.getElementById('btnResultHistory');
@@ -1052,13 +1111,44 @@
   const btnClrH = btnClearHistory || document.getElementById('btnClearHistory');
   const searchInp = historySearchInput || document.getElementById('historySearchInput');
   const hModal = historyModal || document.getElementById('historyModal');
+  const btnCancelPass = btnCancelClearPassword || document.getElementById('btnCancelClearPassword');
+  const btnConfirmPass = btnConfirmClearPassword || document.getElementById('btnConfirmClearPassword');
+  const passInp = clearPasswordInput || document.getElementById('clearPasswordInput');
+  const passModal = passwordPromptModal || document.getElementById('passwordPromptModal');
 
   if (btnOpenH) btnOpenH.addEventListener('click', openHistoryModal);
   if (btnResH) btnResH.addEventListener('click', openHistoryModal);
   if (btnCloseH) btnCloseH.addEventListener('click', closeHistoryModal);
   if (btnCloseHBot) btnCloseHBot.addEventListener('click', closeHistoryModal);
   if (btnExpH) btnExpH.addEventListener('click', exportHistoryToCSV);
-  if (btnClrH) btnClrH.addEventListener('click', clearHistoryCache);
+  if (btnClrH) btnClrH.addEventListener('click', openClearPasswordModal);
+
+  if (btnCancelPass) btnCancelPass.addEventListener('click', closeClearPasswordModal);
+  if (btnConfirmPass) btnConfirmPass.addEventListener('click', executeClearHistoryWithPassword);
+
+  if (passInp) {
+    passInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeClearHistoryWithPassword();
+      } else if (e.key === 'Escape') {
+        closeClearPasswordModal();
+      }
+    });
+    passInp.addEventListener('input', () => {
+      const err = clearPasswordError || document.getElementById('clearPasswordError');
+      if (err) err.style.display = 'none';
+      passInp.classList.remove('input-error');
+    });
+  }
+
+  if (passModal) {
+    passModal.addEventListener('click', (e) => {
+      if (e.target === passModal) {
+        closeClearPasswordModal();
+      }
+    });
+  }
 
   if (searchInp) {
     searchInp.addEventListener('input', (e) => {
