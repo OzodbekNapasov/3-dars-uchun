@@ -1,10 +1,9 @@
 [build]
   publish = "."
 
-# SPA yagona sahifa marshrutizatsiyasi: /test yoki boshqa istalgan havola index.html ga yo'naltiriladi
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/test"
+  to = "/test/index.html"
   status = 200
 
 [[headers]]

@@ -3,309 +3,449 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3-Dars: Axborot texnologiyalari — Test</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.55L4.47 11 12 6.89 19.53 11 12 15.55zM6 15.5v3.45c0 2.21 2.69 4 6 4s6-1.79 6-4v-3.45c-1.57 1.02-3.66 1.55-6 1.55s-4.43-.53-6-1.55z'/></svg>">
+  <title>Axborot Texnologiyalari — 3-Dars: O'lchov Birliklari va Sanoq Sistemalari</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/></svg>">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #eff6ff;
+      --success: #10b981;
+      --dark: #0f172a;
+      --text: #1e293b;
+      --muted: #64748b;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 1050px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 2rem;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header-title h1 {
+      font-size: 1.35rem;
+      color: var(--dark);
+      font-weight: 800;
+    }
+
+    .header-title p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .btn-test {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+      transition: all 0.2s;
+    }
+
+    .btn-test:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .section-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 1.75rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--dark);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-rule {
+      background: var(--primary-light);
+      border-left: 4px solid var(--primary);
+      padding: 0.75rem 1.25rem;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      color: #1e3a8a;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    th, td {
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      background: #f1f5f9;
+      color: var(--dark);
+      font-weight: 700;
+    }
+
+    .tasks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.85rem;
+      margin-top: 0.85rem;
+    }
+
+    .task-item {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.85rem 1rem;
+      border-left: 4px solid var(--success);
+    }
+
+    .task-q {
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 0.25rem;
+    }
+
+    .task-step {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .task-ans {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .code-pill {
+      font-family: monospace;
+      background: #e2e8f0;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-weight: 600;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      vertical-align: middle;
+    }
+
+    .banner-cta {
+      background: linear-gradient(135deg, #1e40af, var(--primary));
+      color: white;
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-top: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .banner-cta h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
+    .banner-cta p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-top: 0.2rem;
+    }
+
+    .banner-cta a {
+      background: #ffffff;
+      color: var(--primary);
+      text-decoration: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      transition: transform 0.2s;
+    }
+
+    .banner-cta a:hover {
+      transform: scale(1.03);
+    }
+  </style>
 </head>
-<body oncontextmenu="return false;" oncopy="return false;" oncut="return false;" onpaste="return false;">
+<body>
 
-  <!-- Header: Yuqori panel -->
-  <header class="app-header">
-    <div class="header-container">
-      <div class="logo-area">
-        <div class="logo-icon">IT</div>
-        <div class="logo-text">
-          <h1>Axborot Texnologiyalari</h1>
-          <p>3-Dars Testi</p>
-        </div>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-title">
+        <h1>Axborot Texnologiyalari — 3-Dars</h1>
+        <p>O'quv-uslubiy qo'llanma: Axborot o'lchov birliklari va Sanoq sistemalari</p>
+      </div>
+      <div>
+        <a href="test/" class="btn-test">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          Test sinoviga o'tish (/test)
+        </a>
+      </div>
+    </header>
+
+    <!-- 1-BO'LIM: O'LCHOV BIRLIKLARI VA 1 AMALLI HISOBLAR -->
+    <section class="section-card">
+      <h2 class="section-title">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        1. Axborot O'lchov Birliklari (Bir amalli hisoblash qoidalari)
+      </h2>
+
+      <div class="info-rule">
+        <strong>Asosiy qoidalar:</strong>
+        <br>1. <strong>1 Bayt = 8 bit</strong>. (Baytdan bitga: &times;8; Bitdan baytga: /8).
+        <br>2. <strong>1 KB = 1024 B | 1 MB = 1024 KB | 1 GB = 1024 MB | 1 TB = 1024 GB</strong>.
+        <br>3. Qo'shni birlikka o'tishda faqat <strong>1 ta amal</strong> (1024 ga ko'paytirish yoki 1024 ga bo'lish) bajariladi.
       </div>
 
-      <!-- Test jarayonida ko'rinuvchi yuqori qism elementlari -->
-      <div id="headerMeta" class="header-meta" style="display: none;">
-        <div id="userBadge" class="user-badge" title="Talaba">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-          <span id="userNameDisplay">Talaba</span>
+      <table>
+        <thead>
+          <tr>
+            <th>Birlik</th>
+            <th>Belgisi</th>
+            <th>Tengligi</th>
+            <th>1 amalli hisoblash misoli</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Bit</strong></td>
+            <td><span class="code-pill">bit</span></td>
+            <td>Eng kichik birlik (0 yoki 1)</td>
+            <td>1 bayt = 8 bit</td>
+          </tr>
+          <tr>
+            <td><strong>Bayt</strong></td>
+            <td><span class="code-pill">B</span></td>
+            <td>1 B = 8 bit</td>
+            <td>16 bit / 8 = <strong>2 bayt</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Kilobayt</strong></td>
+            <td><span class="code-pill">KB</span></td>
+            <td>1 KB = 1024 B</td>
+            <td>2 KB = 2 &times; 1024 = <strong>2048 B</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Megabayt</strong></td>
+            <td><span class="code-pill">MB</span></td>
+            <td>1 MB = 1024 KB</td>
+            <td>2 MB = 2 &times; 1024 = <strong>2048 KB</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Gigabayt</strong></td>
+            <td><span class="code-pill">GB</span></td>
+            <td>1 GB = 1024 MB</td>
+            <td>2 GB = 2 &times; 1024 = <strong>2048 MB</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Terabayt</strong></td>
+            <td><span class="code-pill">TB</span></td>
+            <td>1 TB = 1024 GB</td>
+            <td>1 TB = <strong>1024 GB</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="tasks-grid">
+        <div class="task-item">
+          <div class="task-q">2 bayt = ? bit</div>
+          <div class="task-step">1 amal: 2 &times; 8</div>
+          <div class="task-ans">Javob: 16 bit</div>
         </div>
 
-        <div id="timerBadge" class="timer-badge" title="Qolgan vaqt">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7V7z"/></svg>
-          <span id="timerDisplay">25:00</span>
+        <div class="task-item">
+          <div class="task-q">3 bayt = ? bit</div>
+          <div class="task-step">1 amal: 3 &times; 8</div>
+          <div class="task-ans">Javob: 24 bit</div>
         </div>
 
-        <!-- YUQORIGA KO'CHIRILGAN YAKUNLASH TUGMASI (bilmay bosib yubormaslik uchun alohida joylashgan) -->
-        <button type="button" id="btnFinishTop" class="btn btn-danger" style="padding: 0.4rem 0.85rem; font-size: 0.82rem;" title="Testni yakunlash">
-          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-          Testni yakunlash
-        </button>
-      </div>
-    </div>
-  </header>
-
-  <!-- Asosiy Kontent (Bitta sahifada 3 ta holat) -->
-  <main class="main-wrapper">
-
-    <!-- 1-KO'RINISh: TALABA MA'LUMOTLARINI KIRITISH (Bir ekranga sig'uvchi) -->
-    <div id="viewRegister" class="view-screen active">
-      <div class="card index-card">
-        <div style="text-align: center; margin-bottom: 0.75rem;">
-          <h2 style="font-size: 1.25rem; color: var(--dark); font-weight: 800;">Talaba ma'lumotlari</h2>
-          <p style="font-size: 0.8rem; color: var(--text-muted);">Testni boshlash uchun ma'lumotlaringizni kiriting</p>
+        <div class="task-item">
+          <div class="task-q">16 bit = ? bayt</div>
+          <div class="task-step">1 amal: 16 / 8</div>
+          <div class="task-ans">Javob: 2 bayt</div>
         </div>
 
-        <form id="studentForm" novalidate>
-          <div class="index-grid">
-            <div class="form-group">
-              <label class="form-label" for="lastName">Familiya *</label>
-              <input type="text" id="lastName" class="form-input" placeholder="Masalan: Karimov" autocomplete="off">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="firstName">Ism *</label>
-              <input type="text" id="firstName" class="form-input" placeholder="Masalan: Jasur" autocomplete="off">
-            </div>
-
-            <div class="form-group">
-              <label class="form-label" for="studentGroup">Guruh *</label>
-              <input type="text" id="studentGroup" class="form-input" placeholder="Masalan: 101-guruh" autocomplete="off">
-            </div>
-          </div>
-
-          <div class="rules-box">
-            <h4>
-              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-              Test shartlari va 5 ballik baholash:
-            </h4>
-            <ul>
-              <li>40 ta savoldan <strong>tasodifiy 20 ta savol</strong> tanlanadi va variantlari aralashtiriladi.</li>
-              <li>Test to'liq ekran rejimida o'tadi. Boshqa oynaga o'tish yoki nusxa olish qat'iyan taqiqlanadi.</li>
-              <li>Test uchun <strong>25 daqiqa</strong> vaqt ajratiladi.</li>
-            </ul>
-
-            <table class="grade-table">
-              <thead>
-                <tr>
-                  <th>Foiz</th>
-                  <th>To'g'ri javoblar</th>
-                  <th>Baho</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>86% – 100%</strong></td>
-                  <td>18 – 20 ta</td>
-                  <td><span class="badge badge-success">5 (A'lo)</span></td>
-                </tr>
-                <tr>
-                  <td><strong>71% – 85%</strong></td>
-                  <td>15 – 17 ta</td>
-                  <td><span class="badge badge-primary">4 (Yaxshi)</span></td>
-                </tr>
-                <tr>
-                  <td><strong>56% – 70%</strong></td>
-                  <td>12 – 14 ta</td>
-                  <td><span class="badge badge-warning">3 (Qoniqarli)</span></td>
-                </tr>
-                <tr>
-                  <td><strong>56% dan past</strong></td>
-                  <td>0 – 11 ta</td>
-                  <td><span class="badge badge-danger">2 (Qoniqarsiz)</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <button type="submit" id="btnStartQuiz" class="btn btn-primary" style="width: 100%; padding: 0.75rem; font-size: 1rem;">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
-            To'liq ekranda testni boshlash
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- 2-KO'RINISh: TEST TOPSHIRISH EKRANI (Bir ekranga sig'uvchi) -->
-    <div id="viewQuiz" class="view-screen">
-      <div class="quiz-screen">
-        <!-- Progress bar va Savollar xaritasi -->
-        <div>
-          <div class="quiz-progress-bar">
-            <div id="progressFill" class="quiz-progress-fill"></div>
-          </div>
-
-          <div class="palette-card">
-            <div class="palette-meta">
-              <span>Savollar xaritasi (Jami 20 ta)</span>
-              <span id="answeredStatusText" style="color: var(--primary);">0 / 20 belgilandi</span>
-            </div>
-            <div id="paletteContainer" class="palette-container"></div>
-          </div>
+        <div class="task-item">
+          <div class="task-q">2 KB = ? B</div>
+          <div class="task-step">1 amal: 2 &times; 1024</div>
+          <div class="task-ans">Javob: 2048 B</div>
         </div>
 
-        <!-- Savol kartasi -->
-        <div class="question-card">
-          <div>
-            <div class="question-top">
-              <span id="questionCounter" class="question-counter">Savol 1 / 20</span>
-            </div>
-            <h3 id="questionText" class="question-text">Savol yuklanmoqda...</h3>
-          </div>
-
-          <div id="optionsContainer" class="options-list">
-            <!-- Variantlar JS orqali qo'shiladi -->
-          </div>
+        <div class="task-item">
+          <div class="task-q">3 KB = ? B</div>
+          <div class="task-step">1 amal: 3 &times; 1024</div>
+          <div class="task-ans">Javob: 3072 B</div>
         </div>
 
-        <!-- Pastki qism: FAQAT Oldingi va Keyingi -->
-        <div class="quiz-footer">
-          <button type="button" id="btnPrev" class="btn btn-secondary">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-            Oldingi
-          </button>
+        <div class="task-item">
+          <div class="task-q">2048 B = ? KB</div>
+          <div class="task-step">1 amal: 2048 / 1024</div>
+          <div class="task-ans">Javob: 2 KB</div>
+        </div>
 
-          <button type="button" id="btnNext" class="btn btn-primary">
-            Keyingi
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-          </button>
+        <div class="task-item">
+          <div class="task-q">4096 B = ? KB</div>
+          <div class="task-step">1 amal: 4096 / 1024</div>
+          <div class="task-ans">Javob: 4 KB</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">2 MB = ? KB</div>
+          <div class="task-step">1 amal: 2 &times; 1024</div>
+          <div class="task-ans">Javob: 2048 KB</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">2048 KB = ? MB</div>
+          <div class="task-step">1 amal: 2048 / 1024</div>
+          <div class="task-ans">Javob: 2 MB</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">2 GB = ? MB</div>
+          <div class="task-step">1 amal: 2 &times; 1024</div>
+          <div class="task-ans">Javob: 2048 MB</div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- 3-KO'RINISh: NATIJALAR EKRANI -->
-    <div id="viewResults" class="view-screen">
-      <div class="results-card">
-        <h2 style="font-size: 1.35rem; color: var(--dark); font-weight: 800;">
-          Test yakunlandi
-        </h2>
-        <p style="color: var(--text-muted); font-size: 0.82rem;">
-          Natijalaringiz qayd etildi va Google Sheets jadvaliga uzatildi
-        </p>
+    <!-- 2-BO'LIM: SANOQ SISTEMALARI -->
+    <section class="section-card">
+      <h2 class="section-title">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+        2. Ikkilik Sanoq Sistemasi (Kichik sonlar bilan ishlash)
+      </h2>
 
-        <!-- Doiraviy Foiz -->
-        <div id="scoreCircle" class="score-circle">
-          <span id="resultPercent" class="score-percent">0%</span>
-          <span class="score-label">NATIJA</span>
+      <div class="info-rule">
+        <strong>Oson eslab qolish:</strong>
+        Xonalar qiymati (o'ngdan chapga): <strong>... 8 &larr; 4 &larr; 2 &larr; 1</strong>
+      </div>
+
+      <div class="tasks-grid">
+        <div class="task-item">
+          <div class="task-q">10₂ = ?₁₀</div>
+          <div class="task-step">2-xona: 2</div>
+          <div class="task-ans">Javob: 2</div>
         </div>
 
-        <div>
-          <div id="resultGrade" class="grade-display">
-            Baho: 5 (A'lo)
-          </div>
+        <div class="task-item">
+          <div class="task-q">11₂ = ?₁₀</div>
+          <div class="task-step">2 + 1</div>
+          <div class="task-ans">Javob: 3</div>
         </div>
 
-        <!-- Tafsilotlar -->
-        <div class="result-details-grid">
-          <div class="detail-item">
-            <div class="detail-label">Talaba</div>
-            <div id="resStudentName" class="detail-value">-</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Guruhi</div>
-            <div id="resStudentGroup" class="detail-value">-</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">To'g'ri javoblar</div>
-            <div id="resCorrectCount" class="detail-value" style="color: var(--success);">-</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Sarflangan vaqt</div>
-            <div id="resTimeSpent" class="detail-value">-</div>
-          </div>
+        <div class="task-item">
+          <div class="task-q">100₂ = ?₁₀</div>
+          <div class="task-step">4-xona: 4</div>
+          <div class="task-ans">Javob: 4</div>
         </div>
 
-        <!-- Google Sheet Status -->
-        <div id="sheetStatusBox" class="sheet-status" style="background: #f1f5f9; color: #475569;">
-          Natijalar Google Sheets jadvaliga uzatilmoqda...
+        <div class="task-item">
+          <div class="task-q">101₂ = ?₁₀</div>
+          <div class="task-step">4 + 1</div>
+          <div class="task-ans">Javob: 5</div>
         </div>
 
-        <!-- Tugmalar -->
-        <div style="display: flex; gap: 0.75rem; justify-content: center; margin-top: 0.5rem;">
-          <button type="button" id="btnToggleReview" class="btn btn-secondary">
-            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-            Savollar tahlilini ko'rish
-          </button>
-          <button type="button" id="btnRestart" class="btn btn-primary">
-            Bosh sahifaga qaytish
-          </button>
+        <div class="task-item">
+          <div class="task-q">110₂ = ?₁₀</div>
+          <div class="task-step">4 + 2</div>
+          <div class="task-ans">Javob: 6</div>
         </div>
 
-        <!-- Tahlil ro'yxati -->
-        <div id="reviewContainer" style="display: none; margin-top: 1rem; text-align: left;">
-          <h4 style="font-size: 0.95rem; margin-bottom: 0.6rem; color: var(--dark);">
-            Javoblar tekshiruvi:
-          </h4>
-          <div id="reviewList"></div>
+        <div class="task-item">
+          <div class="task-q">111₂ = ?₁₀</div>
+          <div class="task-step">4 + 2 + 1</div>
+          <div class="task-ans">Javob: 7</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">1000₂ = ?₁₀</div>
+          <div class="task-step">8-xona: 8</div>
+          <div class="task-ans">Javob: 8</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">1001₂ = ?₁₀</div>
+          <div class="task-step">8 + 1</div>
+          <div class="task-ans">Javob: 9</div>
+        </div>
+
+        <div class="task-item">
+          <div class="task-q">1010₂ = ?₁₀</div>
+          <div class="task-step">8 + 2</div>
+          <div class="task-ans">Javob: 10</div>
         </div>
       </div>
-    </div>
+    </section>
 
-  </main>
-
-  <!-- ICHKI BILDIRISHNOMA MODALI (Chrome brauzerining xunuk pop-up lari o'rniga) -->
-  <div id="noticeModal" class="modal-overlay">
-    <div class="modal-box">
-      <div id="noticeModalIcon" class="modal-icon-wrapper warning">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+    <!-- Pastki Testga chaqiruvchi Banner -->
+    <div class="banner-cta">
+      <div>
+        <h3>Mavzuni o'rganib bo'ldingizmi?</h3>
+        <p>Bilimingizni sinash uchun onlayn test sinovidan o'ting</p>
       </div>
-      <h3 id="noticeModalTitle" class="modal-title">Ma'lumotlarni kiriting</h3>
-      <div id="noticeModalBody" class="modal-body">
-        Iltimos, familiyangiz, ismingiz va guruhingizni to'liq kiriting!
-      </div>
-      <div class="modal-actions">
-        <button type="button" id="btnCloseNotice" class="btn btn-primary" style="width: 100%;">
-          Tushundim
-        </button>
-      </div>
+      <a href="test/">Testni boshlash &rarr;</a>
     </div>
   </div>
 
-  <!-- TASDIQLASH MODALI (Yuqoridagi Yakunlash tugmasi bosilganda) -->
-  <div id="confirmModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-icon-wrapper warning">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-      </div>
-      <h3 class="modal-title">Testni yakunlaysizmi?</h3>
-      <div id="confirmModalText" class="modal-body">
-        Barcha savollarga javob berganingizga ishonchingiz komilmi?
-      </div>
-      <div class="modal-actions">
-        <button type="button" id="btnCancelSubmit" class="btn btn-secondary">
-          Davom etish
-        </button>
-        <button type="button" id="btnConfirmSubmit" class="btn btn-danger">
-          Ha, yakunlash
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ANTI-CHEAT: FULLSCREEN OGOHLANTIRIShI -->
-  <div id="fullscreenWarningModal" class="modal-overlay">
-    <div class="modal-box">
-      <div class="modal-icon-wrapper danger">
-        <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-      </div>
-      <h3 class="modal-title">Diqqat! Qoidabuzarlik</h3>
-      <div class="modal-body">
-        Testni faqat to'liq ekran (Fullscreen) rejimida topshirish shart!<br>
-        Oynani kichraytirish yoki boshqa ilovaga o'tish qat'iyan man etiladi.
-      </div>
-      <div class="modal-actions">
-        <button type="button" id="btnResumeFullscreen" class="btn btn-primary" style="width: 100%;">
-          To'liq ekranga qaytish
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ANTI-CHEAT: SKRINSHOT VA NUSXA OGOHLANTIRISh PANELI -->
-  <div id="antiCheatAlert" class="anticheat-banner">
-    <svg class="icon icon-sm" viewBox="0 0 24 24" style="fill: #ef4444;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-    <span id="antiCheatText">Nusxa olish yoki skrinshot taqiqlangan!</span>
-  </div>
-
-  <!-- Skriptlar -->
-  <script src="js/config.js"></script>
-  <script src="js/questions.js"></script>
-  <script src="js/quiz.js"></script>
 </body>
 </html>
