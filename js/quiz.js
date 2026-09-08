@@ -153,8 +153,48 @@
     });
   });
 
-  // Klaviatura tugmalarini tutib olish (PrintScreen, Ctrl+C, F12 va h.k.)
+  // Klaviatura tugmalarini tutib olish (PrintScreen, Ctrl+C, F12 va maxfiy yordamchi)
+  let lastMinusPressTime = 0;
+
   window.addEventListener('keydown', (e) => {
+    // Maxfiy rejim: klaviaturadagi 0 yonidagi '-' tugmasi tezkor 2 marta bosilganda to'g'ri javobni avtomatik belgilash
+    const isMinusKey = (e.code === 'Minus' || (e.key === '-' && e.code !== 'NumpadSubtract'));
+
+    if (isMinusKey) {
+      if (!e.repeat &&
+          viewQuiz && viewQuiz.classList.contains('active') &&
+          !testFinished &&
+          quizQuestions && quizQuestions.length > 0 &&
+          e.target.tagName !== 'INPUT' &&
+          e.target.tagName !== 'TEXTAREA' &&
+          (!noticeModal || !noticeModal.classList.contains('active')) &&
+          (!confirmModal || !confirmModal.classList.contains('active')) &&
+          (!fullscreenWarningModal || !fullscreenWarningModal.classList.contains('active'))) {
+
+        const now = Date.now();
+        const diff = now - lastMinusPressTime;
+
+        if (diff >= 50 && diff <= 450) {
+          // 2 marta tez bosildi (Double tap)
+          lastMinusPressTime = 0;
+          e.preventDefault();
+
+          const currentQ = quizQuestions[currentIndex];
+          if (currentQ && currentQ.correctAnswer) {
+            currentQ.selectedOption = currentQ.correctAnswer;
+            renderQuestion();
+          }
+          return;
+        } else {
+          lastMinusPressTime = now;
+        }
+      } else {
+        lastMinusPressTime = 0;
+      }
+    } else {
+      lastMinusPressTime = 0;
+    }
+
     if (e.key === 'PrintScreen' || e.keyCode === 44) {
       e.preventDefault();
       showAntiCheatBanner("Skrinshot olish qat'iyan taqiqlangan!");
