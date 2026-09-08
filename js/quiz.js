@@ -341,6 +341,18 @@
     answeredStatusText.textContent = `${answeredCount} / ${quizQuestions.length} belgilandi`;
     const progressPercent = (answeredCount / quizQuestions.length) * 100;
     progressFill.style.width = `${progressPercent}%`;
+
+    const dynamicQuizFrame = document.getElementById('dynamicQuizFrame');
+    const frameProgressText = document.getElementById('frameProgressText');
+    if (dynamicQuizFrame) {
+      const angle = (answeredCount / quizQuestions.length) * 360;
+      const ratio = answeredCount / quizQuestions.length;
+      dynamicQuizFrame.style.setProperty('--answered-angle', `${angle}deg`);
+      dynamicQuizFrame.style.setProperty('--answered-ratio', ratio);
+    }
+    if (frameProgressText) {
+      frameProgressText.textContent = `${answeredCount} / ${quizQuestions.length} belgilandi (${Math.round(progressPercent)}%)`;
+    }
   }
 
   // =========================================================================
@@ -365,6 +377,9 @@
       optDiv.innerHTML = `
         <div class="option-letter">${optionLetters[optIdx]}</div>
         <div class="option-text">${escapeHtml(optText)}</div>
+        <div class="option-check">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        </div>
       `;
 
       optDiv.addEventListener('click', () => {

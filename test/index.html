@@ -149,17 +149,23 @@
           </div>
         </div>
 
-        <!-- Savol kartasi -->
-        <div class="question-card">
-          <div>
-            <div class="question-top">
-              <span id="questionCounter" class="question-counter">Savol 1 / 20</span>
+        <!-- Dinamik chetki rangli ramka bilan o'ralgan Savol kartasi -->
+        <div class="dynamic-frame-wrapper" id="dynamicQuizFrame">
+          <div class="question-card">
+            <div class="question-header-area">
+              <div class="question-top">
+                <span id="questionCounter" class="question-counter">Savol 1 / 20</span>
+                <div class="frame-progress-indicator">
+                  <span class="pulse-indicator-dot"></span>
+                  <span id="frameProgressText">0 / 20 belgilandi (0%)</span>
+                </div>
+              </div>
+              <h3 id="questionText" class="question-text">Savol yuklanmoqda...</h3>
             </div>
-            <h3 id="questionText" class="question-text">Savol yuklanmoqda...</h3>
-          </div>
 
-          <div id="optionsContainer" class="options-list">
-            <!-- Variantlar JS orqali qo'shiladi -->
+            <div id="optionsContainer" class="options-list">
+              <!-- Variantlar JS orqali qo'shiladi -->
+            </div>
           </div>
         </div>
 
