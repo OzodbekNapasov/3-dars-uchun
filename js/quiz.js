@@ -848,22 +848,39 @@
   // =========================================================================
   function getHistoryList() {
     try {
-      return JSON.parse(localStorage.getItem('TEST_RESULTS_BACKUP') || '[]');
+      let raw = localStorage.getItem('TEST_RESULTS_BACKUP');
+      let list = [];
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) list = parsed;
+      }
+      // Agar TEST_RESULTS_BACKUP bo'sh bo'lsa, TEST_PENDING_SUBMISSIONS dan ham tekshirib ko'ramiz
+      if (list.length === 0) {
+        const pendingRaw = localStorage.getItem('TEST_PENDING_SUBMISSIONS');
+        if (pendingRaw) {
+          const pendingParsed = JSON.parse(pendingRaw);
+          if (Array.isArray(pendingParsed)) list = pendingParsed;
+        }
+      }
+      return list.filter(item => item && typeof item === 'object');
     } catch (e) {
       return [];
     }
   }
 
   function updateHistoryBadge() {
-    const list = getHistoryList();
-    if (historyCountBadge) {
-      if (list.length > 0) {
-        historyCountBadge.textContent = list.length;
-        historyCountBadge.style.display = 'inline-block';
-      } else {
-        historyCountBadge.style.display = 'none';
+    try {
+      const list = getHistoryList();
+      const badge = historyCountBadge || document.getElementById('historyCountBadge');
+      if (badge) {
+        if (list.length > 0) {
+          badge.textContent = list.length;
+          badge.style.display = 'inline-block';
+        } else {
+          badge.style.display = 'none';
+        }
       }
-    }
+    } catch (e) {}
   }
 
   function renderHistoryTable(filterText = '') {
@@ -872,72 +889,101 @@
 
     const total = rawList.length;
     if (total > 0) {
-      const avg = Math.round(rawList.reduce((acc, item) => acc + (Number(item.percentage) || 0), 0) / total);
+      const avg = Math.round(rawList.reduce((acc, item) => acc + (parseInt(item.percentage, 10) || 0), 0) / total);
       const topCount = rawList.filter(item => String(item.grade) === '5').length;
-      const maxScore = Math.max(...rawList.map(item => Number(item.percentage) || 0));
+      const maxScore = Math.max(0, ...rawList.map(item => parseInt(item.percentage, 10) || 0));
 
-      if (statTotalCount) statTotalCount.textContent = `${total} ta`;
-      if (statAvgScore) statAvgScore.textContent = `${avg}%`;
-      if (statTopGrades) statTopGrades.textContent = `${topCount} ta`;
-      if (statMaxScore) statMaxScore.textContent = `${maxScore}%`;
+      const sTotal = statTotalCount || document.getElementById('statTotalCount');
+      const sAvg = statAvgScore || document.getElementById('statAvgScore');
+      const sTop = statTopGrades || document.getElementById('statTopGrades');
+      const sMax = statMaxScore || document.getElementById('statMaxScore');
+
+      if (sTotal) sTotal.textContent = `${total} ta`;
+      if (sAvg) sAvg.textContent = `${avg}%`;
+      if (sTop) sTop.textContent = `${topCount} ta`;
+      if (sMax) sMax.textContent = `${maxScore}%`;
     } else {
-      if (statTotalCount) statTotalCount.textContent = '0 ta';
-      if (statAvgScore) statAvgScore.textContent = '0%';
-      if (statTopGrades) statTopGrades.textContent = '0 ta';
-      if (statMaxScore) statMaxScore.textContent = '0%';
+      const sTotal = statTotalCount || document.getElementById('statTotalCount');
+      const sAvg = statAvgScore || document.getElementById('statAvgScore');
+      const sTop = statTopGrades || document.getElementById('statTopGrades');
+      const sMax = statMaxScore || document.getElementById('statMaxScore');
+
+      if (sTotal) sTotal.textContent = '0 ta';
+      if (sAvg) sAvg.textContent = '0%';
+      if (sTop) sTop.textContent = '0 ta';
+      if (sMax) sMax.textContent = '0%';
     }
 
-    const term = filterText.trim().toLowerCase();
+    const term = (filterText || '').trim().toLowerCase();
     const filtered = list.filter(item => {
       if (!term) return true;
       const fullName = `${item.lastName || ''} ${item.firstName || ''}`.toLowerCase();
-      const group = (item.group || '').toLowerCase();
+      const group = String(item.group || '').toLowerCase();
       return fullName.includes(term) || group.includes(term);
     });
 
+    const hTable = historyTable || document.getElementById('historyTable');
+    const hEmpty = historyEmptyState || document.getElementById('historyEmptyState');
+    const hTbody = historyTableBody || document.getElementById('historyTableBody');
+
     if (filtered.length === 0) {
-      if (historyTable) historyTable.style.display = 'none';
-      if (historyEmptyState) historyEmptyState.style.display = 'block';
-      if (historyTableBody) historyTableBody.innerHTML = '';
+      if (hTable) hTable.style.display = 'none';
+      if (hEmpty) hEmpty.style.display = 'block';
+      if (hTbody) hTbody.innerHTML = '';
       return;
     }
 
-    if (historyTable) historyTable.style.display = 'table';
-    if (historyEmptyState) historyEmptyState.style.display = 'none';
+    if (hTable) hTable.style.display = 'table';
+    if (hEmpty) hEmpty.style.display = 'none';
 
-    historyTableBody.innerHTML = '';
-    filtered.forEach((item, idx) => {
-      const tr = document.createElement('tr');
+    if (hTbody) {
+      hTbody.innerHTML = '';
+      filtered.forEach((item, idx) => {
+        const tr = document.createElement('tr');
 
-      let badgeClass = 'badge-primary';
-      const gradeNum = String(item.grade);
-      if (gradeNum === '5') badgeClass = 'badge-success';
-      else if (gradeNum === '4') badgeClass = 'badge-primary';
-      else if (gradeNum === '3') badgeClass = 'badge-warning';
-      else if (gradeNum === '2') badgeClass = 'badge-danger';
+        let badgeClass = 'badge-primary';
+        const gradeNum = String(item.grade || '');
+        if (gradeNum === '5') badgeClass = 'badge-success';
+        else if (gradeNum === '4') badgeClass = 'badge-primary';
+        else if (gradeNum === '3') badgeClass = 'badge-warning';
+        else if (gradeNum === '2') badgeClass = 'badge-danger';
 
-      tr.innerHTML = `
-        <td style="text-align: center; color: var(--text-muted); font-weight: 700;">${idx + 1}</td>
-        <td><strong>${escapeHtml(item.lastName || '')} ${escapeHtml(item.firstName || '')}</strong></td>
-        <td><span style="color: #475569; font-weight: 600;">${escapeHtml(item.group || '-')}</span></td>
-        <td><span style="font-weight: 750;">${item.correctCount || 0} / ${item.totalCount || 20}</span></td>
-        <td><strong style="color: var(--primary);">${item.percentage || 0}%</strong></td>
-        <td><span class="badge ${badgeClass}">${item.grade || '-'}${item.gradeLabel ? ' (' + escapeHtml(item.gradeLabel) + ')' : ''}</span></td>
-        <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timeSpent || '-')}</td>
-        <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timestamp || '-')}</td>
-      `;
-      historyTableBody.appendChild(tr);
-    });
+        const pct = parseInt(item.percentage, 10) || 0;
+
+        tr.innerHTML = `
+          <td style="text-align: center; color: var(--text-muted); font-weight: 700;">${idx + 1}</td>
+          <td><strong>${escapeHtml(item.lastName || '')} ${escapeHtml(item.firstName || '')}</strong></td>
+          <td><span style="color: #475569; font-weight: 600;">${escapeHtml(item.group || '-')}</span></td>
+          <td><span style="font-weight: 750;">${item.correctCount != null ? item.correctCount : '-'} / ${item.totalCount || 20}</span></td>
+          <td><strong style="color: var(--primary);">${pct}%</strong></td>
+          <td><span class="badge ${badgeClass}">${item.grade || '-'}${item.gradeLabel ? ' (' + escapeHtml(item.gradeLabel) + ')' : ''}</span></td>
+          <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timeSpent || '-')}</td>
+          <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timestamp || '-')}</td>
+        `;
+        hTbody.appendChild(tr);
+      });
+    }
   }
 
   function openHistoryModal() {
-    if (historySearchInput) historySearchInput.value = '';
-    renderHistoryTable();
-    if (historyModal) historyModal.classList.add('active');
+    const modal = historyModal || document.getElementById('historyModal');
+    if (modal) {
+      modal.classList.add('active');
+    }
+    try {
+      const search = historySearchInput || document.getElementById('historySearchInput');
+      if (search) search.value = '';
+      renderHistoryTable();
+    } catch (err) {
+      console.error("renderHistoryTable xatosi:", err);
+    }
   }
 
   function closeHistoryModal() {
-    if (historyModal) historyModal.classList.remove('active');
+    const modal = historyModal || document.getElementById('historyModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
   }
 
   function exportHistoryToCSV() {
@@ -953,9 +999,9 @@
       `"${(item.lastName || '').replace(/"/g, '""')}"`,
       `"${(item.firstName || '').replace(/"/g, '""')}"`,
       `"${(item.group || '').replace(/"/g, '""')}"`,
-      item.correctCount || 0,
+      item.correctCount != null ? item.correctCount : '-',
       item.totalCount || 20,
-      `${item.percentage || 0}%`,
+      `${parseInt(item.percentage, 10) || 0}%`,
       item.grade || '-',
       `"${(item.gradeLabel || '').replace(/"/g, '""')}"`,
       `"${(item.timeSpent || '').replace(/"/g, '""')}"`,
@@ -984,6 +1030,7 @@
     if (confirm("Haqiqatan ham barcha saqlangan test natijalarini keshdan tozalashni xohlaysizmi?")) {
       try {
         localStorage.removeItem('TEST_RESULTS_BACKUP');
+        localStorage.removeItem('TEST_PENDING_SUBMISSIONS');
       } catch (e) {}
       renderHistoryTable();
       updateHistoryBadge();
@@ -991,22 +1038,37 @@
     }
   }
 
-  if (btnOpenHistory) btnOpenHistory.addEventListener('click', openHistoryModal);
-  if (btnResultHistory) btnResultHistory.addEventListener('click', openHistoryModal);
-  if (btnCloseHistory) btnCloseHistory.addEventListener('click', closeHistoryModal);
-  if (btnCloseHistoryBottom) btnCloseHistoryBottom.addEventListener('click', closeHistoryModal);
-  if (btnExportHistory) btnExportHistory.addEventListener('click', exportHistoryToCSV);
-  if (btnClearHistory) btnClearHistory.addEventListener('click', clearHistoryCache);
+  // Global window ga eksport qilamiz (Inline onclick ham ishlashi uchun)
+  window.openHistoryModal = openHistoryModal;
+  window.closeHistoryModal = closeHistoryModal;
+  window.exportHistoryToCSV = exportHistoryToCSV;
+  window.clearHistoryCache = clearHistoryCache;
 
-  if (historySearchInput) {
-    historySearchInput.addEventListener('input', (e) => {
+  const btnOpenH = btnOpenHistory || document.getElementById('btnOpenHistory');
+  const btnResH = btnResultHistory || document.getElementById('btnResultHistory');
+  const btnCloseH = btnCloseHistory || document.getElementById('btnCloseHistory');
+  const btnCloseHBot = btnCloseHistoryBottom || document.getElementById('btnCloseHistoryBottom');
+  const btnExpH = btnExportHistory || document.getElementById('btnExportHistory');
+  const btnClrH = btnClearHistory || document.getElementById('btnClearHistory');
+  const searchInp = historySearchInput || document.getElementById('historySearchInput');
+  const hModal = historyModal || document.getElementById('historyModal');
+
+  if (btnOpenH) btnOpenH.addEventListener('click', openHistoryModal);
+  if (btnResH) btnResH.addEventListener('click', openHistoryModal);
+  if (btnCloseH) btnCloseH.addEventListener('click', closeHistoryModal);
+  if (btnCloseHBot) btnCloseHBot.addEventListener('click', closeHistoryModal);
+  if (btnExpH) btnExpH.addEventListener('click', exportHistoryToCSV);
+  if (btnClrH) btnClrH.addEventListener('click', clearHistoryCache);
+
+  if (searchInp) {
+    searchInp.addEventListener('input', (e) => {
       renderHistoryTable(e.target.value);
     });
   }
 
-  if (historyModal) {
-    historyModal.addEventListener('click', (e) => {
-      if (e.target === historyModal) {
+  if (hModal) {
+    hModal.addEventListener('click', (e) => {
+      if (e.target === hModal) {
         closeHistoryModal();
       }
     });

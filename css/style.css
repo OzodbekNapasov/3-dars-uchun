@@ -870,12 +870,12 @@ body {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
   padding: 1rem;
 }
 
 .modal-overlay.active {
-  display: flex;
+  display: flex !important;
   animation: fadeIn 0.2s ease;
 }
 
