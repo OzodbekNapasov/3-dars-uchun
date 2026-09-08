@@ -540,62 +540,227 @@
   });
 
   // =========================================================================
-  // 10. GOOGLE SHEETS GA NATIJANI UZATISH
+  // 10. GOOGLE SHEETS GA NATIJANI UZATISH VA OFFLINE NAVBAT (AUTO-SYNC)
   // =========================================================================
+  const PENDING_KEY = 'TEST_PENDING_SUBMISSIONS';
+  let isSyncing = false;
+
+  function getPendingSubmissions() {
+    try {
+      return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function savePendingSubmissions(list) {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
   function submitToGoogleSheets(payload) {
+    // 1. Har doim to'liq zaxira ro'yxatiga (backup) yozib qo'yamiz
     try {
       const backupList = JSON.parse(localStorage.getItem('TEST_RESULTS_BACKUP') || '[]');
       backupList.push(payload);
       localStorage.setItem('TEST_RESULTS_BACKUP', JSON.stringify(backupList));
     } catch (e) {}
 
-    const scriptUrl = localStorage.getItem('CUSTOM_GOOGLE_SHEET_URL') || APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL;
+    // 2. Unikal ID biriktiramiz
+    payload.id = payload.id || ('sub_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6));
 
-    if (!scriptUrl) {
-      sheetStatusBox.style.background = '#fef3c7';
-      sheetStatusBox.style.color = '#92400e';
-      sheetStatusBox.innerHTML = `Natijangiz saqlandi (Jadval havolasi config.js da kutilmoqda).`;
+    // 3. Navbatga qo'shamiz (agar mavjud bo'lmasa)
+    const pendingList = getPendingSubmissions();
+    if (!pendingList.some(item => item.id === payload.id)) {
+      pendingList.push(payload);
+      savePendingSubmissions(pendingList);
+    }
+
+    if (sheetStatusBox) {
+      sheetStatusBox.dataset.hasSubmitted = "true";
+    }
+
+    // 4. Sinxronizatsiyani ishga tushiramiz
+    processPendingQueue();
+  }
+
+  // Bitta natijani yuborish
+  async function sendItem(payload, scriptUrl) {
+    try {
+      await fetch(scriptUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return true;
+    } catch (postErr) {
+      try {
+        const getUrl = `${scriptUrl}?` + new URLSearchParams({
+          timestamp: payload.timestamp,
+          lastName: payload.lastName,
+          firstName: payload.firstName,
+          group: payload.group,
+          correctCount: payload.correctCount,
+          totalCount: payload.totalCount,
+          percentage: payload.percentage,
+          grade: payload.grade,
+          gradeLabel: payload.gradeLabel
+        }).toString();
+        await fetch(getUrl, { mode: 'no-cors' });
+        return true;
+      } catch (getErr) {
+        return false;
+      }
+    }
+  }
+
+  // Navbatdagi barcha natijalarni uzatish
+  async function processPendingQueue() {
+    if (isSyncing) return;
+
+    const pendingList = getPendingSubmissions();
+    if (pendingList.length === 0) {
+      if (sheetStatusBox && sheetStatusBox.dataset.hasSubmitted === "true") {
+        setSheetStatusSuccess();
+      }
       return;
     }
 
-    sheetStatusBox.innerHTML = `Natijalar Google Sheets jadvaliga uzatilmoqda...`;
+    const scriptUrl = localStorage.getItem('CUSTOM_GOOGLE_SHEET_URL') || APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL;
+    if (!scriptUrl) {
+      if (sheetStatusBox) {
+        sheetStatusBox.style.background = '#fffbeb';
+        sheetStatusBox.style.color = '#b45309';
+        sheetStatusBox.style.border = '1px solid #fde68a';
+        sheetStatusBox.innerHTML = `Natijangiz kompyuterda saqlandi (Jadval havolasi kutilmoqda).`;
+      }
+      return;
+    }
 
-    fetch(scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-    .then(() => {
-      sheetStatusBox.style.background = '#ecfdf5';
-      sheetStatusBox.style.color = '#065f46';
-      sheetStatusBox.innerHTML = `Natijangiz Google Sheets jadvaliga muvaffaqiyatli yozildi!`;
-    })
-    .catch(() => {
-      const getUrl = `${scriptUrl}?` + new URLSearchParams({
-        timestamp: payload.timestamp,
-        lastName: payload.lastName,
-        firstName: payload.firstName,
-        group: payload.group,
-        correctCount: payload.correctCount,
-        totalCount: payload.totalCount,
-        percentage: payload.percentage,
-        grade: payload.grade,
-        gradeLabel: payload.gradeLabel
-      }).toString();
+    // Agar internet bo'lmasa
+    if (!navigator.onLine) {
+      setSheetStatusOfflineWaiting(pendingList.length);
+      return;
+    }
 
-      fetch(getUrl, { mode: 'no-cors' })
-        .then(() => {
-          sheetStatusBox.style.background = '#ecfdf5';
-          sheetStatusBox.style.color = '#065f46';
-          sheetStatusBox.innerHTML = `Natijangiz Google Sheets jadvaliga muvaffaqiyatli yozildi!`;
-        })
-        .catch(() => {
-          sheetStatusBox.style.background = '#fef2f2';
-          sheetStatusBox.style.color = '#991b1b';
-          sheetStatusBox.innerHTML = `Natija qurilma xotirasiga saqlandi.`;
-        });
-    });
+    isSyncing = true;
+    if (sheetStatusBox) {
+      sheetStatusBox.style.background = '#eef2ff';
+      sheetStatusBox.style.color = '#4338ca';
+      sheetStatusBox.style.border = '1px solid #c7d2fe';
+      sheetStatusBox.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <div class="sync-spinner"></div>
+          <span>Google Sheets jadvaliga uzatilmoqda... (${pendingList.length} ta natija)</span>
+        </div>
+      `;
+    }
+
+    const remaining = [];
+    for (const item of pendingList) {
+      const success = await sendItem(item, scriptUrl);
+      if (!success) {
+        remaining.push(item);
+      }
+    }
+
+    savePendingSubmissions(remaining);
+    isSyncing = false;
+
+    if (remaining.length === 0) {
+      setSheetStatusSuccess();
+    } else {
+      setSheetStatusOfflineWaiting(remaining.length);
+    }
+  }
+
+  function setSheetStatusSuccess() {
+    if (!sheetStatusBox) return;
+    sheetStatusBox.style.background = '#ecfdf5';
+    sheetStatusBox.style.color = '#065f46';
+    sheetStatusBox.style.border = '1px solid #a7f3d0';
+    sheetStatusBox.innerHTML = `
+      <svg class="icon icon-sm" style="color: #10b981;" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <span><strong>Natijangiz Google Sheets jadvaliga muvaffaqiyatli uzatildi!</strong></span>
+    `;
+  }
+
+  function setSheetStatusOfflineWaiting(count) {
+    if (!sheetStatusBox) return;
+    sheetStatusBox.style.background = '#fffbeb';
+    sheetStatusBox.style.color = '#b45309';
+    sheetStatusBox.style.border = '1.5px solid #fde68a';
+    sheetStatusBox.innerHTML = `
+      <div style="display: flex; flex-direction: column; gap: 0.45rem; align-items: center; width: 100%;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span class="pulse-warning-dot"></span>
+          <span><strong>Internet kutilmoqda...</strong> Natijangiz kompyuter xotirasida xavfsiz saqlandi.</span>
+        </div>
+        <div style="font-size: 0.8rem; color: #78350f;">
+          Internet tiklanishi bilanoq natija avtomatik ravishda jadvalga yuboriladi (${count} ta navbatda).
+        </div>
+        <button type="button" class="btn-retry" onclick="window.manualRetrySync()">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          Hozir qayta yuborish
+        </button>
+      </div>
+    `;
+  }
+
+  // Qo'lda qayta yuborish uchun global funksiya
+  window.manualRetrySync = function() {
+    processPendingQueue();
+  };
+
+  // Tarmoq holati monitoringi (Online / Offline events)
+  const networkStatusBadge = document.getElementById('networkStatusBadge');
+  const networkStatusText = document.getElementById('networkStatusText');
+
+  function updateNetworkStatus(online) {
+    if (!networkStatusBadge) return;
+
+    if (!online) {
+      networkStatusBadge.style.display = 'inline-flex';
+      networkStatusBadge.className = 'network-badge offline';
+      if (networkStatusText) {
+        networkStatusText.textContent = "Internet uzildi (Testni davom ettiring, natija xotirada saqlanadi)";
+      }
+      const pendingList = getPendingSubmissions();
+      if (pendingList.length > 0 && sheetStatusBox && sheetStatusBox.dataset.hasSubmitted === "true") {
+        setSheetStatusOfflineWaiting(pendingList.length);
+      }
+    } else {
+      networkStatusBadge.style.display = 'inline-flex';
+      networkStatusBadge.className = 'network-badge online';
+      if (networkStatusText) {
+        networkStatusText.textContent = "Internet tiklandi";
+      }
+      setTimeout(() => {
+        if (networkStatusBadge && navigator.onLine) {
+          networkStatusBadge.style.display = 'none';
+        }
+      }, 3500);
+
+      // Tarmoq kelishi bilan zudlik bilan navbatdagi natijalarni uzatamiz!
+      processPendingQueue();
+    }
+  }
+
+  window.addEventListener('online', () => updateNetworkStatus(true));
+  window.addEventListener('offline', () => updateNetworkStatus(false));
+
+  // Har 5 soniyada fon tekshiruvi: agar internet bo'lsa va navbatda natija bo'lsa, uzatadi
+  setInterval(() => {
+    if (navigator.onLine && getPendingSubmissions().length > 0) {
+      processPendingQueue();
+    }
+  }, 5000);
+
+  // Sahifa yuklanganda navbatda qolib ketgan natijalar bo'lsa darhol uzatishga urinish
+  if (navigator.onLine && getPendingSubmissions().length > 0) {
+    processPendingQueue();
   }
 
 })();
