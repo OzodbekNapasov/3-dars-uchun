@@ -1,0 +1,239 @@
+#Axborotning eng kichik o'lchov birligi qaysi?
++ Bit
+- Bayt
+- Kilobayt
+- Megabayt
+
+#1 bayt necha bitga teng?
++ 8 bit
+- 2 bit
+- 4 bit
+- 16 bit
+
+#2 bayt necha bit bo'ladi?
++ 16 bit
+- 10 bit
+- 12 bit
+- 20 bit
+
+#3 bayt necha bitga teng?
++ 24 bit
+- 16 bit
+- 18 bit
+- 32 bit
+
+#16 bit necha bayt bo'ladi?
++ 2 bayt
+- 1 bayt
+- 4 bayt
+- 8 bayt
+
+#24 bit necha baytga teng?
++ 3 bayt
+- 2 bayt
+- 4 bayt
+- 6 bayt
+
+#32 bit necha bayt bo'ladi?
++ 4 bayt
+- 2 bayt
+- 6 bayt
+- 8 bayt
+
+#1 KB (Kilobayt) necha baytga teng?
++ 1024 B
+- 512 B
+- 1000 B
+- 2048 B
+
+#2 KB necha bayt bo'ladi?
++ 2048 B
+- 1024 B
+- 3072 B
+- 4096 B
+
+#3 KB necha baytga teng?
++ 3072 B
+- 2048 B
+- 4096 B
+- 1024 B
+
+#2048 bayt necha Kilobayt (KB) bo'ladi?
++ 2 KB
+- 1 KB
+- 4 KB
+- 8 KB
+
+#3072 bayt necha Kilobayt (KB) bo'ladi?
++ 3 KB
+- 2 KB
+- 4 KB
+- 6 KB
+
+#4096 bayt necha Kilobayt (KB) bo'ladi?
++ 4 KB
+- 2 KB
+- 8 KB
+- 16 KB
+
+#1 MB (Megabayt) necha KB ga teng?
++ 1024 KB
+- 512 KB
+- 1000 KB
+- 2048 KB
+
+#2 MB necha KB bo'ladi?
++ 2048 KB
+- 1024 KB
+- 3072 KB
+- 4096 KB
+
+#3 MB necha KB ga teng?
++ 3072 KB
+- 2048 KB
+- 4096 KB
+- 1024 KB
+
+#2048 KB necha Megabayt (MB) bo'ladi?
++ 2 MB
+- 1 MB
+- 4 MB
+- 8 MB
+
+#4096 KB necha Megabayt (MB) bo'ladi?
++ 4 MB
+- 2 MB
+- 8 MB
+- 16 MB
+
+#1 GB (Gigabayt) necha MB ga teng?
++ 1024 MB
+- 512 MB
+- 1000 MB
+- 2048 MB
+
+#2 GB necha MB bo'ladi?
++ 2048 MB
+- 1024 MB
+- 3072 MB
+- 4096 MB
+
+#2048 MB necha Gigabayt (GB) bo'ladi?
++ 2 GB
+- 1 GB
+- 4 GB
+- 8 GB
+
+#1 TB (Terabayt) necha GB ga teng?
++ 1024 GB
+- 512 GB
+- 1000 GB
+- 2048 GB
+
+#Ikkilik sanoq sistemasida nechta raqam ishlatiladi?
++ 2 ta (0 va 1)
+- 10 ta
+- 8 ta
+- 16 ta
+
+#O'nlik sanoq sistemasining asosi nechaga teng?
++ 10
+- 2
+- 8
+- 16
+
+#10₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 2
+- 1
+- 3
+- 4
+
+#11₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 3
+- 2
+- 4
+- 5
+
+#100₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 4
+- 2
+- 3
+- 5
+
+#101₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 5
+- 3
+- 6
+- 7
+
+#110₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 6
+- 4
+- 5
+- 7
+
+#111₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 7
+- 5
+- 6
+- 8
+
+#1000₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 8
+- 6
+- 7
+- 10
+
+#1001₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 9
+- 7
+- 8
+- 10
+
+#1010₂ soni o'nlik sanoq sistemasida nechaga teng?
++ 10
+- 8
+- 9
+- 12
+
+#3₁₀ sonining ikkilik sanoq sistemasidagi ko'rinishi qaysi?
++ 11₂
+- 10₂
+- 100₂
+- 101₂
+
+#4₁₀ sonining ikkilik sanoq sistemasidagi ko'rinishi qaysi?
++ 100₂
+- 101₂
+- 110₂
+- 111₂
+
+#5₁₀ sonining ikkilik sanoq sistemasidagi ko'rinishi qaysi?
++ 101₂
+- 100₂
+- 110₂
+- 111₂
+
+#Axborot nima?
++ Atrof-muhitdagi obyektlar va hodisalar haqidagi ma'lumotlar
+- Faqat kompyuter simlari
+- Faqat printer qog'ozi
+- Faqat elektr toki
+
+#Quyidagilardan qaysi biri tibbiy axborotga misol bo'la oladi?
++ Bemorning tana harorati 38°C
+- Monitorning eni
+- Sichqonchaning tugmasi
+- Klaviatura kabeli
+
+#Matn, rasm, tovush va video nimalar hisoblanadi?
++ Axborot turlari
+- Sanoq sistemalari
+- Operatsion tizimlar
+- Xotira qurilmalari
+
+#Kompyuterda ishlash vaqtida ko'z va monitor orasidagi me'yoriy masofa qanday bo'lishi kerak?
++ 50 - 70 sm
+- 5 - 10 sm
+- 2 metr
+- 15 sm
