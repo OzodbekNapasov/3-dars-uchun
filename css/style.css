@@ -927,6 +927,161 @@ body {
   flex: 1;
 }
 
+/* Tarix (Natijalar tarixi) Modali */
+.history-modal-box {
+  max-width: 860px;
+  width: 96%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+  overflow: hidden;
+}
+
+.history-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1.5px solid var(--border);
+}
+
+.modal-close-btn {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  font-size: 1.4rem;
+  color: #64748b;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+  border-color: #fca5a5;
+}
+
+.history-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.history-stat-card {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.55rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 850;
+  color: var(--dark);
+}
+
+.history-toolbar {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.history-search-wrapper {
+  flex: 1;
+  min-width: 220px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+}
+
+.history-search-wrapper input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 0.85rem;
+  color: var(--dark);
+}
+
+.history-table-container {
+  flex: 1;
+  overflow-y: auto;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  background: #ffffff;
+  min-height: 220px;
+  max-height: 360px;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.history-table th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 800;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 2px solid #cbd5e1;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.history-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.history-table tr:hover {
+  background: #f8fafc;
+}
+
+.history-empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .history-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* Anti-cheat banner */
 .anticheat-banner {
   display: none;

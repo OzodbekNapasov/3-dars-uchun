@@ -44,6 +44,15 @@
           Testni yakunlash
         </button>
       </div>
+
+      <!-- Tarix tugmasi (Header o'ng qismida) -->
+      <div id="headerHistoryWrapper" style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+        <button type="button" id="btnOpenHistory" class="btn btn-secondary" style="padding: 0.38rem 0.85rem; font-size: 0.82rem; border-radius: 8px;" title="Test natijalari tarixi (keshda saqlangan)">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          <span>Tarix</span>
+          <span id="historyCountBadge" class="badge badge-primary" style="padding: 0.1rem 0.45rem; font-size: 0.7rem; margin-left: 0.2rem; display: none;">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -237,6 +246,10 @@
             <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
             Savollar tahlilini ko'rish
           </button>
+          <button type="button" id="btnResultHistory" class="btn btn-secondary">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+            Natijalar tarixi
+          </button>
           <button type="button" id="btnRestart" class="btn btn-primary">
             Qaytadan topshirish
           </button>
@@ -319,6 +332,96 @@
   <div id="antiCheatAlert" class="anticheat-banner">
     <svg class="icon icon-sm" viewBox="0 0 24 24" style="fill: #ef4444;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
     <span id="antiCheatText">Nusxa olish yoki skrinshot taqiqlangan!</span>
+  </div>
+
+  <!-- NATIJALAR TARIXI MODALI (Keshda saqlangan) -->
+  <div id="historyModal" class="modal-overlay">
+    <div class="modal-box history-modal-box">
+      <div class="history-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <div class="modal-icon-wrapper primary" style="width: 38px; height: 38px; margin: 0; border-radius: 10px;">
+            <svg class="icon icon-md" viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          </div>
+          <div>
+            <h3 class="modal-title" style="margin: 0; text-align: left; font-size: 1.18rem;">Test Natijalari Tarixi</h3>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">Brauzer keshida saqlangan barcha natijalar</p>
+          </div>
+        </div>
+        <button type="button" id="btnCloseHistory" class="modal-close-btn" title="Yopish">&times;</button>
+      </div>
+
+      <!-- Kesh statistikasi -->
+      <div class="history-stats-grid">
+        <div class="history-stat-card">
+          <span class="stat-label">Jami topshirilgan</span>
+          <span id="statTotalCount" class="stat-value">0 ta</span>
+        </div>
+        <div class="history-stat-card">
+          <span class="stat-label">O'rtacha natija</span>
+          <span id="statAvgScore" class="stat-value">0%</span>
+        </div>
+        <div class="history-stat-card">
+          <span class="stat-label">A'lo (5) baholar</span>
+          <span id="statTopGrades" class="stat-value" style="color: var(--success);">0 ta</span>
+        </div>
+        <div class="history-stat-card">
+          <span class="stat-label">Eng yuqori natija</span>
+          <span id="statMaxScore" class="stat-value" style="color: var(--primary);">0%</span>
+        </div>
+      </div>
+
+      <!-- Qidiruv va Harakatlar -->
+      <div class="history-toolbar">
+        <div class="history-search-wrapper">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          <input type="text" id="historySearchInput" placeholder="Ism, familiya yoki guruh bo'yicha qidirish..." autocomplete="off">
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+          <button type="button" id="btnExportHistory" class="btn btn-secondary" style="padding: 0.42rem 0.75rem; font-size: 0.8rem;" title="Excel yoki CSV formatida yuklab olish">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            Eksport (CSV)
+          </button>
+          <button type="button" id="btnClearHistory" class="btn btn-danger" style="padding: 0.42rem 0.75rem; font-size: 0.8rem;" title="Barcha natijalarni keshdan tozalash">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            Tozalash
+          </button>
+        </div>
+      </div>
+
+      <!-- Natijalar Jadvali -->
+      <div class="history-table-container">
+        <table class="history-table" id="historyTable">
+          <thead>
+            <tr>
+              <th style="width: 40px; text-align: center;">#</th>
+              <th>Talaba</th>
+              <th>Guruh</th>
+              <th>To'g'ri</th>
+              <th>Foiz</th>
+              <th>Baho</th>
+              <th>Vaqt</th>
+              <th>Sana</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- JS orqali to'ldiriladi -->
+          </tbody>
+        </table>
+        <div id="historyEmptyState" class="history-empty-state" style="display: none;">
+          <div class="empty-icon-box" style="margin-bottom: 0.5rem;">
+            <svg class="icon icon-lg" viewBox="0 0 24 24" style="fill: #94a3b8; width: 42px; height: 42px;"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          </div>
+          <p style="font-weight: 750; color: #475569; margin-bottom: 0.25rem;">Keshda saqlangan natijalar topilmadi</p>
+          <p style="font-size: 0.8rem; color: #94a3b8; max-width: 380px; margin: 0 auto;">Talabalar test topshirishi bilan ularning natijalari avtomatik tarzda bu yerda saqlanib boradi.</p>
+        </div>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 0.85rem;">
+        <button type="button" id="btnCloseHistoryBottom" class="btn btn-secondary" style="width: 100%;">
+          Yopish
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Skriptlar -->

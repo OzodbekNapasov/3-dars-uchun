@@ -65,6 +65,25 @@
   const reviewList = document.getElementById('reviewList');
   const btnRestart = document.getElementById('btnRestart');
 
+  // Tarix (Kesh) elementlari
+  const headerHistoryWrapper = document.getElementById('headerHistoryWrapper');
+  const btnOpenHistory = document.getElementById('btnOpenHistory');
+  const historyCountBadge = document.getElementById('historyCountBadge');
+  const btnResultHistory = document.getElementById('btnResultHistory');
+  const historyModal = document.getElementById('historyModal');
+  const btnCloseHistory = document.getElementById('btnCloseHistory');
+  const btnCloseHistoryBottom = document.getElementById('btnCloseHistoryBottom');
+  const historySearchInput = document.getElementById('historySearchInput');
+  const btnExportHistory = document.getElementById('btnExportHistory');
+  const btnClearHistory = document.getElementById('btnClearHistory');
+  const historyTable = document.getElementById('historyTable');
+  const historyTableBody = document.getElementById('historyTableBody');
+  const historyEmptyState = document.getElementById('historyEmptyState');
+  const statTotalCount = document.getElementById('statTotalCount');
+  const statAvgScore = document.getElementById('statAvgScore');
+  const statTopGrades = document.getElementById('statTopGrades');
+  const statMaxScore = document.getElementById('statMaxScore');
+
   // Holat o'zgaruvchilari
   let currentStudent = null;
   let quizQuestions = [];
@@ -169,7 +188,8 @@
           e.target.tagName !== 'TEXTAREA' &&
           (!noticeModal || !noticeModal.classList.contains('active')) &&
           (!confirmModal || !confirmModal.classList.contains('active')) &&
-          (!fullscreenWarningModal || !fullscreenWarningModal.classList.contains('active'))) {
+          (!fullscreenWarningModal || !fullscreenWarningModal.classList.contains('active')) &&
+          (!historyModal || !historyModal.classList.contains('active'))) {
 
         const now = Date.now();
         const diff = now - lastMinusPressTime;
@@ -308,6 +328,7 @@
     // Header yangilash
     userNameDisplay.textContent = `${currentStudent.lastName} ${currentStudent.firstName} (${currentStudent.group})`;
     headerMeta.style.display = 'flex';
+    if (headerHistoryWrapper) headerHistoryWrapper.style.display = 'none';
 
     // Ekranlarni almashtirish
     viewRegister.classList.remove('active');
@@ -519,6 +540,8 @@
 
     // Headerdan test tugmalarini yashirish
     headerMeta.style.display = 'none';
+    if (headerHistoryWrapper) headerHistoryWrapper.style.display = 'flex';
+    updateHistoryBadge();
 
     // Natijalarni chiqarish
     resultPercent.textContent = `${percentage}%`;
@@ -592,6 +615,8 @@
     viewResults.classList.remove('active');
     viewRegister.classList.add('active');
     studentForm.reset();
+    if (headerHistoryWrapper) headerHistoryWrapper.style.display = 'flex';
+    updateHistoryBadge();
   });
 
   // =========================================================================
@@ -817,5 +842,177 @@
   if (navigator.onLine && getPendingSubmissions().length > 0) {
     processPendingQueue();
   }
+
+  // =========================================================================
+  // 11. TEST NATIJALARI TARIXI (KESH / LOCALSTORAGE)
+  // =========================================================================
+  function getHistoryList() {
+    try {
+      return JSON.parse(localStorage.getItem('TEST_RESULTS_BACKUP') || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function updateHistoryBadge() {
+    const list = getHistoryList();
+    if (historyCountBadge) {
+      if (list.length > 0) {
+        historyCountBadge.textContent = list.length;
+        historyCountBadge.style.display = 'inline-block';
+      } else {
+        historyCountBadge.style.display = 'none';
+      }
+    }
+  }
+
+  function renderHistoryTable(filterText = '') {
+    const rawList = getHistoryList();
+    const list = [...rawList].reverse();
+
+    const total = rawList.length;
+    if (total > 0) {
+      const avg = Math.round(rawList.reduce((acc, item) => acc + (Number(item.percentage) || 0), 0) / total);
+      const topCount = rawList.filter(item => String(item.grade) === '5').length;
+      const maxScore = Math.max(...rawList.map(item => Number(item.percentage) || 0));
+
+      if (statTotalCount) statTotalCount.textContent = `${total} ta`;
+      if (statAvgScore) statAvgScore.textContent = `${avg}%`;
+      if (statTopGrades) statTopGrades.textContent = `${topCount} ta`;
+      if (statMaxScore) statMaxScore.textContent = `${maxScore}%`;
+    } else {
+      if (statTotalCount) statTotalCount.textContent = '0 ta';
+      if (statAvgScore) statAvgScore.textContent = '0%';
+      if (statTopGrades) statTopGrades.textContent = '0 ta';
+      if (statMaxScore) statMaxScore.textContent = '0%';
+    }
+
+    const term = filterText.trim().toLowerCase();
+    const filtered = list.filter(item => {
+      if (!term) return true;
+      const fullName = `${item.lastName || ''} ${item.firstName || ''}`.toLowerCase();
+      const group = (item.group || '').toLowerCase();
+      return fullName.includes(term) || group.includes(term);
+    });
+
+    if (filtered.length === 0) {
+      if (historyTable) historyTable.style.display = 'none';
+      if (historyEmptyState) historyEmptyState.style.display = 'block';
+      if (historyTableBody) historyTableBody.innerHTML = '';
+      return;
+    }
+
+    if (historyTable) historyTable.style.display = 'table';
+    if (historyEmptyState) historyEmptyState.style.display = 'none';
+
+    historyTableBody.innerHTML = '';
+    filtered.forEach((item, idx) => {
+      const tr = document.createElement('tr');
+
+      let badgeClass = 'badge-primary';
+      const gradeNum = String(item.grade);
+      if (gradeNum === '5') badgeClass = 'badge-success';
+      else if (gradeNum === '4') badgeClass = 'badge-primary';
+      else if (gradeNum === '3') badgeClass = 'badge-warning';
+      else if (gradeNum === '2') badgeClass = 'badge-danger';
+
+      tr.innerHTML = `
+        <td style="text-align: center; color: var(--text-muted); font-weight: 700;">${idx + 1}</td>
+        <td><strong>${escapeHtml(item.lastName || '')} ${escapeHtml(item.firstName || '')}</strong></td>
+        <td><span style="color: #475569; font-weight: 600;">${escapeHtml(item.group || '-')}</span></td>
+        <td><span style="font-weight: 750;">${item.correctCount || 0} / ${item.totalCount || 20}</span></td>
+        <td><strong style="color: var(--primary);">${item.percentage || 0}%</strong></td>
+        <td><span class="badge ${badgeClass}">${item.grade || '-'}${item.gradeLabel ? ' (' + escapeHtml(item.gradeLabel) + ')' : ''}</span></td>
+        <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timeSpent || '-')}</td>
+        <td style="color: var(--text-muted); font-size: 0.78rem;">${escapeHtml(item.timestamp || '-')}</td>
+      `;
+      historyTableBody.appendChild(tr);
+    });
+  }
+
+  function openHistoryModal() {
+    if (historySearchInput) historySearchInput.value = '';
+    renderHistoryTable();
+    if (historyModal) historyModal.classList.add('active');
+  }
+
+  function closeHistoryModal() {
+    if (historyModal) historyModal.classList.remove('active');
+  }
+
+  function exportHistoryToCSV() {
+    const list = getHistoryList();
+    if (list.length === 0) {
+      showNotice("Ma'lumot yo'q", "Eksport qilish uchun keshda hech qanday test natijasi topilmadi.", "warning");
+      return;
+    }
+
+    const headers = ["Tartib", "Familiya", "Ism", "Guruh", "Togri javoblar", "Jami savollar", "Foiz", "Baho", "Baho izohi", "Sarflangan vaqt", "Sana va vaqt"];
+    const rows = list.map((item, idx) => [
+      idx + 1,
+      `"${(item.lastName || '').replace(/"/g, '""')}"`,
+      `"${(item.firstName || '').replace(/"/g, '""')}"`,
+      `"${(item.group || '').replace(/"/g, '""')}"`,
+      item.correctCount || 0,
+      item.totalCount || 20,
+      `${item.percentage || 0}%`,
+      item.grade || '-',
+      `"${(item.gradeLabel || '').replace(/"/g, '""')}"`,
+      `"${(item.timeSpent || '').replace(/"/g, '""')}"`,
+      `"${(item.timestamp || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `3-dars-test-tarixi-${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function clearHistoryCache() {
+    const list = getHistoryList();
+    if (list.length === 0) {
+      showNotice("Kesh bo'sh", "Keshda tozalanadigan test natijalari mavjud emas.", "warning");
+      return;
+    }
+
+    if (confirm("Haqiqatan ham barcha saqlangan test natijalarini keshdan tozalashni xohlaysizmi?")) {
+      try {
+        localStorage.removeItem('TEST_RESULTS_BACKUP');
+      } catch (e) {}
+      renderHistoryTable();
+      updateHistoryBadge();
+      showNotice("Muvaffaqiyatli", "Barcha test natijalari keshdan o'chirildi.", "primary");
+    }
+  }
+
+  if (btnOpenHistory) btnOpenHistory.addEventListener('click', openHistoryModal);
+  if (btnResultHistory) btnResultHistory.addEventListener('click', openHistoryModal);
+  if (btnCloseHistory) btnCloseHistory.addEventListener('click', closeHistoryModal);
+  if (btnCloseHistoryBottom) btnCloseHistoryBottom.addEventListener('click', closeHistoryModal);
+  if (btnExportHistory) btnExportHistory.addEventListener('click', exportHistoryToCSV);
+  if (btnClearHistory) btnClearHistory.addEventListener('click', clearHistoryCache);
+
+  if (historySearchInput) {
+    historySearchInput.addEventListener('input', (e) => {
+      renderHistoryTable(e.target.value);
+    });
+  }
+
+  if (historyModal) {
+    historyModal.addEventListener('click', (e) => {
+      if (e.target === historyModal) {
+        closeHistoryModal();
+      }
+    });
+  }
+
+  // Dastlab keshdagi natijalar sonini yangilab qo'yamiz
+  updateHistoryBadge();
 
 })();
