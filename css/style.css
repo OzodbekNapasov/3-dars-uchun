@@ -293,12 +293,13 @@ body {
   border-collapse: collapse;
   font-size: 0.8rem;
   margin-top: 0.4rem;
+  border: 1px solid var(--border);
 }
 
 .grade-table th, .grade-table td {
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.6rem;
   text-align: left;
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
 }
 
 .grade-table th {

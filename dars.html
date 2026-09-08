@@ -110,20 +110,31 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.9rem;
-      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      margin-top: 0.75rem;
+      margin-bottom: 1.25rem;
+      border: 2px solid #cbd5e1;
     }
 
     th, td {
-      padding: 0.65rem 0.85rem;
+      padding: 0.65rem 0.9rem;
       text-align: left;
-      border-bottom: 1px solid var(--border);
+      border: 1px solid #cbd5e1;
     }
 
     th {
       background: #f1f5f9;
       color: var(--dark);
       font-weight: 700;
+      border-bottom: 2px solid #94a3b8;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    tbody tr:hover {
+      background: #eff6ff;
     }
 
     .tasks-grid {
@@ -210,48 +221,61 @@
       <table>
         <thead>
           <tr>
-            <th>Birlik</th>
+            <th>O‘lchov birligi</th>
             <th>Belgisi</th>
             <th>Tengligi</th>
-            <th>1 amalli hisoblash misoli</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td><strong>Bit</strong></td>
             <td><span class="code-pill">bit</span></td>
-            <td>Eng kichik birlik (0 yoki 1)</td>
-            <td>1 bayt = 8 bit</td>
+            <td>Eng kichik axborot birligi</td>
           </tr>
           <tr>
             <td><strong>Bayt</strong></td>
             <td><span class="code-pill">B</span></td>
             <td>1 B = 8 bit</td>
-            <td>16 bit / 8 = <strong>2 bayt</strong></td>
           </tr>
           <tr>
             <td><strong>Kilobayt</strong></td>
             <td><span class="code-pill">KB</span></td>
             <td>1 KB = 1024 B</td>
-            <td>2 KB = 2 &times; 1024 = <strong>2048 B</strong></td>
           </tr>
           <tr>
             <td><strong>Megabayt</strong></td>
             <td><span class="code-pill">MB</span></td>
             <td>1 MB = 1024 KB</td>
-            <td>2 MB = 2 &times; 1024 = <strong>2048 KB</strong></td>
           </tr>
           <tr>
             <td><strong>Gigabayt</strong></td>
             <td><span class="code-pill">GB</span></td>
             <td>1 GB = 1024 MB</td>
-            <td>2 GB = 2 &times; 1024 = <strong>2048 MB</strong></td>
           </tr>
           <tr>
             <td><strong>Terabayt</strong></td>
             <td><span class="code-pill">TB</span></td>
             <td>1 TB = 1024 GB</td>
-            <td>1 TB = <strong>1024 GB</strong></td>
+          </tr>
+          <tr>
+            <td><strong>Petabayt</strong></td>
+            <td><span class="code-pill">PB</span></td>
+            <td>1 PB = 1024 TB</td>
+          </tr>
+          <tr>
+            <td><strong>Eksabayt</strong></td>
+            <td><span class="code-pill">EB</span></td>
+            <td>1 EB = 1024 PB</td>
+          </tr>
+          <tr>
+            <td><strong>Zettabayt</strong></td>
+            <td><span class="code-pill">ZB</span></td>
+            <td>1 ZB = 1024 EB</td>
+          </tr>
+          <tr>
+            <td><strong>Yottabayt</strong></td>
+            <td><span class="code-pill">YB</span></td>
+            <td>1 YB = 1024 ZB</td>
           </tr>
         </tbody>
       </table>
