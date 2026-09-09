@@ -3,1345 +3,347 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Axborot Texnologiyalari — 3-Dars: O'lchov Birliklari va Sanoq Sistemalari</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z'/></svg>">
-  <style>
-    :root {
-      --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
-      --primary-light: #eef2ff;
-      --primary-border: #c7d2fe;
-      --success: #10b981;
-      --success-light: #ecfdf5;
-      --dark: #0f172a;
-      --text: #1e293b;
-      --muted: #64748b;
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --border: #e2e8f0;
-      --table-border: #cbd5e1;
-      --radius: 12px;
-      --radius-lg: 16px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-      --shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
-      --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.08);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    }
-
-    body {
-      background-color: var(--bg);
-      background-image: radial-gradient(at 50% 0%, rgba(79, 70, 229, 0.06) 0px, transparent 60%);
-      color: var(--text);
-      line-height: 1.6;
-      padding: 1.5rem;
-    }
-
-    .container {
-      max-width: 1060px;
-      margin: 0 auto;
-    }
-
-    /* Header: Floating Premium Card */
-    header {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem 2rem;
-      margin-bottom: 1.25rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: var(--shadow);
-      flex-wrap: wrap;
-      gap: 1.2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #4f46e5, #3b82f6, #06b6d4);
-    }
-
-    .header-brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .brand-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 12px;
-      background: var(--primary-gradient);
-      color: #ffffff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
-      font-size: 1.15rem;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
-      letter-spacing: 0.5px;
-      flex-shrink: 0;
-    }
-
-    .header-title h1 {
-      font-size: 1.4rem;
-      color: var(--dark);
-      font-weight: 850;
-      letter-spacing: -0.3px;
-    }
-
-    .header-title p {
-      font-size: 0.88rem;
-      color: var(--muted);
-      margin-top: 0.15rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .badge-tag {
-      background: #eef2ff;
-      color: var(--primary);
-      border: 1px solid var(--primary-border);
-      padding: 0.15rem 0.55rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 750;
-    }
-
-    .btn-test {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.6rem;
-      background: var(--primary-gradient);
-      color: white;
-      text-decoration: none;
-      padding: 0.75rem 1.6rem;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-test:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
-    }
-
-    .btn-test:active {
-      transform: translateY(0);
-    }
-
-    /* Tabs Navigation: Segmented Modern Control */
-    .tabs-nav {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.35rem;
-      background: #f1f5f9;
-      padding: 0.45rem;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      box-shadow: inset 0 1px 2px rgba(0,0,0,0.03);
-    }
-
-    .tab-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.55rem;
-      padding: 0.75rem 1.25rem;
-      background: transparent;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 750;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      flex: 1 1 auto;
-    }
-
-    .tab-btn:hover {
-      color: var(--dark);
-      background: rgba(255, 255, 255, 0.6);
-    }
-
-    .tab-btn.active {
-      background: var(--primary-gradient);
-      color: #ffffff;
-      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.3);
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Section Card */
-    .section-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 1.6rem 2rem;
-      margin-bottom: 1.35rem;
-      box-shadow: var(--shadow);
-    }
-
-    .section-title {
-      font-size: 1.25rem;
-      font-weight: 850;
-      color: var(--dark);
-      border-bottom: 2px solid var(--primary-light);
-      padding-bottom: 0.65rem;
-      margin-bottom: 1.1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .title-icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      background: var(--primary-light);
-      color: var(--primary);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .info-rule {
-      background: #eef2ff;
-      border-left: 4px solid var(--primary);
-      padding: 0.85rem 1.35rem;
-      border-radius: 0 10px 10px 0;
-      font-size: 0.92rem;
-      margin-bottom: 1.25rem;
-      color: #1e1b4b;
-      line-height: 1.6;
-    }
-
-    /* Jadval */
-    .table-responsive {
-      border: 1.5px solid var(--table-border);
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 0.75rem;
-      margin-bottom: 1.35rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.95rem;
-    }
-
-    th, td {
-      padding: 0.75rem 1rem;
-      text-align: left;
-      border: 1px solid var(--table-border);
-    }
-
-    th {
-      background: #f1f5f9;
-      color: var(--dark);
-      font-weight: 800;
-      border-bottom: 2px solid #94a3b8;
-    }
-
-    tbody tr:nth-child(even) {
-      background: #f8fafc;
-    }
-
-    tbody tr:hover {
-      background: #eff6ff;
-    }
-
-    /* Toolbar */
-    .tab-toolbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin: 1.35rem 0 1.1rem 0;
-      padding: 0.85rem 1.15rem;
-      background: #f8fafc;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-
-    .tab-counter {
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--dark);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .counter-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--primary);
-      box-shadow: 0 0 6px var(--primary);
-    }
-
-    .tab-actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-action {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      background: #ffffff;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 8px;
-      padding: 0.45rem 0.85rem;
-      font-size: 0.84rem;
-      font-weight: 750;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-action:hover {
-      background: #f1f5f9;
-      border-color: #94a3b8;
-      color: var(--primary);
-      transform: translateY(-1px);
-    }
-
-    /* Tasks grid */
-    .tasks-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 0.95rem;
-      margin-top: 0.85rem;
-    }
-
-    .task-item {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-left: 4px solid var(--primary);
-      border-radius: 10px;
-      padding: 0.95rem 1.15rem;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .task-item:hover {
-      border-color: #cbd5e1;
-      border-left-color: var(--primary);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-    }
-
-    .task-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .task-q-wrap {
-      display: flex;
-      align-items: center;
-      gap: 0.55rem;
-    }
-
-    .q-num {
-      width: 26px;
-      height: 26px;
-      border-radius: 6px;
-      background: #eef2ff;
-      color: var(--primary);
-      font-size: 0.78rem;
-      font-weight: 850;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .task-q {
-      font-size: 1.02rem;
-      font-weight: 800;
-      color: var(--dark);
-    }
-
-    .btn-eye {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      background: #f8fafc;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 7px;
-      padding: 0.35rem 0.65rem;
-      font-size: 0.8rem;
-      font-weight: 750;
-      color: #475569;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      flex-shrink: 0;
-    }
-
-    .btn-eye:hover {
-      background: #eff6ff;
-      color: var(--primary);
-      border-color: var(--primary);
-      transform: translateY(-1px);
-    }
-
-    .btn-eye.active {
-      background: var(--primary-gradient);
-      color: #ffffff;
-      border-color: transparent;
-      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
-    }
-
-    .task-answer-box {
-      margin-top: 0.75rem;
-      padding-top: 0.75rem;
-      border-top: 1px dashed #cbd5e1;
-      animation: slideDown 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .task-step {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 0.35rem;
-      background: #f8fafc;
-      padding: 0.35rem 0.65rem;
-      border-radius: 6px;
-      border: 1px solid #f1f5f9;
-    }
-
-    .ans-badge {
-      display: inline-block;
-      background: #ecfdf5;
-      border: 1px solid #a7f3d0;
-      color: #065f46;
-      font-size: 0.95rem;
-      font-weight: 850;
-      padding: 0.3rem 0.75rem;
-      border-radius: 6px;
-    }
-
-    .code-pill {
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      background: #eef2ff;
-      color: #4338ca;
-      border: 1px solid #c7d2fe;
-      padding: 0.15rem 0.45rem;
-      border-radius: 5px;
-      font-size: 0.9em;
-      font-weight: 750;
-    }
-
-    .icon {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      vertical-align: middle;
-    }
-
-    /* Banner CTA: Deep Gradient Hero Card */
-    .banner-cta {
-      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1e40af 100%);
-      color: white;
-      border-radius: var(--radius-lg);
-      padding: 1.75rem 2.25rem;
-      margin-top: 1.75rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.25rem;
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .banner-cta h3 {
-      font-size: 1.35rem;
-      font-weight: 850;
-      letter-spacing: -0.2px;
-    }
-
-    .banner-cta p {
-      font-size: 0.9rem;
-      opacity: 0.85;
-      margin-top: 0.25rem;
-    }
-
-    .banner-cta a {
-      background: #ffffff;
-      color: var(--primary);
-      text-decoration: none;
-      padding: 0.85rem 1.85rem;
-      border-radius: 10px;
-      font-weight: 850;
-      font-size: 1rem;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .banner-cta a:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
-    }
-
-    @media (max-width: 768px) {
-      body { padding: 0.75rem; }
-      header { padding: 1rem 1.25rem; }
-      .section-card { padding: 1.25rem 1.25rem; }
-      .tabs-nav { flex-direction: column; }
-    }
-  </style>
+  <title>3-Dars: Axborot Texnologiyalari — O'quv va Test Platformasi</title>
+  <link rel="stylesheet" href="css/style.css?v=20260909_2">
+  <link rel="stylesheet" href="css/student.css?v=20260909_2">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.55L4.47 11 12 6.89 19.53 11 12 15.55zM6 15.5v3.45c0 2.21 2.69 4 6 4s6-1.79 6-4v-3.45c-1.57 1.02-3.66 1.55-6 1.55s-4.43-.53-6-1.55z'/></svg>">
 </head>
-<body>
+<body oncontextmenu="return false;" oncopy="return false;" oncut="return false;" onpaste="return false;">
 
-  <div class="container">
-    <!-- Header: Floating Premium Card -->
-    <header>
-      <div class="header-brand">
-        <div class="brand-icon">IT 3</div>
-        <div class="header-title">
-          <h1>Axborot Texnologiyalari — 3-Dars</h1>
-          <p>
-            <span>Axborot o'lchov birliklari va Sanoq sistemalari</span>
-            <span class="badge-tag">Tibbiyot Texnikumi 1-Kurs</span>
+  <!-- Yuqori Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <div class="logo-icon">IT 3</div>
+        <div class="logo-text">
+          <h1>Axborot Texnologiyalari</h1>
+          <p>3-Dars Platformasi</p>
+        </div>
+      </div>
+
+      <!-- Sessiya faol bo'lganda ko'rinuvchi talaba ma'lumotlari -->
+      <div id="headerMeta" class="header-meta" style="display: none;">
+        <div class="user-badge" title="Talaba">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span id="userNameDisplay">Talaba</span>
+        </div>
+
+        <div class="user-badge" style="background: #eef2ff; color: #4338ca; border-color: #c7d2fe;" title="Guruh">
+          <span id="userGroupDisplay">26-01-guruh</span>
+        </div>
+
+        <div id="currentSectionBadge" class="timer-badge" style="background: #f1f5f9; color: #334155; border-color: #cbd5e1;">
+          1-Bo'lim
+        </div>
+      </div>
+
+      <!-- O'qituvchi boshqaruviga o'tish tugmasi -->
+      <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
+        <a href="dars.html" target="_blank" class="btn btn-secondary" style="padding: 0.38rem 0.85rem; font-size: 0.82rem; border-radius: 8px; text-decoration: none;" title="Mavzuni o'rganish sahifasi">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          Mavzu
+        </a>
+        <a href="admin.html" class="btn btn-outline" style="padding: 0.38rem 0.85rem; font-size: 0.82rem; border-radius: 8px; text-decoration: none;" title="O'qituvchi Admin Paneli">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+          Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-wrapper" style="max-width: 1060px; margin: 1.25rem auto; padding: 0 1rem; width: 100%;">
+
+    <!-- 1-KO'RINISh: TALABA MA'LUMOTLARINI KIRITISH (LOGIN) -->
+    <div id="viewRegister" class="view-screen active">
+      <div class="card index-card" style="max-width: 680px; margin: 2rem auto; padding: 2rem 2.25rem;">
+        <div style="text-align: center; margin-bottom: 1.25rem;">
+          <span style="display: inline-block; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.5rem;">
+            Tibbiyot Texnikumi 1-Kurs — 3-Dars
+          </span>
+          <h2 style="font-size: 1.45rem; color: var(--dark); font-weight: 850; margin-bottom: 0.35rem;">
+            Talaba Identifikatsiyasi
+          </h2>
+          <p style="font-size: 0.88rem; color: var(--text-muted);">
+            Platformaga kirish va amaliy topshiriqlarni boshlash uchun ma'lumotlaringizni to'ldiring:
+          </p>
+        </div>
+
+        <form id="studentForm" novalidate>
+          <div class="index-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 1.25rem;">
+            <div class="form-group">
+              <label class="form-label" for="lastName" style="font-weight: 800; font-size: 0.85rem;">Familiyangiz *</label>
+              <input type="text" id="lastName" class="form-input" placeholder="Masalan: Karimov" autocomplete="off" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="firstName" style="font-weight: 800; font-size: 0.85rem;">Ismingiz *</label>
+              <input type="text" id="firstName" class="form-input" placeholder="Masalan: Jasur" autocomplete="off" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="studentGroupSelect" style="font-weight: 800; font-size: 0.85rem;">Guruhingiz *</label>
+              <select id="studentGroupSelect" class="form-input" style="height: 42px;" required>
+                <option value="">Guruhni tanlang...</option>
+                <option value="26-01">26-01-guruh</option>
+                <option value="26-02">26-02-guruh</option>
+                <option value="26-03">26-03-guruh</option>
+                <option value="26-04">26-04-guruh</option>
+                <option value="26-05">26-05-guruh</option>
+                <option value="26-06">26-06-guruh</option>
+                <option value="26-07">26-07-guruh</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="rules-box" style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.35rem;">
+            <h4 style="font-size: 0.95rem; font-weight: 850; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
+              <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              Platformada ishlash qoidalari:
+            </h4>
+            <ul style="padding-left: 1.3rem; font-size: 0.84rem; color: #334155; line-height: 1.6;">
+              <li>Platforma <strong>4 ta bo'limdan</strong> iborat (3 ta amaliy hisoblash va 1 ta yakuniy test).</li>
+              <li>Har bir bo'limdagi savollarga javoblarni yozasiz. Yozish vaqtida to'g'ri yoki xato ekani <strong>ko'rsatilmaydi</strong>.</li>
+              <li>Bo'lim oxirida <strong>"Tasdiqlash"</strong> tugmasini bosganingizdan keyin u qulflanadi va qayta o'zgartirib bo'lmaydi.</li>
+              <li>Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar va yechimlar ko'rsatilmaydi, faqat ballingiz hisoblanadi.</li>
+              <li><strong>4-bo'lim (Test)</strong> faqat o'qituvchi maxsus ruxsat berganida ochiladi.</li>
+            </ul>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem 1.5rem; font-size: 1rem; border-radius: 10px;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            Platformaga kirish va topshiriqlarni boshlash
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 2-KO'RINISh: ASOSIY PLATFORMA (BO'LIMLAR) -->
+    <div id="viewPlatform" style="display: none;">
+
+      <!-- Bo'limlar navigatsiyasi (Zanjir) -->
+      <nav class="steps-container">
+        <div class="step-item active" data-step="1">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <span class="step-title">O'lchov birliklari</span>
+            <span class="step-sub">10 ta misol</span>
+          </div>
+        </div>
+
+        <div class="step-item locked" data-step="2">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <span class="step-title">2-likdan 10-likka</span>
+            <span class="step-sub">10 ta misol</span>
+          </div>
+        </div>
+
+        <div class="step-item locked" data-step="3">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <span class="step-title">10-likdan 2-likka</span>
+            <span class="step-sub">10 ta misol</span>
+          </div>
+        </div>
+
+        <div class="step-item locked" data-step="4">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <span class="step-title">Yakuniy Test</span>
+            <span class="step-sub">20 ta savol</span>
+          </div>
+        </div>
+
+        <div class="step-item locked" data-step="5">
+          <div class="step-num">★</div>
+          <div class="step-info">
+            <span class="step-title">Umumiy Natija</span>
+            <span class="step-sub">Baholash</span>
+          </div>
+        </div>
+      </nav>
+
+      <!-- AMALIY BO'LIMLAR KONTEYNERI (1, 2, 3) -->
+      <div id="practicalSectionView">
+        <div class="section-intro-card">
+          <div class="section-head">
+            <div class="section-title-wrap">
+              <div id="practicalSecIcon" class="section-icon-box"></div>
+              <div>
+                <h3 id="practicalSecTitle" style="font-size: 1.2rem; font-weight: 850; color: var(--dark);">1-Bo'lim</h3>
+                <p id="practicalSecSub" style="font-size: 0.85rem; color: var(--text-muted);"></p>
+              </div>
+            </div>
+          </div>
+          <div id="practicalSecRule" class="section-rule-box"></div>
+        </div>
+
+        <!-- 10 ta savol kartochkalari -->
+        <div id="practicalQuestionsGrid" class="questions-grid">
+          <!-- Savollar JS orqali joylanadi -->
+        </div>
+
+        <!-- Pastki tasdiqlash paneli -->
+        <div class="submit-action-card">
+          <div id="practicalStatusText" class="action-status-text">
+            Javob berildi: <strong>0 / 10</strong> ta. Yozib bo'lgach "Tasdiqlash" tugmasini bosing.
+          </div>
+          <button type="button" id="btnSubmitPractical" class="btn btn-primary" style="padding: 0.75rem 1.6rem; font-size: 0.95rem;">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+            Bo'limni tasdiqlash va yakunlash
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-BO'LIM TEST KONTEYNERI -->
+      <div id="testSectionView" style="display: none;">
+        
+        <!-- A) Test qulflangan holati -->
+        <div id="testLockCard" class="locked-test-screen">
+          <div class="lock-big-icon">
+            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          </div>
+          <h3 style="font-size: 1.35rem; font-weight: 850; color: var(--dark); margin-bottom: 0.35rem;">
+            Test sinovi qulflangan
+          </h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; max-width: 420px; margin: 0 auto;">
+            Ushbu bo'lim faqat o'qituvchi maxsus ruxsati bilan ochiladi. O'qituvchi bergan 4 xonali PIN-kodni kiriting yoki o'qituvchi masofadan ochishini kuting:
+          </p>
+
+          <div class="pin-input-group">
+            <input type="password" id="testPinInput" class="pin-input-box" maxlength="6" placeholder="••••" autocomplete="off">
+            <button type="button" id="btnVerifyPin" class="btn btn-primary" style="padding: 0 1.25rem;">
+              Kirish &rarr;
+            </button>
+          </div>
+          <div id="pinErrorMessage" style="color: #dc2626; font-size: 0.85rem; font-weight: 750; min-height: 1.2rem;"></div>
+        </div>
+
+        <!-- B) Test faol holati -->
+        <div id="testActiveCard" style="display: none;">
+          <div class="card" style="padding: 1.25rem 1.6rem; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <div style="font-size: 0.95rem; font-weight: 850; color: var(--dark);">
+                Savol: <span id="testQuestionCounter">1 / 20</span>
+              </div>
+              <div class="timer-badge" style="background: #eff6ff; color: #1e40af; border: 1.5px solid #bfdbfe; font-size: 1rem; padding: 0.35rem 0.85rem;">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7V7z"/></svg>
+                <span id="testTimerDisplay">25:00</span>
+              </div>
+            </div>
+
+            <!-- Progress bar -->
+            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 1.2rem;">
+              <div id="testProgressFill" style="width: 5%; height: 100%; background: var(--primary-gradient); transition: width 0.3s ease;"></div>
+            </div>
+
+            <!-- Savollar palitrasi (1..20) -->
+            <div id="testPalette" class="palette-container" style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.25rem;"></div>
+
+            <!-- Savol matni -->
+            <div id="testQuestionText" class="question-text" style="font-size: 1.15rem; font-weight: 850; color: var(--dark); margin-bottom: 1.25rem; line-height: 1.5;">
+              Savol yuklanmoqda...
+            </div>
+
+            <!-- 4 ta variant (A, B, C, D) -->
+            <div id="testOptionsContainer" class="options-grid" style="display: grid; grid-template-columns: 1fr; gap: 0.65rem; margin-bottom: 1.5rem;"></div>
+
+            <!-- Navigatsiya tugmalari -->
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+              <button type="button" id="btnTestPrev" class="btn btn-outline">
+                &larr; Oldingi
+              </button>
+              <button type="button" id="btnFinishTest" class="btn btn-danger" style="background: #dc2626; color: white;">
+                Testni yakunlash
+              </button>
+              <button type="button" id="btnTestNext" class="btn btn-primary">
+                Keyingi &rarr;
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 5-KO'RINISh: YAKUNIY UMUMIY NATIJA -->
+      <div id="finalSummaryView" style="display: none;">
+        <div class="card" style="max-width: 780px; margin: 1.5rem auto; padding: 2.25rem; text-align: center;">
+          <div style="width: 68px; height: 68px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+            <svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+
+          <h2 style="font-size: 1.6rem; font-weight: 850; color: var(--dark); margin-bottom: 0.25rem;">
+            Barcha Topshiriqlar Yakunlandi!
+          </h2>
+          <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            <span id="resStudentName" style="font-weight: 800; color: var(--dark);">-</span> | 
+            <span id="resStudentGroup" style="font-weight: 800; color: var(--primary);">-</span>
+          </p>
+
+          <!-- 4 ta bo'lim bo'yicha hisobot gridi -->
+          <div class="summary-results-grid">
+            <div class="summary-score-box">
+              <h5>1-Bo'lim (O'lchov)</h5>
+              <div id="scoreSec1" class="score-val">0 / 10</div>
+            </div>
+            <div class="summary-score-box">
+              <h5>2-Bo'lim (2→10)</h5>
+              <div id="scoreSec2" class="score-val">0 / 10</div>
+            </div>
+            <div class="summary-score-box">
+              <h5>3-Bo'lim (10→2)</h5>
+              <div id="scoreSec3" class="score-val">0 / 10</div>
+            </div>
+            <div class="summary-score-box">
+              <h5>4-Bo'lim (Test)</h5>
+              <div id="scoreSec4" class="score-val">0 / 20</div>
+            </div>
+          </div>
+
+          <!-- Umumiy to'plangan ball va Baho -->
+          <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 1.5rem; margin: 1.5rem 0;">
+            <div style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.35rem;">Umumiy natija:</div>
+            <div style="font-size: 2.2rem; font-weight: 900; color: var(--dark); margin-bottom: 0.5rem;">
+              <span id="resTotalCorrect">0 / 50</span> 
+              <span style="font-size: 1.3rem; color: var(--primary); font-weight: 800;">(<span id="resPercent">0%</span>)</span>
+            </div>
+            <div>
+              <span id="resGradeBadge" class="badge badge-success" style="font-size: 1.15rem; padding: 0.4rem 1.2rem;">
+                5 — A'lo
+              </span>
+            </div>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            * Natijalaringiz o'qituvchi admin paneliga va Google Sheets jadvaliga avtomatik ravishda saqlandi.
           </p>
         </div>
       </div>
-      <div>
-        <a href="test/" class="btn-test">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-          Test sinoviga o'tish (/test)
-        </a>
+
+    </div>
+  </main>
+
+  <!-- Bo'lim Yakunlanganida Chiquvchi Modal -->
+  <div id="sectionCompleteModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 480px; text-align: center; padding: 2rem 1.5rem;">
+      <div style="width: 58px; height: 58px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       </div>
-    </header>
-
-    <!-- Tab Navigatsiyasi -->
-    <nav class="tabs-nav">
-      <button class="tab-btn active" onclick="switchTab(0)">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        1. Axborot O'lchov Birliklari
+      <h3 id="modalSecTitle" style="font-size: 1.3rem; font-weight: 850; color: var(--dark); margin-bottom: 0.35rem;">Bo'lim yakunlandi!</h3>
+      <div id="modalSecScore" style="font-size: 1.8rem; font-weight: 900; color: #2563eb; margin: 0.75rem 0;">10 / 10 ta to'g'ri</div>
+      <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
+        Ushbu bo'lim muvaffaqiyatli saqlandi va qulflanadi. Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar ko'rsatilmaydi.
+      </p>
+      <button type="button" id="btnModalNextSec" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem 1.25rem; font-size: 0.95rem;">
+        Keyingi bo'limga o'tish &rarr;
       </button>
-      <button class="tab-btn" onclick="switchTab(1)">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-        2. 2-likdan 10-likka O'tish
-      </button>
-      <button class="tab-btn" onclick="switchTab(2)">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-        3. 10-likdan 2-likka O'tish
-      </button>
-    </nav>
-
-    <!-- 1-TAB: AXBOROT O'LCHOV BIRLIKLARI -->
-    <main id="tab-0" class="tab-content active">
-      <section class="section-card">
-        <h2 class="section-title">
-          <span class="title-icon">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-          </span>
-          Axborot O'lchov Birliklari Jadvali
-        </h2>
-
-        <div class="info-rule">
-          <strong>Asosiy qoidalar:</strong>
-          <br>1. <strong>1 Bayt = 8 bit</strong>. (Baytdan bitga o'tish: &times;8; Bitdan baytga o'tish: /8).
-          <br>2. <strong>1 KB = 1024 B | 1 MB = 1024 KB | 1 GB = 1024 MB | 1 TB = 1024 GB</strong>.
-          <br>3. Qo'shni birlikka o'tishda faqat 1024 ga ko'paytiriladi yoki 1024 ga bo'linadi.
-        </div>
-
-        <div class="table-responsive">
-          <table>
-            <thead>
-              <tr>
-                <th>O‘lchov birligi</th>
-                <th>Belgisi</th>
-                <th>Tengligi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Bit</strong></td>
-                <td><span class="code-pill">bit</span></td>
-                <td>Eng kichik axborot birligi</td>
-              </tr>
-              <tr>
-                <td><strong>Bayt</strong></td>
-                <td><span class="code-pill">B</span></td>
-                <td>1 B = 8 bit</td>
-              </tr>
-              <tr>
-                <td><strong>Kilobayt</strong></td>
-                <td><span class="code-pill">KB</span></td>
-                <td>1 KB = 1024 B</td>
-              </tr>
-              <tr>
-                <td><strong>Megabayt</strong></td>
-                <td><span class="code-pill">MB</span></td>
-                <td>1 MB = 1024 KB</td>
-              </tr>
-              <tr>
-                <td><strong>Gigabayt</strong></td>
-                <td><span class="code-pill">GB</span></td>
-                <td>1 GB = 1024 MB</td>
-              </tr>
-              <tr>
-                <td><strong>Terabayt</strong></td>
-                <td><span class="code-pill">TB</span></td>
-                <td>1 TB = 1024 GB</td>
-              </tr>
-              <tr>
-                <td><strong>Petabayt</strong></td>
-                <td><span class="code-pill">PB</span></td>
-                <td>1 PB = 1024 TB</td>
-              </tr>
-              <tr>
-                <td><strong>Eksabayt</strong></td>
-                <td><span class="code-pill">EB</span></td>
-                <td>1 EB = 1024 PB</td>
-              </tr>
-              <tr>
-                <td><strong>Zettabayt</strong></td>
-                <td><span class="code-pill">ZB</span></td>
-                <td>1 ZB = 1024 EB</td>
-              </tr>
-              <tr>
-                <td><strong>Yottabayt</strong></td>
-                <td><span class="code-pill">YB</span></td>
-                <td>1 YB = 1024 ZB</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- Toolbar -->
-        <div class="tab-toolbar">
-          <span class="tab-counter">
-            <span class="counter-dot"></span>
-            10 ta amaliy misol (Javobni ko'rish uchun ko'z tugmasini bosing)
-          </span>
-          <div class="tab-actions">
-            <button class="btn-action" onclick="toggleAllInTab(0, true)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-              Barcha javoblarni ko'rsatish
-            </button>
-            <button class="btn-action" onclick="toggleAllInTab(0, false)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
-              Barchasini yashirish
-            </button>
-          </div>
-        </div>
-
-        <!-- 10 ta misol -->
-        <div class="tasks-grid">
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">01</span>
-                <span class="task-q">5 KB = ? B</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 5 &times; 1024 B</div>
-              <div class="ans-badge">Javob: 5120 B</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">02</span>
-                <span class="task-q">3 MB = ? KB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 3 &times; 1024 KB</div>
-              <div class="ans-badge">Javob: 3072 KB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">03</span>
-                <span class="task-q">2 GB = ? MB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 2 &times; 1024 MB</div>
-              <div class="ans-badge">Javob: 2048 MB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">04</span>
-                <span class="task-q">4096 B = ? KB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 4096 / 1024</div>
-              <div class="ans-badge">Javob: 4 KB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">05</span>
-                <span class="task-q">2048 KB = ? MB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 2048 / 1024</div>
-              <div class="ans-badge">Javob: 2 MB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">06</span>
-                <span class="task-q">8192 B = ? KB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 8192 / 1024</div>
-              <div class="ans-badge">Javob: 8 KB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">07</span>
-                <span class="task-q">5 MB = ? B</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 5 &times; 1024 &times; 1024 B = 5 &times; 1 048 576 B</div>
-              <div class="ans-badge">Javob: 5 242 880 B</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">08</span>
-                <span class="task-q">3 GB = ? KB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 3 &times; 1024 &times; 1024 KB = 3 &times; 1 048 576 KB</div>
-              <div class="ans-badge">Javob: 3 145 728 KB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">09</span>
-                <span class="task-q">16 384 KB = ? MB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 16 384 / 1024</div>
-              <div class="ans-badge">Javob: 16 MB</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">10</span>
-                <span class="task-q">10 240 MB = ? GB</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yechish: 10 240 / 1024</div>
-              <div class="ans-badge">Javob: 10 GB</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- 2-TAB: 2-LIKDAN 10-LIKKA O'TISH -->
-    <main id="tab-1" class="tab-content">
-      <section class="section-card">
-        <h2 class="section-title">
-          <span class="title-icon">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-          </span>
-          2-lik Sanoq Sistemasidan 10-lik Sanoq Sistemasiga O'tish
-        </h2>
-
-        <div class="info-rule">
-          <strong>O'tish qoidasi:</strong>
-          <br>Ikkilik sondagi har bir xona qiymati o'ngdan chapga qarab 2 ning darajalari bo'yicha oshib boradi:
-          <br><strong>... 128 &larr; 64 &larr; 32 &larr; 16 &larr; 8 &larr; 4 &larr; 2 &larr; 1</strong>
-          <br>Sonning faqat <strong>1</strong> bo'lgan xonalaridagi qiymatlar bir-biriga qo'shiladi.
-        </div>
-
-        <!-- Toolbar -->
-        <div class="tab-toolbar">
-          <span class="tab-counter">
-            <span class="counter-dot"></span>
-            10 ta misol: 2-likdan 10-likka o'tkazish
-          </span>
-          <div class="tab-actions">
-            <button class="btn-action" onclick="toggleAllInTab(1, true)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-              Barcha javoblarni ko'rsatish
-            </button>
-            <button class="btn-action" onclick="toggleAllInTab(1, false)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
-              Barchasini yashirish
-            </button>
-          </div>
-        </div>
-
-        <!-- 10 ta misol -->
-        <div class="tasks-grid">
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">01</span>
-                <span class="task-q">101₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 4 + 1</div>
-              <div class="ans-badge">Javob: 5₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">02</span>
-                <span class="task-q">110₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 4 + 2</div>
-              <div class="ans-badge">Javob: 6₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">03</span>
-                <span class="task-q">1001₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 8 + 1</div>
-              <div class="ans-badge">Javob: 9₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">04</span>
-                <span class="task-q">1010₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 8 + 2</div>
-              <div class="ans-badge">Javob: 10₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">05</span>
-                <span class="task-q">1101₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 8 + 4 + 1</div>
-              <div class="ans-badge">Javob: 13₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">06</span>
-                <span class="task-q">1111₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 8 + 4 + 2 + 1</div>
-              <div class="ans-badge">Javob: 15₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">07</span>
-                <span class="task-q">10000₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">5-xona qiymati: 2⁴ = 16</div>
-              <div class="ans-badge">Javob: 16₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">08</span>
-                <span class="task-q">10101₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 16 + 4 + 1</div>
-              <div class="ans-badge">Javob: 21₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">09</span>
-                <span class="task-q">11011₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 16 + 8 + 2 + 1</div>
-              <div class="ans-badge">Javob: 27₁₀</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">10</span>
-                <span class="task-q">101010₂ = ?₁₀</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Xonalar yig'indisi: 32 + 8 + 2</div>
-              <div class="ans-badge">Javob: 42₁₀</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- 3-TAB: 10-LIKDAN 2-LIKKA O'TISH -->
-    <main id="tab-2" class="tab-content">
-      <section class="section-card">
-        <h2 class="section-title">
-          <span class="title-icon">
-            <svg class="icon" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-          </span>
-          10-lik Sanoq Sistemasidan 2-lik Sanoq Sistemasiga O'tish
-        </h2>
-
-        <div class="info-rule">
-          <strong>O'tish qoidasi:</strong>
-          <br>10-lik sonni ikkilik sanoq sistemasiga o'tkazish uchun u <strong>ketma-ket 2 ga bo'linadi</strong> va hosil bo'lgan qoldiqlar oxirgi natijadan boshlab (teskari tartibda) yoziladi.
-          <br>Yoki sonni 2 ning darajalari yig'indisi ko'rinishida yoyib, bor xonalarga 1, yo'qlariga 0 qo'yiladi (masalan: 50 = 32 + 16 + 2 &rarr; 110010₂).
-        </div>
-
-        <!-- Toolbar -->
-        <div class="tab-toolbar">
-          <span class="tab-counter">
-            <span class="counter-dot"></span>
-            10 ta misol: 10-likdan 2-likka o'tkazish
-          </span>
-          <div class="tab-actions">
-            <button class="btn-action" onclick="toggleAllInTab(2, true)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-              Barcha javoblarni ko'rsatish
-            </button>
-            <button class="btn-action" onclick="toggleAllInTab(2, false)">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.44-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>
-              Barchasini yashirish
-            </button>
-          </div>
-        </div>
-
-        <!-- 10 ta misol -->
-        <div class="tasks-grid">
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">01</span>
-                <span class="task-q">50₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 32 + 16 + 2 (32, 16, 2 xonalarida 1)</div>
-              <div class="ans-badge">Javob: 110010₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">02</span>
-                <span class="task-q">70₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 64 + 4 + 2 (64, 4, 2 xonalarida 1)</div>
-              <div class="ans-badge">Javob: 1000110₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">03</span>
-                <span class="task-q">100₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 64 + 32 + 4 (64, 32, 4 xonalarida 1)</div>
-              <div class="ans-badge">Javob: 1100100₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">04</span>
-                <span class="task-q">102₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 64 + 32 + 4 + 2</div>
-              <div class="ans-badge">Javob: 1100110₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">05</span>
-                <span class="task-q">105₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 64 + 32 + 8 + 1</div>
-              <div class="ans-badge">Javob: 1101001₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">06</span>
-                <span class="task-q">108₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 64 + 32 + 8 + 4</div>
-              <div class="ans-badge">Javob: 1101100₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">07</span>
-                <span class="task-q">150₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 128 + 16 + 4 + 2</div>
-              <div class="ans-badge">Javob: 10010110₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">08</span>
-                <span class="task-q">200₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 128 + 64 + 8</div>
-              <div class="ans-badge">Javob: 11001000₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">09</span>
-                <span class="task-q">205₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 128 + 64 + 8 + 4 + 1</div>
-              <div class="ans-badge">Javob: 11001101₂</div>
-            </div>
-          </div>
-
-          <div class="task-item">
-            <div class="task-header">
-              <div class="task-q-wrap">
-                <span class="q-num">10</span>
-                <span class="task-q">255₁₀ = ?₂</span>
-              </div>
-              <button class="btn-eye" onclick="toggleAnswer(this)" title="Javobni ko'rish / yashirish">
-                <svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                <span class="eye-text">Javob</span>
-              </button>
-            </div>
-            <div class="task-answer-box" style="display: none;">
-              <div class="task-step">Yoyilma: 128 + 64 + 32 + 16 + 8 + 4 + 2 + 1 (barcha 8 xonasi 1)</div>
-              <div class="ans-badge">Javob: 11111111₂</div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <!-- Pastki Testga chaqiruvchi Banner -->
-    <div class="banner-cta">
-      <div>
-        <h3>Mavzuni o'rganib bo'ldingizmi?</h3>
-        <p>Bilimingizni sinash uchun 20 ta tasodifiy savoldan iborat test sinovidan o'ting</p>
-      </div>
-      <a href="test/">Testni boshlash &rarr;</a>
     </div>
   </div>
 
-  <script>
-    // Tab almashtirish
-    function switchTab(tabIndex) {
-      const tabBtns = document.querySelectorAll('.tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
-
-      tabBtns.forEach((btn, idx) => {
-        if (idx === tabIndex) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-
-      tabContents.forEach((content, idx) => {
-        if (idx === tabIndex) {
-          content.classList.add('active');
-        } else {
-          content.classList.remove('active');
-        }
-      });
-    }
-
-    // Bitta misol javobini ko'rsatish / yashirish
-    function toggleAnswer(btn) {
-      const card = btn.closest('.task-item');
-      const box = card.querySelector('.task-answer-box');
-      const textSpan = btn.querySelector('.eye-text');
-
-      if (!box) return;
-
-      if (box.style.display === 'none' || box.style.display === '') {
-        box.style.display = 'block';
-        btn.classList.add('active');
-        if (textSpan) textSpan.textContent = 'Yashirish';
-      } else {
-        box.style.display = 'none';
-        btn.classList.remove('active');
-        if (textSpan) textSpan.textContent = 'Javob';
-      }
-    }
-
-    // Tab ichidagi barcha javoblarni birvarakay ko'rsatish yoki yashirish
-    function toggleAllInTab(tabIndex, show) {
-      const tab = document.getElementById('tab-' + tabIndex);
-      if (!tab) return;
-
-      const items = tab.querySelectorAll('.task-item');
-      items.forEach(item => {
-        const box = item.querySelector('.task-answer-box');
-        const btn = item.querySelector('.btn-eye');
-        const textSpan = btn ? btn.querySelector('.eye-text') : null;
-
-        if (box) {
-          if (show) {
-            box.style.display = 'block';
-            if (btn) btn.classList.add('active');
-            if (textSpan) textSpan.textContent = 'Yashirish';
-          } else {
-            box.style.display = 'none';
-            if (btn) btn.classList.remove('active');
-            if (textSpan) textSpan.textContent = 'Javob';
-          }
-        }
-      });
-    }
-  </script>
+  <!-- Skriptlar -->
+  <script src="js/config.js?v=20260909_2"></script>
+  <script src="js/exercises.js?v=20260909_2"></script>
+  <script src="js/questions.js?v=20260909_2"></script>
+  <script src="js/student.js?v=20260909_2"></script>
 </body>
 </html>

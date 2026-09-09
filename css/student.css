@@ -1,0 +1,347 @@
+/* ==========================================================================
+   Talabalar Platformasi — Qo'shimcha Stillar (css/student.css)
+   ========================================================================== */
+
+/* Step Navigatsiya (Bo'limlar zanjiri) */
+.steps-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  background: #ffffff;
+  padding: 0.5rem;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+}
+
+.step-item {
+  flex: 1 1 0;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 0.95rem;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--text-muted);
+}
+
+.step-item.active {
+  background: #eff6ff;
+  border-color: #2563eb;
+  color: #1e40af;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
+}
+
+.step-item.completed {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.step-item.locked {
+  cursor: not-allowed;
+  opacity: 0.65;
+  background: #f1f5f9;
+}
+
+.step-num {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 850;
+  font-size: 0.8rem;
+  background: #e2e8f0;
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.step-item.active .step-num {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.step-item.completed .step-num {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.step-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.step-sub {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  margin-top: 0.15rem;
+}
+
+/* Amaliy Bo'lim Kartochkasi */
+.section-intro-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.6rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.section-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.section-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4f46e5 0%, #2563eb 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.section-rule-box {
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+  padding: 0.75rem 1rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  color: #1e3a8a;
+}
+
+/* Savollar Gridi */
+.questions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.question-card-item {
+  background: #ffffff;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.question-card-item:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.question-card-item.is-answered {
+  border-color: #93c5fd;
+  background: #fafcff;
+}
+
+.question-card-item.is-locked {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  opacity: 0.85;
+}
+
+.q-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.q-badge-num {
+  font-size: 0.78rem;
+  font-weight: 850;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+.q-prompt-text {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--dark);
+  letter-spacing: 0.3px;
+  font-family: ui-monospace, Menlo, Monaco, Consolas, monospace;
+}
+
+.q-input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.practical-answer-input {
+  flex: 1 1 auto;
+  width: 100%;
+  padding: 0.7rem 0.95rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--dark);
+  background: #ffffff;
+  outline: none;
+  font-family: ui-monospace, Menlo, Monaco, monospace;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.practical-answer-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
+}
+
+.practical-answer-input:disabled {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+  border-color: #cbd5e1;
+}
+
+.unit-tag {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.45rem 0.65rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Submit Action Bar */
+.submit-action-card {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.25rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  box-shadow: var(--shadow);
+}
+
+.action-status-text {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Test Qulflangan Holati (Lock Screen) */
+.locked-test-screen {
+  background: #ffffff;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  max-width: 540px;
+  margin: 1.5rem auto;
+  box-shadow: var(--shadow);
+}
+
+.lock-big-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+}
+
+.lock-big-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+.pin-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.5rem 0;
+}
+
+.pin-input-box {
+  width: 180px;
+  padding: 0.75rem 1rem;
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-align: center;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+  font-family: monospace;
+}
+
+.pin-input-box:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* Yakuniy Jamlovchi Natija Kartochkasi */
+.summary-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.summary-score-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.summary-score-box h5 {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.summary-score-box .score-val {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--dark);
+}

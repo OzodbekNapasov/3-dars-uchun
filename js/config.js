@@ -1,19 +1,41 @@
 /**
- * Test Tizimi Sozlamalari (Configuration)
+ * Platforma Sozlamalari (Configuration)
+ * Axborot Texnologiyalari — 3-Dars
  */
 const APP_CONFIG = {
-  // Google Apps Script Web App havolasi (Faollashtirilgan)
+  // Google Apps Script Web App havolasi (Ma'lumotlarni yozish va olish uchun)
   GOOGLE_SHEET_WEBAPP_URL: "https://script.google.com/macros/s/AKfycbyGufJOXt7KO1ZZSMUbinL1Vnir9YYzGw5yDuhUrw3bUNj614hgByzxEw7spj6s3VP-cQ/exec",
+
+  // Ruxsat etilgan guruhlar
+  ALLOWED_GROUPS: [
+    "26-01",
+    "26-02",
+    "26-03",
+    "26-04",
+    "26-05",
+    "26-06",
+    "26-07"
+  ],
 
   // Test parametrlari
   TEST_QUESTIONS_COUNT: 20, // 40 tadan 20 ta tasodifiy savol
   TEST_DURATION_MINUTES: 25, // 25 daqiqa
   
+  // O'qituvchi boshlang'ich PIN-kodi (Testni ochish uchun)
+  DEFAULT_TEACHER_PIN: "2603",
+
+  // LocalStorage kalitlari
+  STORAGE_KEYS: {
+    STUDENT_SESSION: "app_student_session_v3",
+    ADMIN_CONFIG: "app_admin_config_v3",
+    ALL_SUBMISSIONS: "app_all_submissions_v3"
+  },
+
   // Baholash mezonlari (5 ballik tizim)
   GRADING: {
-    GRADE_5_MIN_PERCENT: 86, // 86% va undan yuqori -> 5 (A'lo)
-    GRADE_4_MIN_PERCENT: 71, // 71% - 85% -> 4 (Yaxshi)
-    GRADE_3_MIN_PERCENT: 56, // 56% - 70% -> 3 (Qoniqarli)
+    GRADE_5_MIN_PERCENT: 86, // 86% - 100% -> 5 (A'lo)
+    GRADE_4_MIN_PERCENT: 71, // 71% - 85%  -> 4 (Yaxshi)
+    GRADE_3_MIN_PERCENT: 56, // 56% - 70%  -> 3 (Qoniqarli)
     // 56% dan past -> 2 (Qoniqarsiz)
   },
 
@@ -30,3 +52,5 @@ const APP_CONFIG = {
     }
   }
 };
+
+window.APP_CONFIG = APP_CONFIG;
