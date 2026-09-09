@@ -9,10 +9,15 @@ Tibbiyot texnikumi 1-kurs talabalari uchun **Axborotning o'lchov birliklari** va
 ### 1. Talaba Platformasi (`index.html`):
 - **Guruhlar tanlovi:** `26-01`, `26-02`, `26-03`, `26-04`, `26-05`, `26-06`, `26-07` guruhlari ro'yxatdan o'tishda tanlanadi.
 - **4 ta Bosqichli struktura:**
-  1. **1-Bo'lim:** Axborot o'lchov birliklarini hisoblash (10 ta amaliy misol, masalan: `5 KB = ? B`).
-  2. **2-Bo'lim:** 2-likdan 10-likka o'tish (10 ta amaliy misol, masalan: `101₂ = ?₁₀`).
-  3. **3-Bo'lim:** 10-likdan 2-likka o'tish (10 ta amaliy misol, masalan: `50₁₀ = ?₂`).
-  4. **4-Bo'lim:** Yakuniy Test Sinovi (20 ta savol, 4 variantli).
+  1. **1-Bo'lim:** Axborot o'lchov birliklari — **10 ta** misol, har biri bitta amal bilan yechiladi (masalan: `7 KB = ? B`).
+  2. **2-Bo'lim:** 2-likdan 10-likka o'tish — **5 ta** misol (masalan: `1111₂ = ?₁₀`).
+  3. **3-Bo'lim:** 10-likdan 2-likka o'tish — **5 ta** misol (masalan: `50₁₀ = ?₂`).
+  4. **4-Bo'lim:** Yakuniy test — **20 ta** savol: **12 nazariy + 4 o'lchov birliklari + 4 sanoq sistemalari**.
+     Savollar 51 talik bankdan har bir kategoriya ichida tasodifiy tanlanadi, ya'ni har bir
+     talabaga boshqacha variant tushadi. Tarkib `js/config.js` dagi `TEST_COMPOSITION` da o'zgartiriladi.
+
+**Jami ball: 40 ta** (10 + 5 + 5 + 20). Savollar sonini o'zgartirsangiz, ballar va barcha
+"n / m" yozuvlari avtomatik moslashadi — kodni qo'lda tuzatish kerak emas.
 - **Anti-Cheat (Ko'chirishning oldini olish):**
   - Talaba javob yozayotganda to'g'ri yoki xatoligi mutlaqo bildirilmaydi.
   - Bo'lim tasdiqlangach, faqat nechta to'g'ri topgani (masalan: *10 tadan 8 ta to'g'ri*) ko'rsatiladi.

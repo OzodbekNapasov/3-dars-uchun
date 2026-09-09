@@ -17,8 +17,15 @@ const APP_CONFIG = {
     "26-07"
   ],
 
-  // Test parametrlari
-  TEST_QUESTIONS_COUNT: 20, // 40 tadan 20 ta tasodifiy savol
+  // Test tarkibi: har bir kategoriyadan nechta savol tushishi.
+  // Jami = 12 + 4 + 4 = 20 ta savol. Savollar bankidan (js/questions.js)
+  // har bir kategoriya ichidan tasodifiy tanlanadi, ya'ni har bir talabaga
+  // boshqacha variant tushadi, lekin tuzilishi bir xil bo'ladi.
+  TEST_COMPOSITION: {
+    nazariy: 12, // mavzu bo'yicha nazariy savollar
+    olchov: 4,   // axborot o'lchov birliklari
+    sanoq: 4     // sanoq sistemalari (2-lik / 10-lik)
+  },
   TEST_DURATION_MINUTES: 25, // 25 daqiqa
   
   // O'qituvchi boshlang'ich PIN-kodi (Testni ochish uchun)
@@ -47,6 +54,12 @@ const APP_CONFIG = {
     GRADE_4_MIN_PERCENT: 71, // 71% - 85%  -> 4 (Yaxshi)
     GRADE_3_MIN_PERCENT: 56, // 56% - 70%  -> 3 (Qoniqarli)
     // 56% dan past -> 2 (Qoniqarsiz)
+  },
+
+  // Testdagi jami savollar soni (TEST_COMPOSITION dan hisoblanadi)
+  getTestQuestionsCount: function () {
+    return Object.keys(this.TEST_COMPOSITION)
+      .reduce((sum, key) => sum + this.TEST_COMPOSITION[key], 0);
   },
 
   // Baho hisoblash funksiyasi

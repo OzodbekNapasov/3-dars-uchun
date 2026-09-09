@@ -6,16 +6,27 @@
  */
 
 (function () {
+  // Bo'lim savollari soni yagona manbadan olinadi (js/exercises.js va js/config.js).
+  // Shu sababli savollar sonini o'zgartirganda bu faylda hech narsa tuzatish kerak emas.
+  function sectionTotal(secNum) {
+    if (secNum === 4) return APP_CONFIG.getTestQuestionsCount();
+    return window.getSectionTotal ? window.getSectionTotal(secNum) : 0;
+  }
+
+  function maxTotalScore() {
+    return sectionTotal(1) + sectionTotal(2) + sectionTotal(3) + sectionTotal(4);
+  }
+
   // Bo'sh (boshlang'ich) sessiya namunasi
   function createEmptySession() {
     return {
       student: null, // { lastName, firstName, group, startTime }
       activeSection: 1, // 1, 2, 3, 4 (test), 5 (final result)
       sections: {
-        1: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-        2: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-        3: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-        4: { completed: false, correctCount: 0, totalCount: 20, answers: {}, scorePercent: 0, grade: 2, gradeLabel: "" }
+        1: { completed: false, correctCount: 0, totalCount: sectionTotal(1), answers: {} },
+        2: { completed: false, correctCount: 0, totalCount: sectionTotal(2), answers: {} },
+        3: { completed: false, correctCount: 0, totalCount: sectionTotal(3), answers: {} },
+        4: { completed: false, correctCount: 0, totalCount: sectionTotal(4), answers: {}, scorePercent: 0, grade: 2, gradeLabel: "" }
       },
       testUnlocked: false,
       testQuestions: [],
@@ -118,6 +129,7 @@
   // Dastlabki ishga tushirish
   function initStudentApp() {
     initGroupSelect();
+    initStepCounts();
     loadSession();
 
     if (session.student) {
@@ -144,6 +156,16 @@
     if (!testStatusPollInterval) {
       testStatusPollInterval = setInterval(pollTestStatus, APP_CONFIG.TEST_STATUS_POLL_MS || 20000);
     }
+  }
+
+  // Bo'limlar zanjiridagi "N ta misol / N ta savol" yozuvlari savollar sonidan
+  // avtomatik to'ldiriladi, shunda HTML ni qo'lda tuzatish kerak bo'lmaydi.
+  function initStepCounts() {
+    document.querySelectorAll("[data-step-count]").forEach(el => {
+      const secNum = Number(el.getAttribute("data-step-count"));
+      const total = sectionTotal(secNum);
+      el.textContent = secNum === 4 ? `${total} ta savol` : `${total} ta misol`;
+    });
   }
 
   // Guruh tanlov dropdownini yaratish (26-01 ... 26-07)
@@ -345,8 +367,8 @@
     if (s3.completed) totalCorrect += s3.correctCount;
     if (s4.completed) totalCorrect += s4.correctCount;
 
-    let possible = 10 + 10 + 10 + 20; // 50
-    let pct = Math.round((totalCorrect / possible) * 100);
+    let possible = maxTotalScore();
+    let pct = possible > 0 ? Math.round((totalCorrect / possible) * 100) : 0;
     let gradeObj = APP_CONFIG.calculateGrade(pct);
 
     // Barcha javoblarni bitta obyektga jamlash
@@ -362,10 +384,10 @@
       lastName: session.student.lastName,
       firstName: session.student.firstName,
       statusText: buildStatusText(),
-      sec1Score: s1.completed ? `${s1.correctCount}/10` : "-",
-      sec2Score: s2.completed ? `${s2.correctCount}/10` : "-",
-      sec3Score: s3.completed ? `${s3.correctCount}/10` : "-",
-      testScore: s4.completed ? `${s4.correctCount}/20` : "-",
+      sec1Score: s1.completed ? `${s1.correctCount}/${sectionTotal(1)}` : "-",
+      sec2Score: s2.completed ? `${s2.correctCount}/${sectionTotal(2)}` : "-",
+      sec3Score: s3.completed ? `${s3.correctCount}/${sectionTotal(3)}` : "-",
+      testScore: s4.completed ? `${s4.correctCount}/${sectionTotal(4)}` : "-",
       totalCorrect: `${totalCorrect} / ${possible}`,
       percentage: `${pct}%`,
       grade: s4.completed ? gradeObj.grade : "-",
@@ -667,7 +689,7 @@
         btnSubmitPractical.style.opacity = "0.6";
         btnSubmitPractical.innerHTML = `
           <svg class="icon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          Ushbu bo'lim bajarildi (${secState.correctCount} / 10)
+          Ushbu bo'lim bajarildi (${secState.correctCount} / ${secConfig.questions.length})
         `;
       } else {
         btnSubmitPractical.disabled = false;
@@ -682,12 +704,18 @@
 
   function updateAnsweredCountText(secConfig, secState) {
     if (!practicalStatusText) return;
+    const total = secConfig.questions.length;
     if (secState.completed) {
-      practicalStatusText.innerHTML = `<strong>Bo'lim holati:</strong> Bajarildi. To'g'ri topilganlar: <strong>${secState.correctCount} / 10</strong> ta.`;
+      practicalStatusText.innerHTML = `<strong>Bo'lim holati:</strong> Bajarildi. To'g'ri topilganlar: <strong>${secState.correctCount} / ${total}</strong> ta.`;
       return;
     }
-    const answeredCount = Object.keys(secState.answers).filter(k => (secState.answers[k] || "").trim() !== "").length;
-    practicalStatusText.innerHTML = `Javob berildi: <strong>${answeredCount} / 10</strong> ta. Yozib bo'lgach "Tasdiqlash" tugmasini bosing.`;
+    const answeredCount = countAnswered(secConfig, secState);
+    practicalStatusText.innerHTML = `Javob berildi: <strong>${answeredCount} / ${total}</strong> ta. Yozib bo'lgach "Tasdiqlash" tugmasini bosing.`;
+  }
+
+  // Faqat shu bo'limga tegishli savollarni sanaymiz
+  function countAnswered(secConfig, secState) {
+    return secConfig.questions.filter(q => (secState.answers[q.id] || "").trim() !== "").length;
   }
 
   // Amaliy bo'limni tasdiqlash va ballni hisoblash
@@ -697,9 +725,10 @@
     const secState = session.sections[secNum];
     if (!secConfig || secState.completed) return;
 
-    const answeredCount = Object.keys(secState.answers).filter(k => (secState.answers[k] || "").trim() !== "").length;
-    if (answeredCount < 10) {
-      const confirmNotAll = confirm(`Siz 10 ta savoldan ${answeredCount} tasiga javob yozdingiz. Qolganlari xato deb hisoblanadi. Haqiqatan ham bo'limni yakunlamoqchimisiz?`);
+    const total = secConfig.questions.length;
+    const answeredCount = countAnswered(secConfig, secState);
+    if (answeredCount < total) {
+      const confirmNotAll = confirm(`Siz ${total} ta savoldan ${answeredCount} tasiga javob yozdingiz. Qolganlari xato deb hisoblanadi. Haqiqatan ham bo'limni yakunlamoqchimisiz?`);
       if (!confirmNotAll) return;
     } else {
       const confirmSubmit = confirm("Barcha javoblarni tekshirib bo'ldingizmi? Tasdiqlashdan so'ng ushbu bo'lim qulflanadi va qayta o'zgartirib bo'lmaydi.");
@@ -721,7 +750,7 @@
 
     // O'quvchiga faqat to'g'ri topilganlar sonini ko'rsatuvchi modal
     if (modalSecTitle) modalSecTitle.textContent = `${secConfig.title} Yakunlandi!`;
-    if (modalSecScore) modalSecScore.textContent = `${correctCount} / 10 ta to'g'ri`;
+    if (modalSecScore) modalSecScore.textContent = `${correctCount} / ${total} ta to'g'ri`;
     if (sectionCompleteModal) sectionCompleteModal.classList.add("active");
 
     updateStepIndicators();
@@ -809,7 +838,7 @@
   }
 
   function startOrResumeTest() {
-    // 20 ta tasodifiy savol generatsiya qilish (agar avval generatsiya qilinmagan bo'lsa)
+    // Test variantini tuzish (agar avval tuzilmagan bo'lsa)
     if (!session.testQuestions || session.testQuestions.length === 0) {
       if (!window.ALL_QUESTIONS || window.ALL_QUESTIONS.length === 0) {
         // Savollar fayli yuklanmagan — taymerni boshlab, bo'sh test ko'rsatmaymiz
@@ -817,21 +846,7 @@
         if (testQuestionText) testQuestionText.textContent = "Savollarni yuklab bo'lmadi.";
         return;
       }
-      {
-        // Savollarni aralashtirish
-        const shuffled = shuffle(window.ALL_QUESTIONS);
-        const count = APP_CONFIG.TEST_QUESTIONS_COUNT || 20;
-        session.testQuestions = shuffled.slice(0, count).map(q => {
-          // Variantlarni ham aralashtirish
-          const opts = shuffle(q.options);
-          return {
-            id: q.id,
-            question: q.question,
-            options: opts,
-            answer: q.answer
-          };
-        });
-      }
+      session.testQuestions = buildTestQuestions();
       saveSession(false);
     }
 
@@ -851,6 +866,36 @@
 
     renderTestPalette();
     renderTestQuestion();
+  }
+
+  /**
+   * Test variantini tuzish.
+   * Har bir kategoriyadan (nazariy / o'lchov / sanoq) config'da belgilangan
+   * miqdorda savol tasodifiy tanlanadi. Shu sababli har bir talabaga boshqacha
+   * variant tushadi, lekin testning tuzilishi hammada bir xil bo'ladi.
+   */
+  function buildTestQuestions() {
+    const composition = APP_CONFIG.TEST_COMPOSITION || {};
+    const bank = window.ALL_QUESTIONS || [];
+    const picked = [];
+
+    Object.keys(composition).forEach(category => {
+      const need = composition[category];
+      const pool = bank.filter(q => q.category === category);
+
+      if (pool.length < need) {
+        console.warn(`"${category}" kategoriyasida ${need} ta savol kerak, bankda esa ${pool.length} ta bor.`);
+      }
+      picked.push(...shuffle(pool).slice(0, need));
+    });
+
+    // Kategoriyalar aralashib ketishi uchun umumiy tartibni ham aralashtiramiz
+    return shuffle(picked).map(q => ({
+      id: q.id,
+      question: q.question,
+      options: shuffle(q.options), // variantlar tartibi ham har talabada boshqacha
+      answer: q.answer
+    }));
   }
 
   function getRemainingSeconds() {
@@ -981,7 +1026,7 @@
 
     if (!force) {
       if (answeredCount < qList.length) {
-        const c = confirm(`Siz 20 ta savoldan ${answeredCount} tasiga javob belgiladingiz. Testni yakunlamoqchimisiz?`);
+        const c = confirm(`Siz ${qList.length} ta savoldan ${answeredCount} tasiga javob belgiladingiz. Testni yakunlamoqchimisiz?`);
         if (!c) return;
       } else {
         const c = confirm("Testni yakunlashni tasdiqlaysizmi?");
@@ -1020,13 +1065,14 @@
     // (aks holda talabaga ikki xil baho ko'rinib chalkashlik tug'diradi).
     const overallCorrect = session.sections[1].correctCount + session.sections[2].correctCount +
                            session.sections[3].correctCount + correctCount;
-    const overallPercent = Math.round((overallCorrect / 50) * 100);
+    const overallPossible = maxTotalScore();
+    const overallPercent = Math.round((overallCorrect / overallPossible) * 100);
     const overallGrade = APP_CONFIG.calculateGrade(overallPercent);
 
     alert(
       `Test muvaffaqiyatli yakunlandi!\n` +
       `Test natijasi: ${qList.length} tadan ${correctCount} ta to'g'ri\n\n` +
-      `Umumiy natija: 50 tadan ${overallCorrect} ta (${overallPercent}%)\n` +
+      `Umumiy natija: ${overallPossible} tadan ${overallCorrect} ta (${overallPercent}%)\n` +
       `Yakuniy baho: ${overallGrade.grade} (${overallGrade.label})`
     );
 
@@ -1047,13 +1093,13 @@
     const s3 = session.sections[3];
     const s4 = session.sections[4];
 
-    if (scoreSec1) scoreSec1.textContent = `${s1.correctCount} / 10`;
-    if (scoreSec2) scoreSec2.textContent = `${s2.correctCount} / 10`;
-    if (scoreSec3) scoreSec3.textContent = `${s3.correctCount} / 10`;
-    if (scoreSec4) scoreSec4.textContent = `${s4.correctCount} / 20`;
+    if (scoreSec1) scoreSec1.textContent = `${s1.correctCount} / ${sectionTotal(1)}`;
+    if (scoreSec2) scoreSec2.textContent = `${s2.correctCount} / ${sectionTotal(2)}`;
+    if (scoreSec3) scoreSec3.textContent = `${s3.correctCount} / ${sectionTotal(3)}`;
+    if (scoreSec4) scoreSec4.textContent = `${s4.correctCount} / ${sectionTotal(4)}`;
 
     const totalCorrect = s1.correctCount + s2.correctCount + s3.correctCount + s4.correctCount;
-    const possible = 50;
+    const possible = maxTotalScore();
     const percent = Math.round((totalCorrect / possible) * 100);
     const gradeObj = APP_CONFIG.calculateGrade(percent);
 

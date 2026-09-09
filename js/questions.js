@@ -1,4 +1,12 @@
-// 3-dars: Bir amal bilan oson hisoblanadigan test savollari (40 ta)
+// 3-dars test savollari banki.
+//
+// Har bir savolning `category` maydoni bor va test shu bo'yicha tuziladi:
+//   nazariy — mavzu bo'yicha nazariy/ta'rif savollari
+//   olchov  — axborot o'lchov birliklarini hisoblash
+//   sanoq   — sanoq sistemalari (2-lik va 10-lik)
+//
+// Talabaga tushadigan 20 ta savol tarkibi js/config.js dagi TEST_COMPOSITION
+// orqali belgilanadi (hozir: 12 nazariy + 4 o'lchov + 4 sanoq).
 const ALL_QUESTIONS = [
   {
     "id": 1,
@@ -9,7 +17,8 @@ const ALL_QUESTIONS = [
       "Kilobayt",
       "Megabayt"
     ],
-    "answer": "Bit"
+    "answer": "Bit",
+    "category": "nazariy"
   },
   {
     "id": 2,
@@ -20,7 +29,8 @@ const ALL_QUESTIONS = [
       "4 bit",
       "16 bit"
     ],
-    "answer": "8 bit"
+    "answer": "8 bit",
+    "category": "olchov"
   },
   {
     "id": 3,
@@ -31,7 +41,8 @@ const ALL_QUESTIONS = [
       "12 bit",
       "20 bit"
     ],
-    "answer": "16 bit"
+    "answer": "16 bit",
+    "category": "olchov"
   },
   {
     "id": 4,
@@ -42,7 +53,8 @@ const ALL_QUESTIONS = [
       "18 bit",
       "32 bit"
     ],
-    "answer": "24 bit"
+    "answer": "24 bit",
+    "category": "olchov"
   },
   {
     "id": 5,
@@ -53,7 +65,8 @@ const ALL_QUESTIONS = [
       "4 bayt",
       "8 bayt"
     ],
-    "answer": "2 bayt"
+    "answer": "2 bayt",
+    "category": "olchov"
   },
   {
     "id": 6,
@@ -64,7 +77,8 @@ const ALL_QUESTIONS = [
       "4 bayt",
       "6 bayt"
     ],
-    "answer": "3 bayt"
+    "answer": "3 bayt",
+    "category": "olchov"
   },
   {
     "id": 7,
@@ -75,7 +89,8 @@ const ALL_QUESTIONS = [
       "6 bayt",
       "8 bayt"
     ],
-    "answer": "4 bayt"
+    "answer": "4 bayt",
+    "category": "olchov"
   },
   {
     "id": 8,
@@ -86,7 +101,8 @@ const ALL_QUESTIONS = [
       "1000 B",
       "2048 B"
     ],
-    "answer": "1024 B"
+    "answer": "1024 B",
+    "category": "olchov"
   },
   {
     "id": 9,
@@ -97,7 +113,8 @@ const ALL_QUESTIONS = [
       "3072 B",
       "4096 B"
     ],
-    "answer": "2048 B"
+    "answer": "2048 B",
+    "category": "olchov"
   },
   {
     "id": 10,
@@ -108,7 +125,8 @@ const ALL_QUESTIONS = [
       "4096 B",
       "1024 B"
     ],
-    "answer": "3072 B"
+    "answer": "3072 B",
+    "category": "olchov"
   },
   {
     "id": 11,
@@ -119,7 +137,8 @@ const ALL_QUESTIONS = [
       "4 KB",
       "8 KB"
     ],
-    "answer": "2 KB"
+    "answer": "2 KB",
+    "category": "olchov"
   },
   {
     "id": 12,
@@ -130,7 +149,8 @@ const ALL_QUESTIONS = [
       "4 KB",
       "6 KB"
     ],
-    "answer": "3 KB"
+    "answer": "3 KB",
+    "category": "olchov"
   },
   {
     "id": 13,
@@ -141,7 +161,8 @@ const ALL_QUESTIONS = [
       "8 KB",
       "16 KB"
     ],
-    "answer": "4 KB"
+    "answer": "4 KB",
+    "category": "olchov"
   },
   {
     "id": 14,
@@ -152,7 +173,8 @@ const ALL_QUESTIONS = [
       "1000 KB",
       "2048 KB"
     ],
-    "answer": "1024 KB"
+    "answer": "1024 KB",
+    "category": "olchov"
   },
   {
     "id": 15,
@@ -163,7 +185,8 @@ const ALL_QUESTIONS = [
       "3072 KB",
       "4096 KB"
     ],
-    "answer": "2048 KB"
+    "answer": "2048 KB",
+    "category": "olchov"
   },
   {
     "id": 16,
@@ -174,7 +197,8 @@ const ALL_QUESTIONS = [
       "4096 KB",
       "1024 KB"
     ],
-    "answer": "3072 KB"
+    "answer": "3072 KB",
+    "category": "olchov"
   },
   {
     "id": 17,
@@ -185,7 +209,8 @@ const ALL_QUESTIONS = [
       "4 MB",
       "8 MB"
     ],
-    "answer": "2 MB"
+    "answer": "2 MB",
+    "category": "olchov"
   },
   {
     "id": 18,
@@ -196,7 +221,8 @@ const ALL_QUESTIONS = [
       "8 MB",
       "16 MB"
     ],
-    "answer": "4 MB"
+    "answer": "4 MB",
+    "category": "olchov"
   },
   {
     "id": 19,
@@ -207,7 +233,8 @@ const ALL_QUESTIONS = [
       "1000 MB",
       "2048 MB"
     ],
-    "answer": "1024 MB"
+    "answer": "1024 MB",
+    "category": "olchov"
   },
   {
     "id": 20,
@@ -218,7 +245,8 @@ const ALL_QUESTIONS = [
       "3072 MB",
       "4096 MB"
     ],
-    "answer": "2048 MB"
+    "answer": "2048 MB",
+    "category": "olchov"
   },
   {
     "id": 21,
@@ -229,7 +257,8 @@ const ALL_QUESTIONS = [
       "4 GB",
       "8 GB"
     ],
-    "answer": "2 GB"
+    "answer": "2 GB",
+    "category": "olchov"
   },
   {
     "id": 22,
@@ -240,7 +269,8 @@ const ALL_QUESTIONS = [
       "1000 GB",
       "2048 GB"
     ],
-    "answer": "1024 GB"
+    "answer": "1024 GB",
+    "category": "olchov"
   },
   {
     "id": 23,
@@ -251,7 +281,8 @@ const ALL_QUESTIONS = [
       "8 ta",
       "16 ta"
     ],
-    "answer": "2 ta (0 va 1)"
+    "answer": "2 ta (0 va 1)",
+    "category": "nazariy"
   },
   {
     "id": 24,
@@ -262,7 +293,8 @@ const ALL_QUESTIONS = [
       "8",
       "16"
     ],
-    "answer": "10"
+    "answer": "10",
+    "category": "nazariy"
   },
   {
     "id": 25,
@@ -273,7 +305,8 @@ const ALL_QUESTIONS = [
       "3",
       "4"
     ],
-    "answer": "2"
+    "answer": "2",
+    "category": "sanoq"
   },
   {
     "id": 26,
@@ -284,7 +317,8 @@ const ALL_QUESTIONS = [
       "4",
       "5"
     ],
-    "answer": "3"
+    "answer": "3",
+    "category": "sanoq"
   },
   {
     "id": 27,
@@ -295,7 +329,8 @@ const ALL_QUESTIONS = [
       "3",
       "5"
     ],
-    "answer": "4"
+    "answer": "4",
+    "category": "sanoq"
   },
   {
     "id": 28,
@@ -306,7 +341,8 @@ const ALL_QUESTIONS = [
       "6",
       "7"
     ],
-    "answer": "5"
+    "answer": "5",
+    "category": "sanoq"
   },
   {
     "id": 29,
@@ -317,7 +353,8 @@ const ALL_QUESTIONS = [
       "5",
       "7"
     ],
-    "answer": "6"
+    "answer": "6",
+    "category": "sanoq"
   },
   {
     "id": 30,
@@ -328,7 +365,8 @@ const ALL_QUESTIONS = [
       "6",
       "8"
     ],
-    "answer": "7"
+    "answer": "7",
+    "category": "sanoq"
   },
   {
     "id": 31,
@@ -339,7 +377,8 @@ const ALL_QUESTIONS = [
       "7",
       "10"
     ],
-    "answer": "8"
+    "answer": "8",
+    "category": "sanoq"
   },
   {
     "id": 32,
@@ -350,7 +389,8 @@ const ALL_QUESTIONS = [
       "8",
       "10"
     ],
-    "answer": "9"
+    "answer": "9",
+    "category": "sanoq"
   },
   {
     "id": 33,
@@ -361,7 +401,8 @@ const ALL_QUESTIONS = [
       "9",
       "12"
     ],
-    "answer": "10"
+    "answer": "10",
+    "category": "sanoq"
   },
   {
     "id": 34,
@@ -372,7 +413,8 @@ const ALL_QUESTIONS = [
       "100₂",
       "101₂"
     ],
-    "answer": "11₂"
+    "answer": "11₂",
+    "category": "sanoq"
   },
   {
     "id": 35,
@@ -383,7 +425,8 @@ const ALL_QUESTIONS = [
       "110₂",
       "111₂"
     ],
-    "answer": "100₂"
+    "answer": "100₂",
+    "category": "sanoq"
   },
   {
     "id": 36,
@@ -394,7 +437,8 @@ const ALL_QUESTIONS = [
       "110₂",
       "111₂"
     ],
-    "answer": "101₂"
+    "answer": "101₂",
+    "category": "sanoq"
   },
   {
     "id": 37,
@@ -405,7 +449,8 @@ const ALL_QUESTIONS = [
       "Faqat printer qog'ozi",
       "Faqat elektr toki"
     ],
-    "answer": "Atrof-muhitdagi obyektlar va hodisalar haqidagi ma'lumotlar"
+    "answer": "Atrof-muhitdagi obyektlar va hodisalar haqidagi ma'lumotlar",
+    "category": "nazariy"
   },
   {
     "id": 38,
@@ -416,7 +461,8 @@ const ALL_QUESTIONS = [
       "Sichqonchaning tugmasi",
       "Klaviatura kabeli"
     ],
-    "answer": "Bemorning tana harorati 38°C"
+    "answer": "Bemorning tana harorati 38°C",
+    "category": "nazariy"
   },
   {
     "id": 39,
@@ -427,7 +473,8 @@ const ALL_QUESTIONS = [
       "Operatsion tizimlar",
       "Xotira qurilmalari"
     ],
-    "answer": "Axborot turlari"
+    "answer": "Axborot turlari",
+    "category": "nazariy"
   },
   {
     "id": 40,
@@ -438,7 +485,140 @@ const ALL_QUESTIONS = [
       "2 metr",
       "15 sm"
     ],
-    "answer": "50 - 70 sm"
+    "answer": "50 - 70 sm",
+    "category": "nazariy"
+  },
+  {
+    "id": 41,
+    "category": "nazariy",
+    "question": "\"Bit\" atamasi qaysi so'zlardan olingan?",
+    "options": [
+      "Binary digit (ikkilik raqam)",
+      "Big data",
+      "Byte information",
+      "Basic unit"
+    ],
+    "answer": "Binary digit (ikkilik raqam)"
+  },
+  {
+    "id": 42,
+    "category": "nazariy",
+    "question": "Baytni bitga aylantirish uchun songa nima qilinadi?",
+    "options": [
+      "8 ga ko'paytiriladi",
+      "8 ga bo'linadi",
+      "1024 ga ko'paytiriladi",
+      "1024 ga bo'linadi"
+    ],
+    "answer": "8 ga ko'paytiriladi"
+  },
+  {
+    "id": 43,
+    "category": "nazariy",
+    "question": "Bitni baytga aylantirish uchun songa nima qilinadi?",
+    "options": [
+      "8 ga bo'linadi",
+      "8 ga ko'paytiriladi",
+      "1024 ga bo'linadi",
+      "2 ga bo'linadi"
+    ],
+    "answer": "8 ga bo'linadi"
+  },
+  {
+    "id": 44,
+    "category": "nazariy",
+    "question": "Kichik birlikdan katta birlikka (masalan, B dan KB ga) o'tishda nima qilinadi?",
+    "options": [
+      "1024 ga bo'linadi",
+      "1024 ga ko'paytiriladi",
+      "8 ga bo'linadi",
+      "10 ga bo'linadi"
+    ],
+    "answer": "1024 ga bo'linadi"
+  },
+  {
+    "id": 45,
+    "category": "nazariy",
+    "question": "Katta birlikdan kichik birlikka (masalan, MB dan KB ga) o'tishda nima qilinadi?",
+    "options": [
+      "1024 ga ko'paytiriladi",
+      "1024 ga bo'linadi",
+      "8 ga ko'paytiriladi",
+      "100 ga ko'paytiriladi"
+    ],
+    "answer": "1024 ga ko'paytiriladi"
+  },
+  {
+    "id": 46,
+    "category": "nazariy",
+    "question": "1024 soni 2 ning nechanchi darajasiga teng?",
+    "options": [
+      "2¹⁰",
+      "2⁸",
+      "2⁵",
+      "2¹²"
+    ],
+    "answer": "2¹⁰"
+  },
+  {
+    "id": 47,
+    "category": "nazariy",
+    "question": "Quyidagi o'lchov birliklaridan qaysi biri eng katta?",
+    "options": [
+      "Terabayt",
+      "Kilobayt",
+      "Megabayt",
+      "Gigabayt"
+    ],
+    "answer": "Terabayt"
+  },
+  {
+    "id": 48,
+    "category": "nazariy",
+    "question": "Kompyuter texnikasi ma'lumotlarni asosan qaysi sanoq sistemasida qayta ishlaydi?",
+    "options": [
+      "Ikkilik (2-lik)",
+      "O'nlik (10-lik)",
+      "Sakkizlik (8-lik)",
+      "O'n oltilik (16-lik)"
+    ],
+    "answer": "Ikkilik (2-lik)"
+  },
+  {
+    "id": 49,
+    "category": "nazariy",
+    "question": "Ikkilik sanoq sistemasida quyidagi raqamlardan qaysi biri ISHLATILMAYDI?",
+    "options": [
+      "2",
+      "0",
+      "1",
+      "0 va 1"
+    ],
+    "answer": "2"
+  },
+  {
+    "id": 50,
+    "category": "nazariy",
+    "question": "Sanoq sistemasining asosi nimani bildiradi?",
+    "options": [
+      "Unda ishlatiladigan raqamlar sonini",
+      "Sonning uzunligini",
+      "Xotira hajmini",
+      "Amallar sonini"
+    ],
+    "answer": "Unda ishlatiladigan raqamlar sonini"
+  },
+  {
+    "id": 51,
+    "category": "nazariy",
+    "question": "Ikkilik sonda o'ngdan birinchi xonaning qiymati nechaga teng?",
+    "options": [
+      "1",
+      "2",
+      "0",
+      "10"
+    ],
+    "answer": "1"
   }
 ];
 

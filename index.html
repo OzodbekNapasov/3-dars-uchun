@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3-Dars: Axborot Texnologiyalari — O'quv va Test Platformasi</title>
-  <link rel="stylesheet" href="css/style.css?v=20260910_1">
-  <link rel="stylesheet" href="css/student.css?v=20260910_2">
+  <link rel="stylesheet" href="css/style.css?v=20260911_2">
+  <link rel="stylesheet" href="css/student.css?v=20260911_2">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.55L4.47 11 12 6.89 19.53 11 12 15.55zM6 15.5v3.45c0 2.21 2.69 4 6 4s6-1.79 6-4v-3.45c-1.57 1.02-3.66 1.55-6 1.55s-4.43-.53-6-1.55z'/></svg>">
 </head>
 <body oncontextmenu="return false;" oncopy="return false;" oncut="return false;" onpaste="return false;">
@@ -101,7 +101,7 @@
               Platformada ishlash qoidalari:
             </h4>
             <ul style="padding-left: 1.3rem; font-size: 0.84rem; color: #334155; line-height: 1.6;">
-              <li>Platforma <strong>4 ta bo'limdan</strong> iborat (3 ta amaliy hisoblash va 1 ta yakuniy test).</li>
+              <li>Platforma <strong>4 ta bo'limdan</strong> iborat: 3 ta amaliy hisoblash va 1 ta yakuniy test.</li>
               <li>Har bir bo'limdagi savollarga javoblarni yozasiz. Yozish vaqtida to'g'ri yoki xato ekani <strong>ko'rsatilmaydi</strong>.</li>
               <li>Bo'lim oxirida <strong>"Tasdiqlash"</strong> tugmasini bosganingizdan keyin u qulflanadi va qayta o'zgartirib bo'lmaydi.</li>
               <li>Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar va yechimlar ko'rsatilmaydi, faqat ballingiz hisoblanadi.</li>
@@ -126,7 +126,7 @@
           <div class="step-num">1</div>
           <div class="step-info">
             <span class="step-title">O'lchov birliklari</span>
-            <span class="step-sub">10 ta misol</span>
+            <span class="step-sub" data-step-count="1">...</span>
           </div>
         </div>
 
@@ -134,7 +134,7 @@
           <div class="step-num">2</div>
           <div class="step-info">
             <span class="step-title">2-likdan 10-likka</span>
-            <span class="step-sub">10 ta misol</span>
+            <span class="step-sub" data-step-count="2">...</span>
           </div>
         </div>
 
@@ -142,7 +142,7 @@
           <div class="step-num">3</div>
           <div class="step-info">
             <span class="step-title">10-likdan 2-likka</span>
-            <span class="step-sub">10 ta misol</span>
+            <span class="step-sub" data-step-count="3">...</span>
           </div>
         </div>
 
@@ -150,7 +150,7 @@
           <div class="step-num">4</div>
           <div class="step-info">
             <span class="step-title">Yakuniy Test</span>
-            <span class="step-sub">20 ta savol</span>
+            <span class="step-sub" data-step-count="4">...</span>
           </div>
         </div>
 
@@ -186,7 +186,7 @@
         <!-- Pastki tasdiqlash paneli -->
         <div class="submit-action-card">
           <div id="practicalStatusText" class="action-status-text">
-            Javob berildi: <strong>0 / 10</strong> ta. Yozib bo'lgach "Tasdiqlash" tugmasini bosing.
+            Javob berildi: <strong>0</strong> ta. Yozib bo'lgach "Tasdiqlash" tugmasini bosing.
           </div>
           <button type="button" id="btnSubmitPractical" class="btn btn-primary" style="padding: 0.75rem 1.6rem; font-size: 0.95rem;">
             <svg class="icon" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
@@ -284,19 +284,19 @@
           <div class="summary-results-grid">
             <div class="summary-score-box">
               <h5>1-Bo'lim (O'lchov)</h5>
-              <div id="scoreSec1" class="score-val">0 / 10</div>
+              <div id="scoreSec1" class="score-val">-</div>
             </div>
             <div class="summary-score-box">
               <h5>2-Bo'lim (2→10)</h5>
-              <div id="scoreSec2" class="score-val">0 / 10</div>
+              <div id="scoreSec2" class="score-val">-</div>
             </div>
             <div class="summary-score-box">
               <h5>3-Bo'lim (10→2)</h5>
-              <div id="scoreSec3" class="score-val">0 / 10</div>
+              <div id="scoreSec3" class="score-val">-</div>
             </div>
             <div class="summary-score-box">
               <h5>4-Bo'lim (Test)</h5>
-              <div id="scoreSec4" class="score-val">0 / 20</div>
+              <div id="scoreSec4" class="score-val">-</div>
             </div>
           </div>
 
@@ -304,7 +304,7 @@
           <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 1.5rem; margin: 1.5rem 0;">
             <div style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.35rem;">Umumiy natija:</div>
             <div style="font-size: 2.2rem; font-weight: 900; color: var(--dark); margin-bottom: 0.5rem;">
-              <span id="resTotalCorrect">0 / 50</span> 
+              <span id="resTotalCorrect">-</span> 
               <span style="font-size: 1.3rem; color: var(--primary); font-weight: 800;">(<span id="resPercent">0%</span>)</span>
             </div>
             <div>
@@ -330,7 +330,7 @@
         <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       </div>
       <h3 id="modalSecTitle" style="font-size: 1.3rem; font-weight: 850; color: var(--dark); margin-bottom: 0.35rem;">Bo'lim yakunlandi!</h3>
-      <div id="modalSecScore" style="font-size: 1.8rem; font-weight: 900; color: #2563eb; margin: 0.75rem 0;">10 / 10 ta to'g'ri</div>
+      <div id="modalSecScore" style="font-size: 1.8rem; font-weight: 900; color: #2563eb; margin: 0.75rem 0;">-</div>
       <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
         Ushbu bo'lim muvaffaqiyatli saqlandi va qulflanadi. Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar ko'rsatilmaydi.
       </p>
@@ -341,9 +341,9 @@
   </div>
 
   <!-- Skriptlar -->
-  <script src="js/config.js?v=20260910_1"></script>
-  <script src="js/exercises.js?v=20260910_1"></script>
-  <script src="js/questions.js?v=20260910_2"></script>
-  <script src="js/student.js?v=20260910_3"></script>
+  <script src="js/config.js?v=20260911_2"></script>
+  <script src="js/exercises.js?v=20260911_2"></script>
+  <script src="js/questions.js?v=20260911_2"></script>
+  <script src="js/student.js?v=20260911_2"></script>
 </body>
 </html>
