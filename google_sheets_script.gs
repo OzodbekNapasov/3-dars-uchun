@@ -201,7 +201,13 @@ function doPost(e) {
         return jsonOut({ status: "ignored", message: "Talaba topilmadi" });
       }
       var isOnline = data.action === "heartbeat";
-      sheet.getRange(existingRow, COL.LAST_SEEN).setValue(now);
+
+      // Bu yerda ham matn formati shart: "2026-09-09 22:59:57" ni Sheets
+      // sana-vaqt obyektiga aylantirib yuboradi.
+      var seenCell = sheet.getRange(existingRow, COL.LAST_SEEN);
+      seenCell.setNumberFormat("@");
+      seenCell.setValue(now);
+
       sheet.getRange(existingRow, COL.ONLINE).setValue(isOnline ? "Online" : "Offline");
       if (isOnline && data.statusText) {
         sheet.getRange(existingRow, COL.STATUS).setValue(data.statusText);
