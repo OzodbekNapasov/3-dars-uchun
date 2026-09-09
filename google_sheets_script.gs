@@ -17,7 +17,11 @@
  */
 
 var SPREADSHEET_ID = "1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg";
-var SHEET_NAME = "Natijalar";
+
+// Bu dars uchun ALOHIDA varaq.
+// Jadvaldagi eski "Natijalar" varag'ida oldingi loyihaning ma'lumotlari bor va
+// ustunlari boshqacha edi — shu sababli unga tegilmaydi, yangi varaq ochiladi.
+var SHEET_NAME = "3-Dars Natijalar";
 var TIMEZONE = "Asia/Tashkent";
 
 // Ustunlar tartibi (1-dan boshlab). Bitta joyda turgani uchun o'zgartirish oson.
@@ -70,8 +74,10 @@ function getTargetSheet() {
 
   var sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
-    sheet = ss.getSheets()[0];
-    sheet.setName(SHEET_NAME);
+    // MUHIM: mavjud varaqni "o'zlashtirib" nomini o'zgartirmaymiz.
+    // Avvalgi versiya shunday qilgani uchun eski loyihaning ma'lumotlari
+    // ustiga yozilib, ustunlar aralashib ketgan edi.
+    sheet = ss.insertSheet(SHEET_NAME);
   }
   return sheet;
 }

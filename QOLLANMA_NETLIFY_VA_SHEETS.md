@@ -7,9 +7,14 @@ Netlify tarmog'ida bepul ishga tushirishingiz mumkin.
 
 ## ⚠️ 1-QADAM (ENG MUHIM): Apps Script'ni QAYTA deploy qilish
 
-> **Diqqat!** Hozir jadvalga ulangan skript **eski versiyada**. Shu sababli admin panel
-> boshqa kompyuterdagi talabalarni **umuman ko'rmaydi** va testni masofadan ochish
-> ishlamaydi. Quyidagi qadamlarni bajarmasangiz platforma faqat bitta kompyuterda ishlaydi.
+> **Diqqat!** `google_sheets_script.gs` faylini har safar o'zgartirganda skriptni
+> Apps Script'ga qayta joylab, **yangi versiya** sifatida deploy qilish shart.
+> Aks holda admin panel boshqa kompyuterdagi talabalarni ko'rmaydi va testni
+> masofadan ochish ishlamaydi.
+>
+> **Natijalar qayerga yoziladi:** skript jadvalda `3-Dars Natijalar` nomli
+> **alohida varaq** ochadi. Oldingi loyihaning `Natijalar` varag'idagi
+> 129 ta qatorga tegilmaydi — ular joyida saqlanib qoladi.
 
 Sizning jadvalingiz:
 **[3-dars testi — Google Sheets](https://docs.google.com/spreadsheets/d/1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg/edit)**
@@ -60,7 +65,7 @@ Shuningdek, admin panelning yuqori qismidagi ko'rsatkichga qarang:
 
 | Nima uchun | Qiymat | Qayerda o'zgartiriladi |
 |---|---|---|
-| Admin panelga kirish paroli | `ustoz2603` | `js/config.js` → `ADMIN_PASSWORD` |
+| Admin panelga kirish paroli | `1207` | `js/config.js` → `ADMIN_PASSWORD` |
 | Testni ochish PIN-kodi | `2603` | Admin panel → "O'zgartirish" tugmasi |
 
 - Admin paroli brauzer yopilguncha bir marta so'raladi.

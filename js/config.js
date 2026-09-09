@@ -32,7 +32,7 @@ const APP_CONFIG = {
   DEFAULT_TEACHER_PIN: "2603",
 
   // Admin panelga kirish paroli (faqat o'qituvchi biladi)
-  ADMIN_PASSWORD: "ustoz2603",
+  ADMIN_PASSWORD: "1207",
 
   // Real vaqt sozlamalari (millisekundlarda)
   HEARTBEAT_INTERVAL_MS: 60000,      // Talaba "men shu yerdaman" signali

@@ -29,7 +29,7 @@ Tibbiyot texnikumi 1-kurs talabalari uchun **Axborotning o'lchov birliklari** va
   keyingi talaba o'z ismi bilan kirib ishlaydi.
 
 ### 2. O'qituvchi Admin Paneli (`admin.html`):
-- **Parol bilan himoyalangan:** panel `js/config.js` dagi `ADMIN_PASSWORD` (boshlang'ich: `ustoz2603`)
+- **Parol bilan himoyalangan:** panel `js/config.js` dagi `ADMIN_PASSWORD` (boshlang'ich: `1207`)
   kiritilmaguncha ochilmaydi. Talaba sahifasida admin panelga havola yo'q.
 - **Jonli holat:** har bir talaba yonida 🟢 Tizimda / ⚪ Chiqqan va oxirgi faollik vaqti.
 - **Jonli Dashboard:** Tizimga kirgan barcha talabalar, ularning ayni damda qaysi bo'limda turgani va olgan ballari real vaqtda yangilanib turadi.
