@@ -78,6 +78,10 @@ function getTargetSheet() {
     // Avvalgi versiya shunday qilgani uchun eski loyihaning ma'lumotlari
     // ustiga yozilib, ustunlar aralashib ketgan edi.
     sheet = ss.insertSheet(SHEET_NAME);
+    // Butun varaqni MATN formatiga o'tkazamiz.
+    // Aks holda Google Sheets "26-01" ni sanaga (26-yanvar), "10/10" ni esa
+    // 10-oktabrga aylantirib yuboradi va talabani topib bo'lmay qoladi.
+    sheet.getRange(1, 1, sheet.getMaxRows(), NUM_COLS).setNumberFormat("@");
   }
   return sheet;
 }
@@ -225,13 +229,15 @@ function doPost(e) {
       "Online"
     ];
 
-    if (existingRow > 1) {
-      sheet.getRange(existingRow, 1, 1, NUM_COLS).setValues([rowValues]);
-      sheet.getRange(existingRow, COL.STATUS, 1, 8).setHorizontalAlignment("center");
-    } else {
-      sheet.appendRow(rowValues);
-      sheet.getRange(sheet.getLastRow(), COL.STATUS, 1, 8).setHorizontalAlignment("center");
-    }
+    var targetRow = (existingRow > 1) ? existingRow : sheet.getLastRow() + 1;
+    var rowRange = sheet.getRange(targetRow, 1, 1, NUM_COLS);
+
+    // Yozishdan OLDIN qatorni matn formatiga o'tkazamiz.
+    // Bo'lmasa Sheets "26-01" ni sanaga, "10/10" ni 10-oktabrga aylantiradi va
+    // keyingi safar talabani topa olmay, har bo'lim uchun yangi qator ochib yuboradi.
+    rowRange.setNumberFormat("@");
+    rowRange.setValues([rowValues]);
+    sheet.getRange(targetRow, COL.STATUS, 1, 8).setHorizontalAlignment("center");
 
     return jsonOut({ status: "success", message: "Natija saqlandi!" });
 
