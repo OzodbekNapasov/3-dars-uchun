@@ -4,10 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>O'qituvchi Paneli — 3-Dars: Axborot Texnologiyalari</title>
-  <link rel="stylesheet" href="css/admin.css?v=20260909_1">
+  <link rel="stylesheet" href="css/admin.css?v=20260910_2">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232563eb'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>">
 </head>
 <body>
+
+  <!-- Parol darvozasi: to'g'ri parol kiritilmaguncha panel ko'rinmaydi -->
+  <div id="authGate" class="auth-gate">
+    <form id="authForm" class="auth-box">
+      <div class="auth-icon">
+        <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      </div>
+      <h2>O'qituvchi Paneli</h2>
+      <p>Bu sahifa faqat o'qituvchi uchun. Davom etish uchun parolni kiriting:</p>
+      <input type="password" id="adminPasswordInput" placeholder="Parol" autocomplete="current-password" autofocus>
+      <div id="authError" class="auth-error"></div>
+      <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Kirish</button>
+    </form>
+  </div>
 
   <!-- Yuqori Navbar -->
   <header class="admin-navbar">
@@ -21,9 +35,9 @@
       </div>
 
       <div class="nav-actions">
-        <span class="live-indicator">
+        <span class="live-indicator" id="connectionIndicator">
           <span class="pulse-dot"></span>
-          Jonli sinxronizatsiya
+          <span id="connectionText">Jonli sinxronizatsiya</span>
         </span>
         <span style="font-size: 0.8rem; color: var(--admin-muted);">
           Yangilandi: <strong id="lastUpdatedTime">-</strong>
@@ -170,6 +184,7 @@
               <th style="width: 40px; text-align: center;">№</th>
               <th style="width: 90px;">Guruh</th>
               <th>Familiya, Ism</th>
+              <th style="text-align: center; width: 110px;" title="Talaba ayni damda tizimda turibdimi?">Tizimda</th>
               <th>Joriy Holat</th>
               <th style="text-align: center;" title="Axborot o'lchov birliklarini aylantirish (10 ta misol)">1-Bo'lim (O'lchov)</th>
               <th style="text-align: center;" title="2-lik sanoq sistemasidan 10-likka o'tish (10 ta misol)">2-Bo'lim (2→10)</th>
@@ -183,7 +198,7 @@
           </thead>
           <tbody id="submissionsTableBody">
             <tr id="emptyStateRow">
-              <td colspan="12" class="empty-table">
+              <td colspan="13" class="empty-table">
                 <svg class="empty-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                 <div style="font-weight: 800; font-size: 1.05rem; margin-bottom: 0.3rem;">Talabalar ma'lumotlari kutilmoqda...</div>
                 <div style="font-size: 0.85rem;">Talaba kompyuteridan link ochilib, ism-familiya kiritilgach shu yerda paydo bo'ladi.</div>
@@ -225,8 +240,9 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <!-- Skriptlar -->
-  <script src="js/config.js?v=20260909_1"></script>
-  <script src="js/exercises.js?v=20260909_1"></script>
-  <script src="js/admin.js?v=20260909_1"></script>
+  <script src="js/config.js?v=20260910_1"></script>
+  <script src="js/exercises.js?v=20260910_1"></script>
+  <script src="js/questions.js?v=20260910_2"></script>
+  <script src="js/admin.js?v=20260910_3"></script>
 </body>
 </html>

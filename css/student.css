@@ -345,3 +345,74 @@
   font-weight: 900;
   color: var(--dark);
 }
+
+/* =========================================================================
+   Bo'lim holati yorlig'i ("✓ Bajarildi")
+   Avval bu uslub faqat admin.css da bor edi, talaba sahifasida stilsiz chiqardi.
+   ========================================================================= */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.status-tag.finished {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.status-tag.active {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+/* Test variantlari <button> element bo'lgani uchun brauzer standartlarini bekor qilamiz
+   (uslublarning o'zi css/style.css dagi .option-item da) */
+button.option-item {
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--dark);
+}
+
+button.option-item:disabled {
+  cursor: not-allowed;
+  opacity: 0.75;
+  transform: none;
+}
+
+button.option-item:disabled:hover {
+  border-color: #e2e8f0;
+  background: #ffffff;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Talaba header'idagi "Chiqish" tugmasi */
+.btn-logout {
+  padding: 0.38rem 0.85rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  text-decoration: none;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1.5px solid #fecaca;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn-logout:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}

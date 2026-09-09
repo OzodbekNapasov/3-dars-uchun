@@ -1,58 +1,106 @@
 # O'QITUVCHI UCHUN TO'LIQ QO'LLANMA: GOOGLE SHEETS & NETLIFY
 
-Ushbu qo'llanma orqali siz yaratilgan test platformasini o'zingiz taqdim etgan Google Sheets jadvalingizga ulab, Netlify tarmog'ida bepul ishga tushirishingiz mumkin.
+Ushbu qo'llanma orqali siz platformani Google Sheets jadvalingizga ulab,
+Netlify tarmog'ida bepul ishga tushirishingiz mumkin.
 
 ---
 
-## 1-QADAM: Sizning Google Sheets jadvalingizga ulanish (2 daqiqa)
+## ⚠️ 1-QADAM (ENG MUHIM): Apps Script'ni QAYTA deploy qilish
 
-Sizning maxsus jadvalingiz:  
+> **Diqqat!** Hozir jadvalga ulangan skript **eski versiyada**. Shu sababli admin panel
+> boshqa kompyuterdagi talabalarni **umuman ko'rmaydi** va testni masofadan ochish
+> ishlamaydi. Quyidagi qadamlarni bajarmasangiz platforma faqat bitta kompyuterda ishlaydi.
+
+Sizning jadvalingiz:
 **[3-dars testi — Google Sheets](https://docs.google.com/spreadsheets/d/1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg/edit)**
 
-1. Yuqoridagi havolani brauzeringizda oching.
-2. Yuqori menyudan: **Kengaytmalar (Extensions)** -> **Apps Script** bo'limiga kiring.
-3. Ochilgan kod tahrirlagichidagi barcha yozuvlarni o'chirib tashlang.
-4. Loyihangizdagi **`google_sheets_script.gs`** faylidagi barcha kodni nusxalang (`Ctrl + A`, `Ctrl + C`) va Apps Script oynasiga qo'ying (`Ctrl + V`).
-5. Yuqoridagi **Saqlash (Disketa belgisi / Ctrl + S)** tugmasini bosing.
-6. O'ng yuqoridagi ko'k **Deploy (Joylashtirish)** -> **New deployment (Yangi joylashtirish)** bandini tanlang.
-7. Chap tomondagi tishli g'ildirakcha (Select type) tugmasini bosing va **Web app** ni tanlang:
-   - **Description:** `Test Natijalari`
-   - **Execute as:** `Me (Mening nomimdan)`
-   - **Who has access:** `Anyone (Har kim / Barcha)` <-- (Juda muhim! Har kim natija yubora olishi uchun shu tanlanishi shart)
-8. **Deploy** tugmasini bosing:
-   - Google hisobingizdan ruxsat so'raydi: **Authorize access** -> o'z akkauntingizni tanlang -> **Advanced** -> **Go to ... (unsafe)** -> **Allow** tugmalarini bosing.
-9. Natijada sizga **Web app URL** beriladi:
-   - Masalan: `https://script.google.com/macros/s/AKfycbx.../exec`
-   - Shu havolani nusxalab (Copy qilib) oling.
-10. Olingan havolani:
-    - **A variant:** Loyihangizdagi **`js/config.js`** faylini ochib, `GOOGLE_SHEET_WEBAPP_URL: "SIZNING_HAVOLANGIZ"` qilib qo'ying.
-    - **B variant:** Yoki `index.html` bosh sahifasini ochib, yuqori o'ng burchakdagi **Sozlamalar** tugmasini bosib, o'sha yerga qo'ying va "Saqlash"ni bosing.
+1. Yuqoridagi havolani oching.
+2. Menyudan: **Kengaytmalar (Extensions)** → **Apps Script**.
+3. Kod tahrirlagichidagi barcha yozuvlarni o'chiring (`Ctrl + A`, `Delete`).
+4. Loyihadagi **`google_sheets_script.gs`** faylidagi barcha kodni nusxalab
+   (`Ctrl + A`, `Ctrl + C`) Apps Script oynasiga qo'ying (`Ctrl + V`).
+5. **Saqlash** (`Ctrl + S`).
+6. **Deploy** → **Manage deployments** (agar avval deploy qilgan bo'lsangiz)
+   → qalamcha (**Edit**) → **Version: New version** → **Deploy**.
+   - Birinchi marta qilayotgan bo'lsangiz: **Deploy** → **New deployment** →
+     tishli g'ildirakcha → **Web app**.
+   - **Execute as:** `Me`
+   - **Who has access:** `Anyone` ← **juda muhim!**
+7. Google ruxsat so'rasa: **Authorize access** → akkauntni tanlang → **Advanced** →
+   **Go to ... (unsafe)** → **Allow**.
+8. Berilgan **Web app URL** ni nusxalab, `js/config.js` dagi
+   `GOOGLE_SHEET_WEBAPP_URL` qiymatiga qo'ying (agar havola o'zgargan bo'lsa).
+
+### Tekshirish
+Brauzerda shu manzilni oching (o'z havolangiz bilan):
+
+```
+https://script.google.com/macros/s/SIZNING_ID/exec?action=get_test_status
+```
+
+- ✅ To'g'ri: `{"status":"success","isTestUnlocked":false,"teacherPin":"2603"}`
+- ❌ Noto'g'ri: `Google Sheets Webhook tayyor...` — demak eski versiya, 6-qadamni qayta bajaring.
+
+Shuningdek, admin panelning yuqori qismidagi ko'rsatkichga qarang:
+**"Jonli sinxronizatsiya"** — aloqa bor; **"Server bilan aloqa yo'q"** — skript qayta deploy qilinmagan.
 
 ---
 
-## 2-QADAM: Netlify tarmog'iga bepul yuklash (Deploy qilish) (1 daqiqa)
+## 2-QADAM: Netlify tarmog'iga bepul yuklash
 
 1. [app.netlify.com/drop](https://app.netlify.com/drop) saytiga kiring.
-2. Agar hisobingiz bo'lmasa, Email yoki Google orqali kiring.
-3. Ekranda **"Drag and drop your site folder here"** maydoni ko'rinadi.
-4. Ish stolidagi **`3-dars`** papkasini sichqoncha bilan ushlab, shu maydon ichiga sudrab tashlang (Drag & Drop).
-5. 10-15 soniyada Netlify sizga sayt havolasini yaratib beradi:
-   - Masalan: `https://3-dars-testi.netlify.app`
-6. Ushbu tayyor havolani talabalaringizga yuborasiz!
+2. Email yoki Google orqali kiring.
+3. Ish stolidagi **`3-dars`** papkasini "Drag and drop" maydoniga sudrab tashlang.
+4. 10-15 soniyada sayt havolasi tayyor bo'ladi (masalan `https://3-dars-testi.netlify.app`).
+5. **Talabalarga faqat asosiy havolani** bering — `admin.html` ni bermang.
 
 ---
 
-## 3-QADAM: Yangi imkoniyatlar va himoyalar
+## 3-QADAM: Parol va PIN kodlar
 
-- **Bir ekranga moslangan dizayn:** Talaba ma'lumotlarini kiritish sahifasi ham, test topshirish sahifasi ham vertikal surilmasdan (scrolling bo'lmasdan) to'liq bitta ekranga sig'adi.
-- **To'liq ekran (Fullscreen) majburiy rejimi:** Test boshlanganda avtomatik to'liq ekran rejimiga kiradi. Agar talaba to'liq ekrandan chiqishga urinsa, darhol ogohlantirish oynasi ochiladi va qaytaradi.
-- **Cheaterlikdan (ko'chirishdan) himoya:**
-  - Matnlarni belgilash (select) o'chirilgan.
-  - Sichqonchaning o'ng tugmasi (context menu) bloklangan.
-  - Nusxa olish (Ctrl+C, Ctrl+P, Ctrl+U, Ctrl+S) va dasturchi konsoli (F12) bloklangan.
-  - Skrinshot olish (PrintScreen) tugmasi tutib olinadi va bufer tozalanadi.
-  - Boshqa brauzer oynasiga yoki ilovaga o'tish (Tab switch) qayd qilinadi va ogohlantirish chiqariladi.
-- **Tugmalar tartibi:**
-  - **Testni yakunlash** tugmasi yuqoriga (header paneliga) ko'chirilgan, bu esa savollarni yechish vaqtida bilmasdan bosib yuborishning oldini oladi.
-  - Pastda esa faqat **Oldingi** va **Keyingi** navigatsiya tugmalari joylashgan.
-- **SVG piktogrammalar:** Tizimda hech qanday emoji ishlatilmagan, barcha belgilar toza va sifatli SVG formatda yaratilgan.
+| Nima uchun | Qiymat | Qayerda o'zgartiriladi |
+|---|---|---|
+| Admin panelga kirish paroli | `ustoz2603` | `js/config.js` → `ADMIN_PASSWORD` |
+| Testni ochish PIN-kodi | `2603` | Admin panel → "O'zgartirish" tugmasi |
+
+- Admin paroli brauzer yopilguncha bir marta so'raladi.
+- Talaba sahifasida admin panelga **hech qanday havola yo'q** — manzilni qo'lda yozgan
+  talaba ham parolsiz kira olmaydi.
+- PIN-kodni o'zgartirsangiz, eski PIN darhol ishlamay qoladi.
+
+---
+
+## 4-QADAM: Dars davomida ishlash tartibi
+
+1. **Siz:** `admin.html` ni oching, parolni kiriting.
+2. **Talabalar:** asosiy havolani ochib, familiya, ism va guruhni kiritadi.
+3. Admin jadvalida talabalar **🟢 Tizimda** holatida paydo bo'ladi, qaysi bo'limda
+   ekani va ballari real vaqtda yangilanib turadi.
+4. 1, 2, 3-bo'limlar tugagach: admin paneldagi **"Barchaga ruxsat"** tugmasini yoqing —
+   test barcha kompyuterlarda 20 soniya ichida o'zi ochiladi.
+   (Yoki talabaga PIN-kodni aytasiz.)
+5. Dars oxirida: **Excel (.xlsx) yuklab olish** — ikkita varaq bilan:
+   - **Natijalar** — bo'limlar, jami ball, foiz, baho.
+   - **Javoblar** — har bir talabaning har bir savolga yozgan javobi + to'g'ri javoblar qatori.
+6. **Chop etish (Vedomost)** — rasmiy imzo joylari bilan qog'ozga yoki PDF ga.
+
+### Bitta kompyuterda bir necha talaba
+Talaba ishini tugatgach, o'ng yuqoridagi **"Chiqish"** tugmasini bosadi va keyingi talaba
+o'z ismi bilan kiradi. Chiqish admin panelda darhol **⚪ Chiqqan** bo'lib ko'rinadi.
+
+---
+
+## Himoya choralari
+
+- Talaba javob yozayotganda to'g'ri yoki xato ekani **umuman bildirilmaydi**.
+- Bo'lim tasdiqlangach qulflanadi, faqat "8 / 10 to'g'ri" ko'rsatiladi —
+  to'g'ri javoblar va yechimlar **hech qachon ekranga chiqmaydi**.
+- 2-bo'lim 1-bo'limsiz, 3-bo'lim 2-bo'limsiz ochilmaydi.
+- Test faqat o'qituvchi ruxsati (PIN yoki masofaviy tugma) bilan ochiladi.
+- Test taymeri absolyut vaqt bo'yicha ishlaydi — talaba tabni yopib qo'yib
+  taymerni to'xtata olmaydi.
+- O'ng tugma, nusxa olish, F12, Ctrl+U/S/P bloklangan.
+
+> **Eslatma:** bu statik (serversiz) sayt bo'lgani uchun to'g'ri javoblar brauzer
+> kodida saqlanadi. Tajribali talaba brauzer vositalari orqali ularni topishi
+> nazariy jihatdan mumkin. Kerak bo'lsa javoblarni shifrlash keyingi bosqichda qo'shiladi.

@@ -24,11 +24,21 @@ const APP_CONFIG = {
   // O'qituvchi boshlang'ich PIN-kodi (Testni ochish uchun)
   DEFAULT_TEACHER_PIN: "2603",
 
+  // Admin panelga kirish paroli (faqat o'qituvchi biladi)
+  ADMIN_PASSWORD: "ustoz2603",
+
+  // Real vaqt sozlamalari (millisekundlarda)
+  HEARTBEAT_INTERVAL_MS: 60000,      // Talaba "men shu yerdaman" signali
+  TEST_STATUS_POLL_MS: 20000,        // Talaba test ruxsatini serverdan so'rashi
+  ADMIN_REFRESH_MS: 10000,           // Admin jadvalini yangilash
+  ONLINE_THRESHOLD_MS: 150000,       // Shu vaqtdan keyin talaba "Offline" deb belgilanadi
+
   // LocalStorage kalitlari
   STORAGE_KEYS: {
     STUDENT_SESSION: "app_student_session_v3",
     ADMIN_CONFIG: "app_admin_config_v3",
-    ALL_SUBMISSIONS: "app_all_submissions_v3"
+    ALL_SUBMISSIONS: "app_all_submissions_v3",
+    ADMIN_AUTH: "app_admin_auth_v3"
   },
 
   // Baholash mezonlari (5 ballik tizim)

@@ -11,6 +11,18 @@
   let isTestUnlocked = false;
   let currentTeacherPin = APP_CONFIG.DEFAULT_TEACHER_PIN || "2603";
   let syncChannel = null;
+  let refreshTimer = null;
+  let serverReachable = null; // null = hali urinilmagan
+
+  // Parol darvozasi elementlari
+  const authGate = document.getElementById("authGate");
+  const authForm = document.getElementById("authForm");
+  const adminPasswordInput = document.getElementById("adminPasswordInput");
+  const authError = document.getElementById("authError");
+
+  // Ulanish holati ko'rsatkichi
+  const connectionIndicator = document.getElementById("connectionIndicator");
+  const connectionText = document.getElementById("connectionText");
 
   // DOM Elementlari
   const statTotalStudents = document.getElementById("statTotalStudents");
@@ -58,6 +70,46 @@
     console.warn("BroadcastChannel qo'llab-quvvatlanmadi:", e);
   }
 
+  // =========================================================================
+  // PAROL DARVOZASI
+  // Talaba admin.html manzilini qo'lda yozib kirsa ham panel ochilmaydi.
+  // =========================================================================
+  function initAuthGate() {
+    let alreadyIn = false;
+    try {
+      alreadyIn = sessionStorage.getItem(APP_CONFIG.STORAGE_KEYS.ADMIN_AUTH) === "1";
+    } catch (e) {}
+
+    if (alreadyIn) {
+      unlockPanel();
+      return;
+    }
+
+    if (authForm) {
+      authForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const entered = (adminPasswordInput ? adminPasswordInput.value : "").trim();
+        if (entered === APP_CONFIG.ADMIN_PASSWORD) {
+          try {
+            sessionStorage.setItem(APP_CONFIG.STORAGE_KEYS.ADMIN_AUTH, "1");
+          } catch (e) {}
+          unlockPanel();
+        } else {
+          if (authError) authError.textContent = "Noto'g'ri parol!";
+          if (adminPasswordInput) {
+            adminPasswordInput.value = "";
+            adminPasswordInput.focus();
+          }
+        }
+      });
+    }
+  }
+
+  function unlockPanel() {
+    if (authGate) authGate.classList.add("hidden");
+    initAdmin();
+  }
+
   // Dastlabki sozlamalarni yuklash
   function initAdmin() {
     loadLocalAdminConfig();
@@ -68,9 +120,23 @@
     // Serverdan ma'lumotlarni tortib olish
     fetchServerData();
     
-    // Har 7 soniyada yangilab turish (Auto-refresh)
-    setInterval(fetchServerData, 7000);
-    
+    // Avtomatik yangilanish (Apps Script kvotasini tejash uchun 10 soniya)
+    if (!refreshTimer) {
+      refreshTimer = setInterval(fetchServerData, APP_CONFIG.ADMIN_REFRESH_MS || 10000);
+    }
+
+    // Jadvaldagi "Javoblar" tugmalari uchun bitta umumiy hodisa (event delegation).
+    // Ilgari har qatorga inline onclick yozilardi va apostrofli ismlarda
+    // (Ma'ruf, G'ayrat...) JS xatosi berardi.
+    if (submissionsTableBody) {
+      submissionsTableBody.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-action='inspect']");
+        if (!btn) return;
+        const key = btn.getAttribute("data-key");
+        inspectStudentByKey(key);
+      });
+    }
+
     // Guruh dropdownini to'ldirish
     if (groupFilterSelect) {
       groupFilterSelect.innerHTML = `<option value="ALL">Barcha guruhlar (26-01 ... 26-07)</option>`;
@@ -248,7 +314,13 @@
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        if (data && data.status === "success") {
+        if (!data || data.status !== "success") {
+          // Skript javob berdi, lekin kutilgan formatda emas —
+          // odatda Apps Script eski versiyada deploy qilinganini bildiradi.
+          throw new Error("Serverdan noto'g'ri javob (skript qayta deploy qilinganmi?)");
+        }
+        setConnectionState(true);
+        {
           if (Array.isArray(data.submissions) && data.submissions.length > 0) {
             data.submissions.forEach(sub => upsertLocalSubmission(sub));
           }
@@ -271,24 +343,71 @@
       })
       .catch(err => {
         console.warn("Serverdan ma'lumot olishda xatolik (Keshdagi ma'lumotlar ko'rsatilmoqda):", err);
+        setConnectionState(false);
         if (callback) callback();
       });
   }
 
-  // Filtrlangan ro'yxatni olish
+  // Serverga ulanish holatini header'da ko'rsatish.
+  // Aks holda o'qituvchi keshdagi eski ma'lumotni jonli deb o'ylab qoladi.
+  function setConnectionState(ok) {
+    if (serverReachable === ok) return;
+    serverReachable = ok;
+
+    if (connectionIndicator) connectionIndicator.classList.toggle("is-offline", !ok);
+    if (connectionText) {
+      connectionText.textContent = ok
+        ? "Jonli sinxronizatsiya"
+        : "Server bilan aloqa yo'q — keshdagi ma'lumot";
+    }
+    if (connectionIndicator) {
+      connectionIndicator.title = ok
+        ? "Google Sheets bilan aloqa bor"
+        : "Google Apps Script javob bermayapti. Skript qayta deploy qilinganini tekshiring (Deploy > Manage deployments > New version).";
+    }
+  }
+
+  // Talabani bir xilda aniqlaydigan kalit (guruh + familiya + ism)
+  function studentKey(s) {
+    return [
+      String(s.group || "").trim().toLowerCase(),
+      String(s.lastName || "").trim().toLowerCase(),
+      String(s.firstName || "").trim().toLowerCase()
+    ].join("|");
+  }
+
+  // Talaba hozir tizimdami? Serverdagi bayroq VA oxirgi faollik vaqti bo'yicha.
+  function isStudentOnline(s) {
+    if (!s.online) return false;
+    if (!s.lastSeen) return false;
+    const seenTs = Date.parse(String(s.lastSeen).replace(" ", "T"));
+    if (isNaN(seenTs)) return !!s.online;
+    return (Date.now() - seenTs) < (APP_CONFIG.ONLINE_THRESHOLD_MS || 150000);
+  }
+
+  // Filtrlangan va saralangan ro'yxat.
+  // Saralash bo'lmasa, har 10 soniyalik yangilanishda qatorlar sakrab turadi.
   function getFilteredSubmissions() {
-    return allSubmissions.filter(s => {
-      // Guruh filtri
-      if (currentGroupFilter !== "ALL" && s.group !== currentGroupFilter) {
-        return false;
-      }
-      // Ism/Familiya qidiruvi
-      if (currentSearchQuery) {
-        const full = `${s.lastName} ${s.firstName} ${s.group}`.toLowerCase();
-        if (!full.includes(currentSearchQuery)) return false;
-      }
-      return true;
-    });
+    return allSubmissions
+      .filter(s => {
+        // Guruh filtri
+        if (currentGroupFilter !== "ALL" && s.group !== currentGroupFilter) {
+          return false;
+        }
+        // Ism/Familiya qidiruvi
+        if (currentSearchQuery) {
+          const full = `${s.lastName} ${s.firstName} ${s.group}`.toLowerCase();
+          if (!full.includes(currentSearchQuery)) return false;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const byGroup = String(a.group || "").localeCompare(String(b.group || ""), "uz");
+        if (byGroup !== 0) return byGroup;
+        const byLast = String(a.lastName || "").localeCompare(String(b.lastName || ""), "uz");
+        if (byLast !== 0) return byLast;
+        return String(a.firstName || "").localeCompare(String(b.firstName || ""), "uz");
+      });
   }
 
   // Statistikani hisoblash
@@ -312,8 +431,8 @@
         gradedCount++;
       }
 
-      // Faollik: agar oxirgi 10 daqiqada yangilangan bo'lsa yoki "Tugatdi" bo'lmasa
-      if (s.statusText && s.statusText !== "Bajarildi" && s.statusText !== "Yakunlandi") {
+      // Faollik: talaba ayni damda tizimda turibdimi (heartbeat asosida)
+      if (isStudentOnline(s)) {
         activeCount++;
       }
     });
@@ -348,14 +467,20 @@
 
     let html = "";
     list.forEach((s, idx) => {
-      const gradeNum = Number(s.grade) || 2;
+      // Talaba testni yakunlamaguncha baho qo'yilmaydi ("-" bo'lib turadi)
+      const gradeNum = Number(s.grade);
+      const hasGrade = !isNaN(gradeNum) && gradeNum >= 2;
       let gradeBadgeClass = "badge-danger";
-      if (gradeNum === 5) gradeBadgeClass = "badge-success";
+      if (!hasGrade) gradeBadgeClass = "badge-group";
+      else if (gradeNum === 5) gradeBadgeClass = "badge-success";
       else if (gradeNum === 4) gradeBadgeClass = "badge-primary";
       else if (gradeNum === 3) gradeBadgeClass = "badge-warning";
 
       const isFinished = s.statusText === "Yakunlandi" || s.statusText === "Bajarildi";
       const statusClass = isFinished ? "status-tag finished" : "status-tag active";
+
+      const online = isStudentOnline(s);
+      const seenLabel = s.lastSeen ? String(s.lastSeen).split(" ")[1] || String(s.lastSeen) : "-";
 
       html += `
         <tr>
@@ -363,6 +488,12 @@
           <td><span class="badge badge-group">${escapeHtml(s.group || "-")}</span></td>
           <td>
             <div style="font-weight: 850; color: var(--admin-dark);">${escapeHtml(s.lastName)} ${escapeHtml(s.firstName)}</div>
+          </td>
+          <td style="text-align: center;">
+            <span class="presence ${online ? "is-online" : "is-offline"}">
+              <span class="dot"></span>${online ? "Tizimda" : "Chiqqan"}
+            </span>
+            <span class="presence-time">${escapeHtml(seenLabel)}</span>
           </td>
           <td>
             <span class="${statusClass}">
@@ -377,11 +508,11 @@
           <td style="text-align: center; font-weight: 850; color: #2563eb;">${escapeHtml(s.percentage || "-")}</td>
           <td style="text-align: center;">
             <span class="badge ${gradeBadgeClass}">
-              ${gradeNum} — ${escapeHtml(s.gradeLabel || "")}
+              ${hasGrade ? `${gradeNum} — ${escapeHtml(s.gradeLabel || "")}` : "Hali yo'q"}
             </span>
           </td>
           <td style="text-align: center;">
-            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" onclick="window.inspectStudentAnswers('${escapeHtml(s.group)}', '${escapeHtml(s.lastName)}', '${escapeHtml(s.firstName)}')">
+            <button type="button" class="btn btn-outline" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" data-action="inspect" data-key="${escapeHtml(studentKey(s))}">
               <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               Javoblar
             </button>
@@ -394,12 +525,8 @@
   }
 
   // Talabaning batafsil javoblarini ko'rish modali
-  window.inspectStudentAnswers = function (group, lastName, firstName) {
-    const student = allSubmissions.find(s => 
-      s.group === group && 
-      s.lastName.toLowerCase() === lastName.toLowerCase() && 
-      s.firstName.toLowerCase() === firstName.toLowerCase()
-    );
+  function inspectStudentByKey(key) {
+    const student = allSubmissions.find(s => studentKey(s) === key);
     if (!student) {
       alert("Talaba ma'lumotlari topilmadi.");
       return;
@@ -444,16 +571,15 @@
       });
     }
 
-    // 4-bo'lim Test natijalari
-    if (student.testScore) {
-      modalHtml += `<div class="answers-section-title">4-Bo'lim: Yakuniy Test Sinovi</div>`;
-      modalHtml += `
-        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; border: 1px solid var(--admin-border);">
-          <div><strong>Test natijasi:</strong> ${escapeHtml(student.testScore)} to'g'ri javob</div>
-          <div><strong>O'zlashtirish:</strong> ${escapeHtml(student.percentage || "-")}</div>
-        </div>
-      `;
-    }
+    // 4-bo'lim: Yakuniy test — har bir savol bo'yicha batafsil
+    modalHtml += `<div class="answers-section-title">4-Bo'lim: Yakuniy Test Sinovi</div>`;
+    modalHtml += `
+      <div style="background: #f8fafc; padding: 0.85rem 1rem; border-radius: 8px; border: 1px solid var(--admin-border); margin-bottom: 0.75rem;">
+        <div><strong>Test natijasi:</strong> ${escapeHtml(student.testScore || "-")} to'g'ri javob</div>
+        <div><strong>Umumiy o'zlashtirish:</strong> ${escapeHtml(student.percentage || "-")}</div>
+      </div>
+    `;
+    modalHtml += renderTestAnswers(answers);
 
     if (modalAnswersContainer) {
       modalAnswersContainer.innerHTML = modalHtml;
@@ -462,7 +588,39 @@
     if (studentDetailsModal) {
       studentDetailsModal.classList.add("active");
     }
-  };
+  }
+
+  /**
+   * Test javoblari `answers` obyektida savol ID si bo'yicha saqlanadi
+   * (har bir talabaga 40 tadan tasodifiy 20 tasi tushadi), shuning uchun
+   * savol matnini window.ALL_QUESTIONS dan ID orqali topamiz.
+   */
+  function renderTestAnswers(answers) {
+    if (!window.ALL_QUESTIONS || !Array.isArray(window.ALL_QUESTIONS)) {
+      return `<div style="font-size: 0.84rem; color: var(--admin-muted);">Test savollari ro'yxati yuklanmadi.</div>`;
+    }
+
+    const rows = window.ALL_QUESTIONS
+      .filter(q => answers[q.id] !== undefined)
+      .map(q => {
+        const userVal = String(answers[q.id]);
+        const isCorrect = userVal === q.answer;
+        return `
+          <div class="test-answer-row ${isCorrect ? "is-correct" : "is-wrong"}">
+            <div class="tq-text">${escapeHtml(q.question)}</div>
+            <div class="tq-vals">
+              <span>Talaba tanladi: <strong>${escapeHtml(userVal)}</strong></span>
+              <span>To'g'ri javob: <strong>${escapeHtml(q.answer)}</strong></span>
+            </div>
+          </div>
+        `;
+      });
+
+    if (rows.length === 0) {
+      return `<div style="font-size: 0.84rem; color: var(--admin-muted);">Talaba hali testni ishlamagan.</div>`;
+    }
+    return rows.join("");
+  }
 
   function closeModal() {
     if (studentDetailsModal) {
@@ -473,6 +631,82 @@
   // =========================================================================
   // EXCEL VA CSV GA EKSPORT QILISH
   // =========================================================================
+
+  // Eksport ustunlari bitta joyda — Excel va CSV bir xil bo'lishi uchun
+  const EXPORT_HEADERS = [
+    "№",
+    "Vaqt (Toshkent)",
+    "Guruh",
+    "Familiya",
+    "Ism",
+    "Tizimda",
+    "Oxirgi faollik",
+    "Holati",
+    "1-Bo'lim (O'lchov)",
+    "2-Bo'lim (2->10)",
+    "3-Bo'lim (10->2)",
+    "4-Bo'lim (Test)",
+    "Jami Ball",
+    "Foiz",
+    "Baho",
+    "Daraja"
+  ];
+
+  function buildExportRow(s, idx) {
+    return [
+      idx + 1,
+      s.timestamp || "",
+      s.group || "",
+      s.lastName || "",
+      s.firstName || "",
+      isStudentOnline(s) ? "Tizimda" : "Chiqqan",
+      s.lastSeen || "-",
+      s.statusText || "",
+      s.sec1Score || "-",
+      s.sec2Score || "-",
+      s.sec3Score || "-",
+      s.testScore || "-",
+      s.totalCorrect || "-",
+      s.percentage || "-",
+      s.grade || "-",
+      s.gradeLabel || ""
+    ];
+  }
+
+  /**
+   * "Javoblar" varag'i: har bir talaba — bitta qator, har bir amaliy savol —
+   * alohida ustun, oxirida test natijasi. O'qituvchi kim qayerda xato
+   * qilganini bir qarashda ko'radi.
+   */
+  function buildAnswersSheet(list) {
+    if (!window.XLSX || !window.PRACTICAL_SECTIONS) return null;
+
+    const questions = [];
+    window.PRACTICAL_SECTIONS.forEach(sec => {
+      sec.questions.forEach(q => {
+        questions.push({ id: q.id, label: `${sec.sectionNumber}.${q.num} ${q.prompt}`, expected: q.expectedAnswer });
+      });
+    });
+
+    const header = ["Guruh", "Familiya", "Ism"].concat(questions.map(q => q.label), ["Test natijasi"]);
+    const rows = [header];
+
+    // Ikkinchi qator — to'g'ri javoblar namunasi (o'qituvchi solishtirishi uchun)
+    rows.push(["", "TO'G'RI JAVOB", ""].concat(questions.map(q => q.expected), [""]));
+
+    list.forEach(s => {
+      const ans = s.answers || {};
+      rows.push(
+        [s.group || "", s.lastName || "", s.firstName || ""]
+          .concat(questions.map(q => (ans[q.id] !== undefined ? String(ans[q.id]) : "")), [s.testScore || "-"])
+      );
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{ wch: 9 }, { wch: 18 }, { wch: 16 }]
+      .concat(questions.map(() => ({ wch: 16 })), [{ wch: 14 }]);
+    return ws;
+  }
 
   function exportToExcel() {
     const list = getFilteredSubmissions();
@@ -486,43 +720,8 @@
 
     // Agar SheetJS (XLSX) kutubxonasi mavjud bo'lsa, to'liq XLSX fayl yasaymiz
     if (window.XLSX) {
-      const dataRows = [
-        [
-          "№",
-          "Vaqt (Toshkent)",
-          "Guruh",
-          "Familiya",
-          "Ism",
-          "Holati",
-          "1-Bo'lim (O'lchov)",
-          "2-Bo'lim (2->10)",
-          "3-Bo'lim (10->2)",
-          "4-Bo'lim (Test)",
-          "Jami Ball",
-          "Foiz",
-          "Baho",
-          "Daraja"
-        ]
-      ];
-
-      list.forEach((s, idx) => {
-        dataRows.push([
-          idx + 1,
-          s.timestamp || "",
-          s.group || "",
-          s.lastName || "",
-          s.firstName || "",
-          s.statusText || "",
-          s.sec1Score || "-",
-          s.sec2Score || "-",
-          s.sec3Score || "-",
-          s.testScore || "-",
-          s.totalCorrect || "-",
-          s.percentage || "-",
-          s.grade || "-",
-          s.gradeLabel || ""
-        ]);
-      });
+      const dataRows = [EXPORT_HEADERS.slice()];
+      list.forEach((s, idx) => dataRows.push(buildExportRow(s, idx)));
 
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.aoa_to_sheet(dataRows);
@@ -534,6 +733,8 @@
         { wch: 10 }, // Guruh
         { wch: 18 }, // Familiya
         { wch: 16 }, // Ism
+        { wch: 12 }, // Tizimda
+        { wch: 18 }, // Oxirgi faollik
         { wch: 14 }, // Holati
         { wch: 18 }, // 1-Bo'lim
         { wch: 18 }, // 2-Bo'lim
@@ -546,6 +747,13 @@
       ];
 
       XLSX.utils.book_append_sheet(wb, ws, "Natijalar");
+
+      // Ikkinchi varaq: har bir talabaning har bir savolga yozgan javobi
+      const answersSheet = buildAnswersSheet(list);
+      if (answersSheet) {
+        XLSX.utils.book_append_sheet(wb, answersSheet, "Javoblar");
+      }
+
       XLSX.writeFile(wb, fileName);
     } else {
       // Agar SheetJS yuklanmagan bo'lsa, XML-asosli toza Excel jadvalini hosil qilamiz
@@ -610,60 +818,43 @@
  </Styles>
  <Worksheet ss:Name="Natijalar">
   <Table>
-   <Column ss:Width="35"/>
-   <Column ss:Width="130"/>
-   <Column ss:Width="65"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="95"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="110"/>
-   <Column ss:Width="100"/>
-   <Column ss:Width="75"/>
-   <Column ss:Width="65"/>
-   <Column ss:Width="55"/>
-   <Column ss:Width="90"/>
+${[35, 130, 65, 110, 110, 75, 130, 95, 110, 110, 110, 100, 75, 65, 55, 90]
+      .map(w => `   <Column ss:Width="${w}"/>`).join("\n")}
    <Row ss:Height="26">
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">№</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Vaqt</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Guruh</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Familiya</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Ism</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Holati</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">1-Bo'lim (O'lchov)</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">2-Bo'lim (2->10)</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">3-Bo'lim (10->2)</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">4-Bo'lim (Test)</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Jami Ball</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Foiz</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Baho</Data></Cell>
-    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">Daraja</Data></Cell>
+${EXPORT_HEADERS.map(h =>
+      `    <Cell ss:StyleID="HeaderStyle"><Data ss:Type="String">${escapeXml(h)}</Data></Cell>`).join("\n")}
    </Row>`;
 
     list.forEach((s, idx) => {
-      const g = Number(s.grade) || 2;
-      let gradeStyle = "Grade2";
+      const g = Number(s.grade);
+      const hasGrade = !isNaN(g) && g >= 2;
+      let gradeStyle = "CenterCell";
       if (g === 5) gradeStyle = "Grade5";
       else if (g === 4) gradeStyle = "Grade4";
       else if (g === 3) gradeStyle = "Grade3";
+      else if (hasGrade) gradeStyle = "Grade2";
+
+      const row = buildExportRow(s, idx);
+      const gradeColIdx = EXPORT_HEADERS.indexOf("Baho");
 
       xml += `
-   <Row ss:Height="20">
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="Number">${idx + 1}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.timestamp || "")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.group || "")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.lastName || "")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.firstName || "")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.statusText || "")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.sec1Score || "-")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.sec2Score || "-")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.sec3Score || "-")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.testScore || "-")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.totalCorrect || "-")}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.percentage || "-")}</Data></Cell>
-    <Cell ss:StyleID="${gradeStyle}"><Data ss:Type="Number">${g}</Data></Cell>
-    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(s.gradeLabel || "")}</Data></Cell>
+   <Row ss:Height="20">`;
+      row.forEach((val, colIdx) => {
+        if (colIdx === 0) {
+          xml += `
+    <Cell ss:StyleID="CenterCell"><Data ss:Type="Number">${idx + 1}</Data></Cell>`;
+        } else if (colIdx === gradeColIdx) {
+          xml += hasGrade
+            ? `
+    <Cell ss:StyleID="${gradeStyle}"><Data ss:Type="Number">${g}</Data></Cell>`
+            : `
+    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">-</Data></Cell>`;
+        } else {
+          xml += `
+    <Cell ss:StyleID="CenterCell"><Data ss:Type="String">${escapeXml(String(val))}</Data></Cell>`;
+        }
+      });
+      xml += `
    </Row>`;
     });
 
@@ -686,44 +877,15 @@
     const groupLabel = currentGroupFilter === "ALL" ? "Barcha_Guruhlar" : currentGroupFilter;
     const fileName = `3-Dars_Natijalar_${groupLabel}_${new Date().toISOString().slice(0, 10)}.csv`;
 
-    const headers = [
-      "№",
-      "Vaqt",
-      "Guruh",
-      "Familiya",
-      "Ism",
-      "Holati",
-      "1-Bo'lim (O'lchov)",
-      "2-Bo'lim (2->10)",
-      "3-Bo'lim (10->2)",
-      "4-Bo'lim (Test)",
-      "Jami Ball",
-      "Foiz",
-      "Baho",
-      "Daraja"
-    ];
+    // Qo'shtirnoqli maydon ichidagi qo'shtirnoqni ikkilantirish shart,
+    // aks holda Excel'da ustunlar surilib ketadi.
+    const csvCell = (v) => `"${String(v === undefined || v === null ? "" : v).replace(/"/g, '""')}"`;
 
     let csvContent = "\uFEFF"; // UTF-8 BOM Excel uchun
-    csvContent += headers.join(",") + "\r\n";
+    csvContent += EXPORT_HEADERS.map(csvCell).join(",") + "\r\n";
 
     list.forEach((s, idx) => {
-      const row = [
-        idx + 1,
-        `"${s.timestamp || ""}"`,
-        `"${s.group || ""}"`,
-        `"${s.lastName || ""}"`,
-        `"${s.firstName || ""}"`,
-        `"${s.statusText || ""}"`,
-        `"${s.sec1Score || "-"}"`,
-        `"${s.sec2Score || "-"}"`,
-        `"${s.sec3Score || "-"}"`,
-        `"${s.testScore || "-"}"`,
-        `"${s.totalCorrect || "-"}"`,
-        `"${s.percentage || "-"}"`,
-        `"${s.grade || "-"}"`,
-        `"${s.gradeLabel || ""}"`
-      ];
-      csvContent += row.join(",") + "\r\n";
+      csvContent += buildExportRow(s, idx).map(csvCell).join(",") + "\r\n";
     });
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
@@ -761,6 +923,6 @@
       .replace(/'/g, "&apos;");
   }
 
-  // Sahifa yuklanganda ishga tushirish
-  document.addEventListener("DOMContentLoaded", initAdmin);
+  // Sahifa yuklanganda avval parol so'raladi, keyin panel ishga tushadi
+  document.addEventListener("DOMContentLoaded", initAuthGate);
 })();

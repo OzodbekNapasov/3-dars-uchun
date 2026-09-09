@@ -6,24 +6,31 @@
  */
 
 (function () {
+  // Bo'sh (boshlang'ich) sessiya namunasi
+  function createEmptySession() {
+    return {
+      student: null, // { lastName, firstName, group, startTime }
+      activeSection: 1, // 1, 2, 3, 4 (test), 5 (final result)
+      sections: {
+        1: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
+        2: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
+        3: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
+        4: { completed: false, correctCount: 0, totalCount: 20, answers: {}, scorePercent: 0, grade: 2, gradeLabel: "" }
+      },
+      testUnlocked: false,
+      testQuestions: [],
+      testCurrentIdx: 0,
+      testDeadlineTs: 0, // Testning absolyut tugash vaqti (Date.now() asosida)
+      isAllFinished: false
+    };
+  }
+
   // Global holat
-  let session = {
-    student: null, // { lastName, firstName, group, startTime }
-    activeSection: 1, // 1, 2, 3, 4 (test), 5 (final result)
-    sections: {
-      1: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-      2: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-      3: { completed: false, correctCount: 0, totalCount: 10, answers: {} },
-      4: { completed: false, correctCount: 0, totalCount: 20, answers: {}, scorePercent: 0, grade: 2, gradeLabel: "" }
-    },
-    testUnlocked: false,
-    testQuestions: [],
-    testCurrentIdx: 0,
-    testRemainingSeconds: (APP_CONFIG.TEST_DURATION_MINUTES || 25) * 60,
-    isAllFinished: false
-  };
+  let session = createEmptySession();
 
   let testTimerInterval = null;
+  let heartbeatInterval = null;
+  let testStatusPollInterval = null;
   let syncChannel = null;
 
   // DOM Elementlari
@@ -33,6 +40,7 @@
   const lastNameInput = document.getElementById("lastName");
   const firstNameInput = document.getElementById("firstName");
   const studentGroupSelect = document.getElementById("studentGroupSelect");
+  const btnLogout = document.getElementById("btnLogout");
 
   const headerMeta = document.getElementById("headerMeta");
   const userNameDisplay = document.getElementById("userNameDisplay");
@@ -120,6 +128,22 @@
 
     bindEvents();
     setupAntiCheat();
+    startBackgroundTasks();
+  }
+
+  // Fon jarayonlari: jonli holat signali va test ruxsatini kuzatish
+  // Eslatma: oyna yopilganda "logout" yubormaymiz — sahifa yangilanganda ham
+  // ishga tushib, talabani noto'g'ri "Offline" qilib qo'yardi. Buning o'rniga
+  // admin panel oxirgi faollik vaqtiga qarab o'zi Offline deb belgilaydi.
+  function startBackgroundTasks() {
+    sendHeartbeat();
+    pollTestStatus();
+    if (!heartbeatInterval) {
+      heartbeatInterval = setInterval(sendHeartbeat, APP_CONFIG.HEARTBEAT_INTERVAL_MS || 60000);
+    }
+    if (!testStatusPollInterval) {
+      testStatusPollInterval = setInterval(pollTestStatus, APP_CONFIG.TEST_STATUS_POLL_MS || 20000);
+    }
   }
 
   // Guruh tanlov dropdownini yaratish (26-01 ... 26-07)
@@ -134,17 +158,44 @@
     });
   }
 
-  // Sessiyani LocalStorage dan yuklash
+  // Sessiyani LocalStorage dan yuklash.
+  // Har bir maydon standart qiymat ustiga qo'yiladi — eski yoki yarim buzilgan
+  // sessiya ilovani ishdan chiqarmasligi uchun.
   function loadSession() {
+    let saved = null;
     try {
       const raw = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.STUDENT_SESSION);
-      if (raw) {
-        const saved = JSON.parse(raw);
-        if (saved && saved.student) {
-          session = Object.assign(session, saved);
-        }
-      }
+      if (raw) saved = JSON.parse(raw);
     } catch (e) {}
+
+    if (!saved || !saved.student || !saved.student.lastName || !saved.student.group) return;
+
+    const fresh = createEmptySession();
+    fresh.student = saved.student;
+    fresh.activeSection = Number(saved.activeSection) || 1;
+    fresh.testUnlocked = !!saved.testUnlocked;
+    fresh.testQuestions = Array.isArray(saved.testQuestions) ? saved.testQuestions : [];
+    fresh.testCurrentIdx = Number(saved.testCurrentIdx) || 0;
+    fresh.testDeadlineTs = Number(saved.testDeadlineTs) || 0;
+    fresh.isAllFinished = !!saved.isAllFinished;
+
+    [1, 2, 3, 4].forEach(n => {
+      const src = (saved.sections && saved.sections[n]) || {};
+      const dst = fresh.sections[n];
+      dst.completed = !!src.completed;
+      dst.correctCount = Number(src.correctCount) || 0;
+      dst.answers = (src.answers && typeof src.answers === "object") ? src.answers : {};
+      if (n === 4) {
+        dst.scorePercent = Number(src.scorePercent) || 0;
+        dst.grade = Number(src.grade) || 2;
+        dst.gradeLabel = src.gradeLabel || "";
+      }
+    });
+
+    // Sessiya buzilgan bo'lsa (savollar yo'q, lekin test tugagan deb turibdi) tuzatib qo'yamiz
+    if (fresh.activeSection < 1 || fresh.activeSection > 5) fresh.activeSection = 1;
+
+    session = fresh;
   }
 
   // Sessiyani saqlash va Admin/Serverga xabar uzatish
@@ -159,10 +210,10 @@
     }
   }
 
-  // Brauzerlararo sinxronizatsiya
-  function broadcastUpdate() {
+  // Brauzerlararo sinxronizatsiya (bitta kompyuterdagi admin oynasi uchun)
+  function broadcastUpdate(customPayload) {
     if (!session.student) return;
-    const payload = prepareStudentPayload();
+    const payload = customPayload || prepareStudentPayload();
     if (syncChannel) {
       try {
         syncChannel.postMessage({ type: "STUDENT_UPDATE", payload: payload });
@@ -182,19 +233,103 @@
     } catch (e) {}
   }
 
-  // Google Sheets Apps Script ga yuborish
-  function sendToServer() {
-    if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL || !session.student) return;
-    const payload = prepareStudentPayload();
-
+  // Google Sheets Apps Script ga har qanday ma'lumotni yuborish.
+  // Content-Type: text/plain — brauzer CORS preflight so'ramasligi uchun
+  // (Apps Script baribir tanani JSON deb o'qiy oladi).
+  function postToServer(payload) {
+    if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) return;
     fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL, {
       method: "POST",
       mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).catch(err => {
       console.warn("Serverga yuborishda vaqtincha xatolik (Keshda saqlandi):", err);
     });
+  }
+
+  // To'liq natijani serverga yuborish
+  function sendToServer() {
+    if (!session.student) return;
+    postToServer(prepareStudentPayload());
+  }
+
+  // "Men shu yerdaman" signali — admin panelda jonli holat ko'rinishi uchun
+  function sendHeartbeat() {
+    if (!session.student) return;
+    broadcastUpdate(); // bitta kompyuterdagi admin oynasi uchun
+    postToServer({
+      action: "heartbeat",
+      group: session.student.group,
+      lastName: session.student.lastName,
+      firstName: session.student.firstName,
+      statusText: buildStatusText()
+    });
+  }
+
+  // Talaba "Chiqish" tugmasini bosganda
+  function sendLogout(student) {
+    if (!student) return;
+
+    // Mahalliy ro'yxatda ham "chiqqan" deb belgilaymiz (bitta kompyuterdagi admin oynasi uchun)
+    broadcastUpdate(Object.assign(prepareStudentPayload(), {
+      online: false,
+      lastSeen: formatLocalTimestamp(new Date())
+    }));
+
+    postToServer({
+      action: "logout",
+      group: student.group,
+      lastName: student.lastName,
+      firstName: student.firstName
+    });
+  }
+
+  // O'qituvchi testni masofadan ochganini serverdan tekshirish.
+  // BroadcastChannel faqat bitta kompyuter ichida ishlagani uchun,
+  // boshqa kompyuterdagi talabalarga ruxsat aynan shu yo'l bilan yetadi.
+  function pollTestStatus() {
+    if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) return;
+    if (!session.student || session.testUnlocked || session.sections[4].completed) return;
+
+    fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL + "?action=get_test_status&t=" + Date.now())
+      .then(res => res.json())
+      .then(data => {
+        if (!data || data.status !== "success") return;
+
+        if (data.teacherPin) {
+          try {
+            const raw = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.ADMIN_CONFIG);
+            const conf = raw ? JSON.parse(raw) : {};
+            conf.teacherPin = data.teacherPin;
+            localStorage.setItem(APP_CONFIG.STORAGE_KEYS.ADMIN_CONFIG, JSON.stringify(conf));
+          } catch (e) {}
+        }
+
+        if (data.isTestUnlocked && !session.testUnlocked) {
+          session.testUnlocked = true;
+          saveSession(false);
+          // Agar talaba ayni damda qulf ekranida turgan bo'lsa — darhol ochamiz
+          if (session.activeSection === 4 && testLockCard && testLockCard.style.display !== "none") {
+            unlockAndStartTest();
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
+  // Serverdagi "Oxirgi faollik" ustuni bilan bir xil format: "YYYY-MM-DD HH:MM:SS"
+  function formatLocalTimestamp(d) {
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ` +
+           `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  }
+
+  // Talabaning ayni damdagi holati (admin panelda "Joriy Holat" ustuni)
+  function buildStatusText() {
+    if (session.isAllFinished) return "Yakunlandi";
+    if (session.activeSection === 4) return "Testda";
+    return `${session.activeSection}-Bo'limda`;
   }
 
   // Server va Admin uchun tayyorlangan to'liq ma'lumot
@@ -214,10 +349,6 @@
     let pct = Math.round((totalCorrect / possible) * 100);
     let gradeObj = APP_CONFIG.calculateGrade(pct);
 
-    let currentStatusText = `${session.activeSection}-Bo'limda`;
-    if (session.isAllFinished) currentStatusText = "Yakunlandi";
-    else if (session.activeSection === 4) currentStatusText = "Testda";
-
     // Barcha javoblarni bitta obyektga jamlash
     const allAnswers = {};
     if (s1.answers) Object.assign(allAnswers, s1.answers);
@@ -230,7 +361,7 @@
       group: session.student.group,
       lastName: session.student.lastName,
       firstName: session.student.firstName,
-      statusText: currentStatusText,
+      statusText: buildStatusText(),
       sec1Score: s1.completed ? `${s1.correctCount}/10` : "-",
       sec2Score: s2.completed ? `${s2.correctCount}/10` : "-",
       sec3Score: s3.completed ? `${s3.correctCount}/10` : "-",
@@ -239,7 +370,11 @@
       percentage: `${pct}%`,
       grade: s4.completed ? gradeObj.grade : "-",
       gradeLabel: s4.completed ? gradeObj.label : "-",
-      answers: allAnswers
+      answers: allAnswers,
+      // Jonli holat: server orqali ham, bitta kompyuterdagi BroadcastChannel
+      // orqali ham admin panel bir xil ma'lumot olishi uchun
+      lastSeen: formatLocalTimestamp(new Date()),
+      online: true
     };
   }
 
@@ -280,6 +415,10 @@
 
     if (btnFinishTest) {
       btnFinishTest.addEventListener("click", submitTestSection);
+    }
+
+    if (btnLogout) {
+      btnLogout.addEventListener("click", handleLogout);
     }
 
     if (btnModalNextSec) {
@@ -323,18 +462,52 @@
 
     saveSession();
     showPlatformView();
+    pollTestStatus();
+  }
+
+  // Tizimdan chiqish — bitta kompyuterda keyingi talaba ishlashi uchun
+  function handleLogout() {
+    if (!session.student) return;
+
+    const warn = session.isAllFinished
+      ? "Tizimdan chiqmoqchimisiz? Natijangiz o'qituvchiga allaqachon saqlangan."
+      : "Diqqat! Siz hali barcha bo'limlarni yakunlamadingiz.\nChiqsangiz, bu kompyuterdagi javoblaringiz o'chadi va qaytadan boshlashingizga to'g'ri keladi.\n\nHaqiqatan chiqmoqchimisiz?";
+    if (!confirm(warn)) return;
+
+    const leaving = session.student;
+
+    // Oxirgi holatni va chiqish signalini serverga yuboramiz
+    sendToServer();
+    sendLogout(leaving);
+
+    if (testTimerInterval) {
+      clearInterval(testTimerInterval);
+      testTimerInterval = null;
+    }
+
+    session = createEmptySession();
+    try {
+      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.STUDENT_SESSION);
+    } catch (e) {}
+
+    if (studentForm) studentForm.reset();
+    if (studentGroupSelect) studentGroupSelect.value = "";
+    showRegisterView();
+    if (lastNameInput) lastNameInput.focus();
   }
 
   function showRegisterView() {
     if (viewRegister) viewRegister.style.display = "block";
     if (viewPlatform) viewPlatform.style.display = "none";
     if (headerMeta) headerMeta.style.display = "none";
+    if (btnLogout) btnLogout.style.display = "none";
   }
 
   function showPlatformView() {
     if (viewRegister) viewRegister.style.display = "none";
     if (viewPlatform) viewPlatform.style.display = "block";
     if (headerMeta) headerMeta.style.display = "flex";
+    if (btnLogout) btnLogout.style.display = "inline-flex";
 
     if (userNameDisplay) userNameDisplay.textContent = `${session.student.lastName} ${session.student.firstName}`;
     if (userGroupDisplay) userGroupDisplay.textContent = `${session.student.group}-guruh`;
@@ -618,8 +791,9 @@
       }
     } catch (e) {}
 
-    if (entered === validPin || entered === "2603" || entered === "7777") {
+    if (entered === validPin) {
       unlockAndStartTest();
+      if (pinErrorMessage) pinErrorMessage.textContent = "";
     } else {
       if (pinErrorMessage) pinErrorMessage.textContent = "Noto'g'ri PIN-kod! O'qituvchidan so'rang.";
       if (testPinInput) testPinInput.focus();
@@ -637,13 +811,19 @@
   function startOrResumeTest() {
     // 20 ta tasodifiy savol generatsiya qilish (agar avval generatsiya qilinmagan bo'lsa)
     if (!session.testQuestions || session.testQuestions.length === 0) {
-      if (window.ALL_QUESTIONS && window.ALL_QUESTIONS.length > 0) {
+      if (!window.ALL_QUESTIONS || window.ALL_QUESTIONS.length === 0) {
+        // Savollar fayli yuklanmagan — taymerni boshlab, bo'sh test ko'rsatmaymiz
+        alert("Test savollari yuklanmadi. Sahifani yangilang yoki o'qituvchiga murojaat qiling.");
+        if (testQuestionText) testQuestionText.textContent = "Savollarni yuklab bo'lmadi.";
+        return;
+      }
+      {
         // Savollarni aralashtirish
-        const shuffled = [...window.ALL_QUESTIONS].sort(() => 0.5 - Math.random());
+        const shuffled = shuffle(window.ALL_QUESTIONS);
         const count = APP_CONFIG.TEST_QUESTIONS_COUNT || 20;
         session.testQuestions = shuffled.slice(0, count).map(q => {
           // Variantlarni ham aralashtirish
-          const opts = [...q.options].sort(() => 0.5 - Math.random());
+          const opts = shuffle(q.options);
           return {
             id: q.id,
             question: q.question,
@@ -655,8 +835,17 @@
       saveSession(false);
     }
 
+    // Tugash vaqtini birinchi marta belgilaymiz. Absolyut vaqt tamg'asi bo'lgani uchun
+    // talaba tabni yopib qo'yса ham taymer to'xtamaydi.
+    if (!session.testDeadlineTs) {
+      const minutes = APP_CONFIG.TEST_DURATION_MINUTES || 25;
+      session.testDeadlineTs = Date.now() + minutes * 60 * 1000;
+      saveSession(false);
+    }
+
     // Taymerni ishga tushirish (agar test hali tugallanmagan bo'lsa)
     if (!session.sections[4].completed && !testTimerInterval) {
+      updateTestTimer();
       testTimerInterval = setInterval(updateTestTimer, 1000);
     }
 
@@ -664,23 +853,27 @@
     renderTestQuestion();
   }
 
+  function getRemainingSeconds() {
+    if (!session.testDeadlineTs) return (APP_CONFIG.TEST_DURATION_MINUTES || 25) * 60;
+    return Math.max(0, Math.round((session.testDeadlineTs - Date.now()) / 1000));
+  }
+
   function updateTestTimer() {
-    if (session.testRemainingSeconds <= 0) {
-      clearInterval(testTimerInterval);
-      testTimerInterval = null;
-      alert("Ajratilgan vaqt tugadi! Test natijalari avtomatik tasdiqlanadi.");
-      submitTestSection(true);
-      return;
-    }
-    session.testRemainingSeconds--;
+    const remaining = getRemainingSeconds();
+
     if (testTimerDisplay) {
-      const m = Math.floor(session.testRemainingSeconds / 60);
-      const s = session.testRemainingSeconds % 60;
+      const m = Math.floor(remaining / 60);
+      const s = remaining % 60;
       testTimerDisplay.textContent = `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
     }
-    // Har 15 soniyada taymer holatini saqlash
-    if (session.testRemainingSeconds % 15 === 0) {
-      saveSession(false);
+
+    if (remaining <= 0) {
+      clearInterval(testTimerInterval);
+      testTimerInterval = null;
+      if (!session.sections[4].completed) {
+        alert("Ajratilgan vaqt tugadi! Test natijalari avtomatik tasdiqlanadi.");
+        submitTestSection(true);
+      }
     }
   }
 
@@ -734,15 +927,16 @@
     const userSelectedOpt = session.sections[4].answers[q.id];
 
     q.options.forEach((optText, optIdx) => {
+      // Klass nomlari css/style.css dagi mavjud uslublar bilan bir xil bo'lishi shart
       const optBtn = document.createElement("button");
       optBtn.type = "button";
-      optBtn.className = "option-btn" + (userSelectedOpt === optText ? " selected" : "");
+      optBtn.className = "option-item" + (userSelectedOpt === optText ? " selected" : "");
       if (isCompleted) optBtn.disabled = true;
 
       const letter = String.fromCharCode(65 + optIdx); // A, B, C, D
       optBtn.innerHTML = `
-        <span class="opt-letter">${letter}</span>
-        <span class="opt-text">${escapeHtml(optText)}</span>
+        <span class="option-letter">${letter}</span>
+        <span class="option-text">${escapeHtml(optText)}</span>
       `;
 
       if (!isCompleted) {
@@ -821,7 +1015,20 @@
 
     saveSession(true); // O'qituvchiga yuborish
 
-    alert(`Test muvaffaqiyatli yakunlandi!\nNatija: 20 tadan ${correctCount} ta to'g'ri (${percent}%)\nBaho: ${gradeObj.grade} (${gradeObj.label})`);
+    // Yakuniy baho barcha 4 ta bo'lim bo'yicha hisoblanadi — shu sababli bu yerda
+    // faqat test natijasini ko'rsatamiz, baho esa umumiy natijadan olinadi
+    // (aks holda talabaga ikki xil baho ko'rinib chalkashlik tug'diradi).
+    const overallCorrect = session.sections[1].correctCount + session.sections[2].correctCount +
+                           session.sections[3].correctCount + correctCount;
+    const overallPercent = Math.round((overallCorrect / 50) * 100);
+    const overallGrade = APP_CONFIG.calculateGrade(overallPercent);
+
+    alert(
+      `Test muvaffaqiyatli yakunlandi!\n` +
+      `Test natijasi: ${qList.length} tadan ${correctCount} ta to'g'ri\n\n` +
+      `Umumiy natija: 50 tadan ${overallCorrect} ta (${overallPercent}%)\n` +
+      `Yakuniy baho: ${overallGrade.grade} (${overallGrade.label})`
+    );
 
     updateStepIndicators();
     renderCurrentSection();
@@ -885,6 +1092,18 @@
         console.warn("Talaba boshqa oynaga o'tdi!");
       }
     });
+  }
+
+  // Fisher-Yates aralashtirish.
+  // `sort(() => 0.5 - Math.random())` teng ehtimollik bermaydi — ba'zi savollar
+  // boshqalariga qaraganda ancha ko'p tushib qolardi.
+  function shuffle(arr) {
+    const out = [...arr];
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
   }
 
   function escapeHtml(str) {

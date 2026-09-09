@@ -1,10 +1,12 @@
 [build]
   publish = "."
 
+# Eski, platformani chetlab o'tuvchi /test sahifasi olib tashlandi.
+# Test endi faqat index.html ichida, o'qituvchi ruxsati bilan ochiladi.
 [[redirects]]
-  from = "/test"
-  to = "/test/index.html"
-  status = 200
+  from = "/test/*"
+  to = "/index.html"
+  status = 301
 
 [[headers]]
   for = "/*"

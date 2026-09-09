@@ -441,3 +441,9 @@ const ALL_QUESTIONS = [
     "answer": "50 - 70 sm"
   }
 ];
+
+// Global eksport.
+// Classic script'dagi top-level `const` window obyektiga tushmaydi, shuning uchun
+// buni aniq yozish shart — aks holda student.js/admin.js dagi window.ALL_QUESTIONS
+// undefined bo'lib, test savollari umuman yuklanmaydi.
+window.ALL_QUESTIONS = ALL_QUESTIONS;

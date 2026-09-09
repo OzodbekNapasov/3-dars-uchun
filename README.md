@@ -20,13 +20,19 @@ Tibbiyot texnikumi 1-kurs talabalari uchun **Axborotning o'lchov birliklari** va
   - 1 marta tasdiqlangan bo'lim qulflanadi ("Bajarildi") va qayta o'zgartirib bo'lmaydi.
   - **4-bo'lim (Test)** faqat o'qituvchi maxsus ruxsat berganida (Admin panel orqali yoki PIN-kod bilan) ochiladi.
 
+- **Chiqish tugmasi:** talaba ishini tugatgach "Chiqish" ni bosadi va bitta kompyuterda
+  keyingi talaba o'z ismi bilan kirib ishlaydi.
+
 ### 2. O'qituvchi Admin Paneli (`admin.html`):
+- **Parol bilan himoyalangan:** panel `js/config.js` dagi `ADMIN_PASSWORD` (boshlang'ich: `ustoz2603`)
+  kiritilmaguncha ochilmaydi. Talaba sahifasida admin panelga havola yo'q.
+- **Jonli holat:** har bir talaba yonida 🟢 Tizimda / ⚪ Chiqqan va oxirgi faollik vaqti.
 - **Jonli Dashboard:** Tizimga kirgan barcha talabalar, ularning ayni damda qaysi bo'limda turgani va olgan ballari real vaqtda yangilanib turadi.
 - **Alohida Ustunlar:** 1-bo'lim, 2-bo'lim, 3-bo'lim, Test, Jami ball, Foiz va 5 ballik baho alohida aniq ustunlarda aks etadi.
 - **Javoblarni Tekshirish:** Har bir talabaning qatoridagi "Javoblar" tugmasi orqali uning har bir savolga yozgan javoblarini tekshirish mumkin.
 - **Testni Masofadan Boshqarish:** Admin paneldagi tugma orqali testni barcha talabalarga birdaniga ochish yoki PIN-kodni o'zgartirish.
 - **Eksport Imkoniyatlari:**
-  - **Excel (`.xlsx` va `.xls`):** Barcha ustunlari toza, sarlavhalari ko'k rangda, baholari ajratilgan tayyor Excel fayli.
+  - **Excel (`.xlsx` va `.xls`):** Barcha ustunlari toza, sarlavhalari ko'k rangda, baholari ajratilgan tayyor Excel fayli. Ikkinchi **"Javoblar"** varag'ida har bir talabaning har bir savolga yozgan javobi va to'g'ri javoblar qatori.
   - **CSV Eksport:** Universal formatda yuklab olish.
   - **Chop etish (Vedomost):** Rasmiy baholar vedomosti ko'rinishida qog'ozga yoki PDF ga chiqarish (imzo va sana joylari bilan).
 
@@ -36,4 +42,12 @@ Tibbiyot texnikumi 1-kurs talabalari uchun **Axborotning o'lchov birliklari** va
 - **`index.html`** — Talaba kompyuterida ochiladigan asosiy platforma havolasi.
 - **`admin.html`** — O'qituvchi kompyuteridagi monitoring va Excel eksport paneli.
 - **`dars.html`** — Doska yoki proyektorga chiqarib dars o'tish uchun nazariy va amaliy qo'llanma.
-- **`google_sheets_script.gs`** — Google Sheets jadvaliga ma'lumotlarni yozuvchi va uzatuvchi yangilangan skript.
+- **`google_sheets_script.gs`** — Google Sheets jadvaliga ma'lumotlarni yozuvchi va uzatuvchi skript.
+
+---
+
+## ⚠️ Ishga tushirishdan oldin
+
+Admin panel boshqa kompyuterlardagi talabalarni ko'rishi va testni masofadan ochish
+ishlashi uchun **`google_sheets_script.gs` ni Apps Script'ga qayta joylab, yangi versiya
+sifatida deploy qilish shart**. To'liq ko'rsatma: [QOLLANMA_NETLIFY_VA_SHEETS.md](QOLLANMA_NETLIFY_VA_SHEETS.md).
