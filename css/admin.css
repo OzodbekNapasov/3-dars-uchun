@@ -313,6 +313,13 @@ input:checked + .slider:before {
   border-color: #cbd5e1;
 }
 
+.btn:disabled, .btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  box-shadow: none !important;
+}
+
 /* Table Card */
 .table-card {
   background: var(--admin-card);

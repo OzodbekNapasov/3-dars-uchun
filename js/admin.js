@@ -6,6 +6,7 @@
 (function () {
   // Holat
   let allSubmissions = [];
+  let selectedStudentKeys = new Set();
   let currentGroupFilter = "ALL";
   let currentSearchQuery = "";
   let isTestUnlocked = false;
@@ -37,7 +38,9 @@
   const btnChangePin = document.getElementById("btnChangePin");
   
   const btnRefresh = document.getElementById("btnRefresh");
-  const btnClearHistory = document.getElementById("btnClearHistory");
+  const btnDeleteSelected = document.getElementById("btnDeleteSelected");
+  const selectAllSubmissions = document.getElementById("selectAllSubmissions");
+  const selectedCountBadge = document.getElementById("selectedCountBadge");
   const btnToggleHistory = document.getElementById("btnToggleHistory");
   const btnExportExcel = document.getElementById("btnExportExcel");
   const btnExportCsv = document.getElementById("btnExportCsv");
@@ -65,10 +68,11 @@
           upsertLocalSubmission(event.data.payload);
           renderTable();
           updateStats();
-        } else if (event.data && event.data.type === "ADMIN_CLEAR_HISTORY") {
-          allSubmissions = [];
+        } else if (event.data && (event.data.type === "ADMIN_CLEAR_HISTORY" || event.data.type === "ADMIN_DELETE_SELECTED")) {
+          loadLocalSubmissions();
           renderTable();
           updateStats();
+          updateDeleteButtonState();
         }
       };
     }
@@ -141,6 +145,20 @@
         const key = btn.getAttribute("data-key");
         inspectStudentByKey(key);
       });
+
+      submissionsTableBody.addEventListener("change", (e) => {
+        if (e.target && e.target.classList.contains("submission-select-chk")) {
+          const key = e.target.getAttribute("data-key");
+          if (key) {
+            if (e.target.checked) {
+              selectedStudentKeys.add(key);
+            } else {
+              selectedStudentKeys.delete(key);
+            }
+          }
+          updateDeleteButtonState();
+        }
+      });
     }
 
     // Guruh dropdownini to'ldirish
@@ -181,8 +199,24 @@
       });
     }
 
-    if (btnClearHistory) {
-      btnClearHistory.addEventListener("click", handleClearHistory);
+    if (selectAllSubmissions) {
+      selectAllSubmissions.addEventListener("change", (e) => {
+        const checked = e.target.checked;
+        const visibleCheckboxes = document.querySelectorAll(".submission-select-chk");
+        visibleCheckboxes.forEach(chk => {
+          chk.checked = checked;
+          const key = chk.getAttribute("data-key");
+          if (key) {
+            if (checked) selectedStudentKeys.add(key);
+            else selectedStudentKeys.delete(key);
+          }
+        });
+        updateDeleteButtonState();
+      });
+    }
+
+    if (btnDeleteSelected) {
+      btnDeleteSelected.addEventListener("click", handleDeleteSelected);
     }
 
     if (btnToggleHistory) {
@@ -300,43 +334,106 @@
     return 1;
   }
 
-  // Eski yozuvlarni tozalash (Admin paneldagi ko'rinishni yangi dars uchun tozalash, Google Sheets-ga tegilmaydi)
-  function handleClearHistory() {
-    const confirmClear = confirm(
-      "Admin paneldagi eski yozuvlar tozalansinmi?\n\n" +
-      "OK — Hozirgi dars/guruh uchun admin panel yangidan toza boshlanadi.\n" +
-      "(Barcha eski natijalar Google Sheets jadvalida to'liq saqlanib qoladi)\n\n" +
+  // O'chirilgan/yashirilgan talabalar kalitlari ro'yxati (Google Sheets-ga tegilmaydi)
+  function getDeletedKeys() {
+    try {
+      const raw = localStorage.getItem("app_admin_deleted_keys");
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch (e) {}
+    return new Set();
+  }
+
+  function saveDeletedKeys(keySet) {
+    try {
+      localStorage.setItem("app_admin_deleted_keys", JSON.stringify(Array.from(keySet)));
+    } catch (e) {}
+  }
+
+  // O'chirish tugmasi va "Barchasini tanlash" holatini yangilash
+  function updateDeleteButtonState() {
+    const visibleCheckboxes = document.querySelectorAll(".submission-select-chk");
+    const count = selectedStudentKeys.size;
+
+    if (btnDeleteSelected) {
+      btnDeleteSelected.disabled = count === 0;
+    }
+    if (selectedCountBadge) {
+      if (count > 0) {
+        selectedCountBadge.textContent = count;
+        selectedCountBadge.style.display = "inline-block";
+      } else {
+        selectedCountBadge.style.display = "none";
+      }
+    }
+    if (selectAllSubmissions) {
+      const visibleKeys = Array.from(visibleCheckboxes).map(c => c.getAttribute("data-key")).filter(Boolean);
+      const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every(k => selectedStudentKeys.has(k));
+      const someVisibleSelected = visibleKeys.some(k => selectedStudentKeys.has(k));
+
+      if (visibleKeys.length === 0) {
+        selectAllSubmissions.checked = false;
+        selectAllSubmissions.indeterminate = false;
+      } else if (allVisibleSelected) {
+        selectAllSubmissions.checked = true;
+        selectAllSubmissions.indeterminate = false;
+      } else if (someVisibleSelected) {
+        selectAllSubmissions.checked = false;
+        selectAllSubmissions.indeterminate = true;
+      } else {
+        selectAllSubmissions.checked = false;
+        selectAllSubmissions.indeterminate = false;
+      }
+    }
+  }
+
+  // Tanlangan talabalar natijalarini admin paneldan o'chirish (Google Sheets-dan o'chirilmaydi)
+  function handleDeleteSelected() {
+    const count = selectedStudentKeys.size;
+    if (count === 0) return;
+
+    const confirmDelete = confirm(
+      `Belgilangan ${count} ta talaba natijasi admin paneldan tozalansinmi?\n\n` +
+      "OK — Natijalar faqat admin paneldan yashiriladi/tozalanadi.\n" +
+      "(Google Sheets jadvalidan o'chirilmaydi, barcha ma'lumotlar u yerda saqlanib qoladi)\n\n" +
       "Bekor qilish — O'zgarishsiz qoldirish."
     );
-    if (!confirmClear) return;
+    if (!confirmDelete) return;
 
-    const cutoffTs = Date.now();
+    const deletedKeys = getDeletedKeys();
+    selectedStudentKeys.forEach(k => deletedKeys.add(k));
+    saveDeletedKeys(deletedKeys);
+    selectedStudentKeys.clear();
+
+    // Mahalliy keshdagi allSubmissions dan ham olib tashlaymiz
+    allSubmissions = allSubmissions.filter(s => !deletedKeys.has(studentKey(s)));
     try {
-      localStorage.setItem("app_admin_cleared_ts", cutoffTs.toString());
-      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.ALL_SUBMISSIONS);
+      localStorage.setItem(APP_CONFIG.STORAGE_KEYS.ALL_SUBMISSIONS, JSON.stringify(allSubmissions));
     } catch (e) {}
-
-    allSubmissions = [];
 
     if (syncChannel) {
       try {
-        syncChannel.postMessage({ type: "ADMIN_CLEAR_HISTORY", cutoffTs: cutoffTs });
+        syncChannel.postMessage({ type: "ADMIN_DELETE_SELECTED" });
       } catch (e) {}
     }
 
     renderTable();
     updateStats();
-    alert("Admin paneli tozalandi!\nYangi talabalar kirishi bilan jadval to'lib boradi.\n\nEski yozuvlarni qayta ko'rish uchun 'Barchasini ko'rsatish' tugmasidan foydalanishingiz mumkin.");
+    updateDeleteButtonState();
   }
 
-  // Google Sheets-dagi barcha eski yozuvlarni qayta ko'rsatish
+  // Google Sheets-dagi barcha eski/yashirilgan yozuvlarni qayta ko'rsatish
   function handleToggleHistory() {
     try {
       localStorage.removeItem("app_admin_cleared_ts");
+      localStorage.removeItem("app_admin_deleted_keys");
     } catch (e) {}
+    selectedStudentKeys.clear();
     if (btnToggleHistory) btnToggleHistory.style.display = "none";
     fetchServerData();
-    alert("Barcha yozuvlar qayta ko'rsatildi!");
+    alert("Barcha natijalar qayta ko'rsatildi!");
   }
 
   // Local Submissions
@@ -456,10 +553,15 @@
   // Filtrlangan va saralangan ro'yxat.
   // Saralash bo'lmasa, har 10 soniyalik yangilanishda qatorlar sakrab turadi.
   function getFilteredSubmissions() {
+    const deletedKeys = getDeletedKeys();
     const clearedTs = Number(localStorage.getItem("app_admin_cleared_ts")) || 0;
     return allSubmissions
       .filter(s => {
-        // Agar o'qituvchi tozalashni bosgan bo'lsa, tozalash vaqtidan oldingi eski yozuvlar yashiriladi
+        // Tanlab o'chirilgan talabalarni yashirish
+        if (deletedKeys.has(studentKey(s))) {
+          return false;
+        }
+        // Agar o'qituvchi oldin umumiy tozalashni bosgan bo'lsa, tozalash vaqtidan oldingi eski yozuvlar yashiriladi
         if (clearedTs > 0) {
           const seenTs = s.lastSeen ? Date.parse(String(s.lastSeen).replace(" ", "T")) : 0;
           if (seenTs && seenTs < clearedTs) {
@@ -519,13 +621,15 @@
       statAvgScore.textContent = gradedCount > 0 ? Math.round(sumPercent / gradedCount) + "%" : "0%";
     }
     const clearedTs = Number(localStorage.getItem("app_admin_cleared_ts")) || 0;
+    const deletedCount = getDeletedKeys().size;
+    const hasHidden = deletedCount > 0 || clearedTs > 0;
     if (tableCountBadge) {
-      tableCountBadge.textContent = clearedTs > 0
-        ? `${list.length} ta talaba (eskilari yashirilgan)`
+      tableCountBadge.textContent = hasHidden
+        ? `${list.length} ta talaba (${deletedCount > 0 ? deletedCount + " ta yashirilgan" : "eskilari yashirilgan"})`
         : `${list.length} ta talaba`;
     }
     if (btnToggleHistory) {
-      btnToggleHistory.style.display = clearedTs > 0 ? "inline-flex" : "none";
+      btnToggleHistory.style.display = hasHidden ? "inline-flex" : "none";
     }
   }
 
@@ -537,13 +641,14 @@
     if (list.length === 0) {
       submissionsTableBody.innerHTML = `
         <tr>
-          <td colspan="14" class="empty-table">
+          <td colspan="15" class="empty-table">
             <svg class="empty-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
             <div style="font-weight: 800; font-size: 1.05rem; margin-bottom: 0.3rem;">Hozircha ma'lumotlar yo'q</div>
             <div style="font-size: 0.85rem;">Talabalar tizimga kirib topshiriqlarni boshlaganida natijalar bu yerda jonli paydo bo'ladi.</div>
           </td>
         </tr>
       `;
+      updateDeleteButtonState();
       return;
     }
 
@@ -564,9 +669,14 @@
       const online = isStudentOnline(s);
       const seenLabel = s.lastSeen ? String(s.lastSeen).split(" ")[1] || String(s.lastSeen) : "-";
       const varNum = Number(s.variant) || 1;
+      const key = studentKey(s);
+      const isChecked = selectedStudentKeys.has(key);
 
       html += `
         <tr>
+          <td style="text-align: center;">
+            <input type="checkbox" class="submission-select-chk" data-key="${escapeHtml(key)}" ${isChecked ? "checked" : ""} style="cursor: pointer; width: 16px; height: 16px; accent-color: var(--admin-primary);">
+          </td>
           <td style="font-weight: 800; color: var(--admin-muted); text-align: center;">${idx + 1}</td>
           <td><span class="badge badge-group">${escapeHtml(s.group || "-")}</span></td>
           <td>
@@ -610,6 +720,7 @@
     });
 
     submissionsTableBody.innerHTML = html;
+    updateDeleteButtonState();
   }
 
   // Talabaning batafsil javoblarini ko'rish modali
