@@ -41,9 +41,10 @@ var COL = {
   GRADE_LABEL: 13,
   ANSWERS: 14,
   LAST_SEEN: 15,
-  ONLINE: 16
+  ONLINE: 16,
+  VARIANT: 17
 };
-var NUM_COLS = 16;
+var NUM_COLS = 17;
 
 var HEADERS = [
   "Vaqt (Toshkent)",
@@ -61,7 +62,8 @@ var HEADERS = [
   "Baho Nomi",
   "Batafsil Javoblar",
   "Oxirgi faollik",
-  "Holat"
+  "Holat",
+  "Variant"
 ];
 
 function getTargetSheet() {
@@ -181,6 +183,12 @@ function doPost(e) {
       return jsonOut({ status: "success", unlocked: !!data.unlocked });
     }
 
+    // --- Admin buyrug'i: eski yozuvlarni arxivlash va jadvalni tozalash ---
+    if (data.action === "clear_sheet") {
+      archiveAndClearActiveSheet();
+      return jsonOut({ status: "success", message: "Jadval tozalandi va arxivlandi" });
+    }
+
     var sheet = getTargetSheet();
     ensureHeaders(sheet);
 
@@ -232,7 +240,8 @@ function doPost(e) {
       data.gradeLabel || "-",
       typeof data.answers === "object" ? JSON.stringify(data.answers) : (data.answers || ""),
       now,
-      "Online"
+      "Online",
+      data.variant ? String(data.variant) : "1"
     ];
 
     var targetRow = (existingRow > 1) ? existingRow : sheet.getLastRow() + 1;
@@ -275,7 +284,13 @@ function doGet(e) {
       });
     }
 
-    // 2. Admin panel: barcha natijalar
+    // 2. Admin buyrug'i: eski yozuvlarni arxivlash va jadvalni tozalash
+    if (action === "clear_sheet") {
+      archiveAndClearActiveSheet();
+      return jsonOut({ status: "success", message: "Jadval tozalandi va arxivlandi" });
+    }
+
+    // 3. Admin panel: barcha natijalar
     if (action === "get_submissions") {
       var sheet = getTargetSheet();
       ensureHeaders(sheet);
@@ -315,7 +330,8 @@ function doGet(e) {
             gradeLabel: String(row[COL.GRADE_LABEL - 1] || ""),
             answers: ans,
             lastSeen: String(lastSeen || ""),
-            online: String(row[COL.ONLINE - 1] || "") === "Online"
+            online: String(row[COL.ONLINE - 1] || "") === "Online",
+            variant: Number(row[COL.VARIANT - 1]) || 1
           });
         }
       }
@@ -329,7 +345,7 @@ function doGet(e) {
       });
     }
 
-    // 3. GET orqali ham yozish (sendBeacon / zaxira yo'li)
+    // 4. GET orqali ham yozish (sendBeacon / zaxira yo'li)
     if (e && e.parameter && (e.parameter.lastName || e.parameter.firstName)) {
       return doPost(e);
     }
@@ -345,3 +361,46 @@ function doGet(e) {
     return jsonOut({ status: "error", error: error.toString() });
   }
 }
+
+/**
+ * Asosiy jadvaldagi ("3-Dars Natijalar") eski talabalar yozuvlarini "3-Dars Arxiv"
+ * varag'iga nusxalaydi va asosiy jadvalni (2-qatordan boshlab) tozalaydi.
+ * Shunda hech qanday ma'lumot yo'qolmaydi va yangi dars toza varaqdan boshlanadi.
+ */
+function archiveAndClearActiveSheet() {
+  var ss;
+  try {
+    ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  } catch (e) {
+    ss = SpreadsheetApp.getActiveSpreadsheet();
+  }
+  var sheet = ss.getSheetByName(SHEET_NAME);
+  if (!sheet) return;
+
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return; // Faqat sarlavha bor yoki bo'sh
+
+  var archiveName = "3-Dars Arxiv";
+  var archiveSheet = ss.getSheetByName(archiveName);
+  if (!archiveSheet) {
+    archiveSheet = ss.insertSheet(archiveName);
+    archiveSheet.appendRow(HEADERS);
+    var hr = archiveSheet.getRange(1, 1, 1, HEADERS.length);
+    hr.setFontWeight("bold");
+    hr.setBackground("#475569");
+    hr.setFontColor("#ffffff");
+    hr.setHorizontalAlignment("center");
+    archiveSheet.setFrozenRows(1);
+    archiveSheet.getRange(1, 1, archiveSheet.getMaxRows(), NUM_COLS).setNumberFormat("@");
+  }
+
+  var dataToArchive = sheet.getRange(2, 1, lastRow - 1, NUM_COLS).getValues();
+  var archLastRow = archiveSheet.getLastRow();
+  var targetRange = archiveSheet.getRange(archLastRow + 1, 1, dataToArchive.length, NUM_COLS);
+  targetRange.setNumberFormat("@");
+  targetRange.setValues(dataToArchive);
+
+  // Asosiy jadvaldan ma'lumotlarni o'chirish (sarlavhadan tashqari)
+  sheet.deleteRows(2, lastRow - 1);
+}
+

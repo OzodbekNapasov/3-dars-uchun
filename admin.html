@@ -150,6 +150,10 @@
       </div>
 
       <div class="control-right">
+        <button type="button" id="btnClearHistory" class="btn btn-outline" style="color: #dc2626; border-color: #fca5a5;" title="Eski yozuvlarni va keshni tozalash">
+          <svg class="icon" viewBox="0 0 24 24" style="width: 16px; height: 16px;"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          Eski yozuvlarni tozalash
+        </button>
         <button type="button" id="btnExportExcel" class="btn btn-success" title="Excel (.xlsx) formatida saqlash">
           <svg class="icon" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
           Excel (.xlsx) yuklab olish
@@ -184,11 +188,12 @@
               <th style="width: 40px; text-align: center;">№</th>
               <th style="width: 90px;">Guruh</th>
               <th>Familiya, Ism</th>
+              <th style="text-align: center; width: 75px;" title="Amaliy mashg'ulot varianti (1-5)">Variant</th>
               <th style="text-align: center; width: 110px;" title="Talaba ayni damda tizimda turibdimi?">Tizimda</th>
               <th>Joriy Holat</th>
               <th style="text-align: center;" title="Axborot o'lchov birliklarini aylantirish (10 ta misol)">1-Bo'lim (O'lchov)</th>
-              <th style="text-align: center;" title="2-lik sanoq sistemasidan 10-likka o'tish (10 ta misol)">2-Bo'lim (2→10)</th>
-              <th style="text-align: center;" title="10-lik sanoq sistemasidan 2-likka o'tish (10 ta misol)">3-Bo'lim (10→2)</th>
+              <th style="text-align: center;" title="2-lik sanoq sistemasidan 10-likka o'tish (5 ta misol)">2-Bo'lim (2→10)</th>
+              <th style="text-align: center;" title="10-lik sanoq sistemasidan 2-likka o'tish (5 ta misol)">3-Bo'lim (10→2)</th>
               <th style="text-align: center;" title="Mavzu bo'yicha yakuniy test sinovi (20 ta savol)">4-Bo'lim (Test)</th>
               <th style="text-align: center;">Jami Ball</th>
               <th style="text-align: center;">Foiz</th>
@@ -198,7 +203,7 @@
           </thead>
           <tbody id="submissionsTableBody">
             <tr id="emptyStateRow">
-              <td colspan="13" class="empty-table">
+              <td colspan="14" class="empty-table">
                 <svg class="empty-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
                 <div style="font-weight: 800; font-size: 1.05rem; margin-bottom: 0.3rem;">Talabalar ma'lumotlari kutilmoqda...</div>
                 <div style="font-size: 0.85rem;">Talaba kompyuteridan link ochilib, ism-familiya kiritilgach shu yerda paydo bo'ladi.</div>

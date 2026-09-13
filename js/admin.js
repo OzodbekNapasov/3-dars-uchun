@@ -37,6 +37,7 @@
   const btnChangePin = document.getElementById("btnChangePin");
   
   const btnRefresh = document.getElementById("btnRefresh");
+  const btnClearHistory = document.getElementById("btnClearHistory");
   const btnExportExcel = document.getElementById("btnExportExcel");
   const btnExportCsv = document.getElementById("btnExportCsv");
   const btnPrintVedomost = document.getElementById("btnPrintVedomost");
@@ -61,6 +62,10 @@
       syncChannel.onmessage = function (event) {
         if (event.data && event.data.type === "STUDENT_UPDATE") {
           upsertLocalSubmission(event.data.payload);
+          renderTable();
+          updateStats();
+        } else if (event.data && event.data.type === "ADMIN_CLEAR_HISTORY") {
+          allSubmissions = [];
           renderTable();
           updateStats();
         }
@@ -175,6 +180,10 @@
       });
     }
 
+    if (btnClearHistory) {
+      btnClearHistory.addEventListener("click", handleClearHistory);
+    }
+
     if (btnExportExcel) {
       btnExportExcel.addEventListener("click", exportToExcel);
     }
@@ -274,6 +283,46 @@
     }
   }
 
+  // Eski yozuvlarni va keshni tozalash
+  function handleClearHistory() {
+    const confirmClear = confirm(
+      "Admin paneldagi va Google Sheets jadvalidagi barcha eski yozuvlarni tozalamoqchimisiz?\n\n" +
+      "OK — Barcha eski natijalar Google Sheets '3-Dars Arxiv' varag'iga xavfsiz ko'chiriladi va joriy jadval yangidan boshlanadi.\n" +
+      "Bekor qilish — O'zgarishsiz qoldirish."
+    );
+    if (!confirmClear) return;
+
+    allSubmissions = [];
+    try {
+      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.ALL_SUBMISSIONS);
+    } catch (e) {}
+
+    if (syncChannel) {
+      try {
+        syncChannel.postMessage({ type: "ADMIN_CLEAR_HISTORY" });
+      } catch (e) {}
+    }
+
+    renderTable();
+    updateStats();
+
+    if (APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) {
+      fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "clear_sheet" })
+      }).then(() => {
+        alert("Eski yozuvlar muvaffaqiyatli arxivlandi va jadval tozalandi!");
+      }).catch(err => {
+        console.warn("Google Sheets tozalash xatosi:", err);
+        alert("Lokal panel tozalandi!");
+      });
+    } else {
+      alert("Admin panel tozalandi!");
+    }
+  }
+
   // Local Submissions
   function loadLocalSubmissions() {
     try {
@@ -288,6 +337,9 @@
 
   function upsertLocalSubmission(newItem) {
     if (!newItem || !newItem.lastName || !newItem.firstName) return;
+    if (!newItem.variant) newItem.variant = 1;
+    else newItem.variant = Number(newItem.variant) || 1;
+
     const idx = allSubmissions.findIndex(s => 
       s.group === newItem.group &&
       s.lastName.toLowerCase() === newItem.lastName.toLowerCase() &&
@@ -342,28 +394,29 @@
         if (callback) callback();
       })
       .catch(err => {
-        console.warn("Serverdan ma'lumot olishda xatolik (Keshdagi ma'lumotlar ko'rsatilmoqda):", err);
+        console.warn("Serverdan ma'lumot olishda vaqtincha xatolik (Keshdagi ma'lumotlar saqlab qolindi):", err);
         setConnectionState(false);
+        // Mavjud keshdagi ma'lumotlar aslo yo'qolmaydi va ko'rinib turadi
+        renderTable();
+        updateStats();
         if (callback) callback();
       });
   }
 
   // Serverga ulanish holatini header'da ko'rsatish.
-  // Aks holda o'qituvchi keshdagi eski ma'lumotni jonli deb o'ylab qoladi.
   function setConnectionState(ok) {
-    if (serverReachable === ok) return;
     serverReachable = ok;
 
     if (connectionIndicator) connectionIndicator.classList.toggle("is-offline", !ok);
     if (connectionText) {
       connectionText.textContent = ok
         ? "Jonli sinxronizatsiya"
-        : "Server bilan aloqa yo'q — keshdagi ma'lumot";
+        : "Server band (qayta ulanmoqda...) — kesh faol";
     }
     if (connectionIndicator) {
       connectionIndicator.title = ok
         ? "Google Sheets bilan aloqa bor"
-        : "Google Apps Script javob bermayapti. Skript qayta deploy qilinganini tekshiring (Deploy > Manage deployments > New version).";
+        : "Google Apps Script band yoki javob kutmoqda. Keshdagi ma'lumotlar to'liq ko'rsatilmoqda va tizim avtomatik qayta ulanadi.";
     }
   }
 
@@ -455,7 +508,7 @@
     if (list.length === 0) {
       submissionsTableBody.innerHTML = `
         <tr>
-          <td colspan="12" class="empty-table">
+          <td colspan="14" class="empty-table">
             <svg class="empty-icon" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
             <div style="font-weight: 800; font-size: 1.05rem; margin-bottom: 0.3rem;">Hozircha ma'lumotlar yo'q</div>
             <div style="font-size: 0.85rem;">Talabalar tizimga kirib topshiriqlarni boshlaganida natijalar bu yerda jonli paydo bo'ladi.</div>
@@ -481,6 +534,7 @@
 
       const online = isStudentOnline(s);
       const seenLabel = s.lastSeen ? String(s.lastSeen).split(" ")[1] || String(s.lastSeen) : "-";
+      const varNum = Number(s.variant) || 1;
 
       html += `
         <tr>
@@ -488,6 +542,11 @@
           <td><span class="badge badge-group">${escapeHtml(s.group || "-")}</span></td>
           <td>
             <div style="font-weight: 850; color: var(--admin-dark);">${escapeHtml(s.lastName)} ${escapeHtml(s.firstName)}</div>
+          </td>
+          <td style="text-align: center;">
+            <span class="badge badge-group" style="background: #fef3c7; color: #92400e; border-color: #fde68a; font-weight: 800;">
+              ${escapeHtml(varNum)}-v
+            </span>
           </td>
           <td style="text-align: center;">
             <span class="presence ${online ? "is-online" : "is-offline"}">
@@ -532,44 +591,46 @@
       return;
     }
 
+    const varNum = Number(student.variant) || 1;
+
     if (modalStudentTitle) {
       modalStudentTitle.textContent = `${student.lastName} ${student.firstName}`;
     }
     if (modalStudentMeta) {
       modalStudentMeta.innerHTML = `
-        <strong>Guruh:</strong> ${student.group} &nbsp;|&nbsp; 
-        <strong>Vaqt:</strong> ${student.timestamp || "-"} &nbsp;|&nbsp;
-        <strong>Umumiy Ball:</strong> ${student.totalCorrect || "-"} &nbsp;|&nbsp;
-        <strong>Baho:</strong> ${student.grade || "-"} (${student.gradeLabel || "-"})
+        <strong>Guruh:</strong> ${escapeHtml(student.group)} &nbsp;|&nbsp; 
+        <strong>Variant:</strong> ${escapeHtml(varNum)}-variant &nbsp;|&nbsp; 
+        <strong>Vaqt:</strong> ${escapeHtml(student.timestamp || "-")} &nbsp;|&nbsp;
+        <strong>Umumiy Ball:</strong> ${escapeHtml(student.totalCorrect || "-")} &nbsp;|&nbsp;
+        <strong>Baho:</strong> ${escapeHtml(student.grade || "-")} (${escapeHtml(student.gradeLabel || "-")})
       `;
     }
 
     const answers = student.answers || {};
     let modalHtml = "";
 
-    // 1, 2, 3-bo'lim amaliy savollari
-    if (window.PRACTICAL_SECTIONS) {
-      window.PRACTICAL_SECTIONS.forEach(sec => {
-        modalHtml += `<div class="answers-section-title">${sec.title}</div>`;
-        modalHtml += `<div class="answers-grid">`;
-        sec.questions.forEach(q => {
-          const userVal = answers[q.id] !== undefined ? String(answers[q.id]) : "";
-          const isCorrect = window.checkPracticalAnswer ? window.checkPracticalAnswer(userVal, q.expectedAnswer) : false;
-          const rowClass = userVal === "" ? "ans-row" : (isCorrect ? "ans-row is-correct" : "ans-row is-wrong");
-          
-          modalHtml += `
-            <div class="${rowClass}">
-              <div class="ans-prompt">${q.num}. ${q.prompt}</div>
-              <div class="ans-vals">
-                <span>Talaba yozgan: <strong class="user-val">${userVal !== "" ? escapeHtml(userVal) : "(Javob berilmagan)"}</strong></span>
-                <span class="exp-val">| To'g'ri: ${escapeHtml(q.expectedAnswer)}</span>
-              </div>
+    // 1, 2, 3-bo'lim amaliy savollari (Talabaning varianti bo'yicha)
+    const secConfigs = window.getPracticalSections ? window.getPracticalSections(varNum, false) : (window.PRACTICAL_SECTIONS || []);
+    secConfigs.forEach(sec => {
+      modalHtml += `<div class="answers-section-title">${sec.title}</div>`;
+      modalHtml += `<div class="answers-grid">`;
+      sec.questions.forEach(q => {
+        const userVal = answers[q.id] !== undefined ? String(answers[q.id]) : "";
+        const isCorrect = window.checkPracticalAnswer ? window.checkPracticalAnswer(userVal, q.expectedAnswer) : false;
+        const rowClass = userVal === "" ? "ans-row" : (isCorrect ? "ans-row is-correct" : "ans-row is-wrong");
+        
+        modalHtml += `
+          <div class="${rowClass}">
+            <div class="ans-prompt">${q.num}. ${q.prompt}</div>
+            <div class="ans-vals">
+              <span>Talaba yozgan: <strong class="user-val">${userVal !== "" ? escapeHtml(userVal) : "(Javob berilmagan)"}</strong></span>
+              <span class="exp-val">| To'g'ri: ${escapeHtml(q.expectedAnswer)}</span>
             </div>
-          `;
-        });
-        modalHtml += `</div>`;
+          </div>
+        `;
       });
-    }
+      modalHtml += `</div>`;
+    });
 
     // 4-bo'lim: Yakuniy test — har bir savol bo'yicha batafsil
     modalHtml += `<div class="answers-section-title">4-Bo'lim: Yakuniy Test Sinovi</div>`;
@@ -639,6 +700,7 @@
     "Guruh",
     "Familiya",
     "Ism",
+    "Variant",
     "Tizimda",
     "Oxirgi faollik",
     "Holati",
@@ -653,12 +715,14 @@
   ];
 
   function buildExportRow(s, idx) {
+    const varNum = Number(s.variant) || 1;
     return [
       idx + 1,
       s.timestamp || "",
       s.group || "",
       s.lastName || "",
       s.firstName || "",
+      `${varNum}-variant`,
       isStudentOnline(s) ? "Tizimda" : "Chiqqan",
       s.lastSeen || "-",
       s.statusText || "",
@@ -674,37 +738,57 @@
   }
 
   /**
-   * "Javoblar" varag'i: har bir talaba — bitta qator, har bir amaliy savol —
-   * alohida ustun, oxirida test natijasi. O'qituvchi kim qayerda xato
-   * qilganini bir qarashda ko'radi.
+   * "Javoblar" varag'i: har bir talabaning o'z varianti va bo'limlar bo'yicha natijalari
    */
   function buildAnswersSheet(list) {
-    if (!window.XLSX || !window.PRACTICAL_SECTIONS) return null;
+    if (!window.XLSX) return null;
 
-    const questions = [];
-    window.PRACTICAL_SECTIONS.forEach(sec => {
-      sec.questions.forEach(q => {
-        questions.push({ id: q.id, label: `${sec.sectionNumber}.${q.num} ${q.prompt}`, expected: q.expectedAnswer });
-      });
-    });
-
-    const header = ["Guruh", "Familiya", "Ism"].concat(questions.map(q => q.label), ["Test natijasi"]);
+    const header = [
+      "Guruh",
+      "Familiya",
+      "Ism",
+      "Variant",
+      "1-Bo'lim (O'lchov)",
+      "2-Bo'lim (2->10)",
+      "3-Bo'lim (10->2)",
+      "4-Bo'lim (Test)",
+      "Jami Ball",
+      "Foiz",
+      "Baho"
+    ];
     const rows = [header];
 
-    // Ikkinchi qator — to'g'ri javoblar namunasi (o'qituvchi solishtirishi uchun)
-    rows.push(["", "TO'G'RI JAVOB", ""].concat(questions.map(q => q.expected), [""]));
-
     list.forEach(s => {
-      const ans = s.answers || {};
-      rows.push(
-        [s.group || "", s.lastName || "", s.firstName || ""]
-          .concat(questions.map(q => (ans[q.id] !== undefined ? String(ans[q.id]) : "")), [s.testScore || "-"])
-      );
+      const varNum = Number(s.variant) || 1;
+      rows.push([
+        s.group || "",
+        s.lastName || "",
+        s.firstName || "",
+        `${varNum}-variant`,
+        s.sec1Score || "-",
+        s.sec2Score || "-",
+        s.sec3Score || "-",
+        s.testScore || "-",
+        s.totalCorrect || "-",
+        s.percentage || "-",
+        s.grade ? `${s.grade} (${s.gradeLabel || ""})` : "-"
+      ]);
     });
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    ws['!cols'] = [{ wch: 9 }, { wch: 18 }, { wch: 16 }]
-      .concat(questions.map(() => ({ wch: 16 })), [{ wch: 14 }]);
+    ws['!cols'] = [
+      { wch: 10 },
+      { wch: 18 },
+      { wch: 16 },
+      { wch: 12 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 16 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 10 },
+      { wch: 14 }
+    ];
     return ws;
   }
 
@@ -733,6 +817,7 @@
         { wch: 10 }, // Guruh
         { wch: 18 }, // Familiya
         { wch: 16 }, // Ism
+        { wch: 12 }, // Variant
         { wch: 12 }, // Tizimda
         { wch: 18 }, // Oxirgi faollik
         { wch: 14 }, // Holati

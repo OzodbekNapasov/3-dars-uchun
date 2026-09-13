@@ -20,7 +20,7 @@
   // Bo'sh (boshlang'ich) sessiya namunasi
   function createEmptySession() {
     return {
-      student: null, // { lastName, firstName, group, startTime }
+      student: null, // { lastName, firstName, group, variant, startTime }
       activeSection: 1, // 1, 2, 3, 4 (test), 5 (final result)
       sections: {
         1: { completed: false, correctCount: 0, totalCount: sectionTotal(1), answers: {} },
@@ -28,6 +28,7 @@
         3: { completed: false, correctCount: 0, totalCount: sectionTotal(3), answers: {} },
         4: { completed: false, correctCount: 0, totalCount: sectionTotal(4), answers: {}, scorePercent: 0, grade: 2, gradeLabel: "" }
       },
+      practicalSections: null, // Talaba uchun 1 marta yaratilgan aralash amaliy bo'limlar
       testUnlocked: false,
       testQuestions: [],
       testCurrentIdx: 0,
@@ -194,7 +195,11 @@
 
     const fresh = createEmptySession();
     fresh.student = saved.student;
+    if (!fresh.student.variant) fresh.student.variant = 1;
     fresh.activeSection = Number(saved.activeSection) || 1;
+    fresh.practicalSections = Array.isArray(saved.practicalSections) && saved.practicalSections.length > 0
+      ? saved.practicalSections
+      : (window.getPracticalSections ? window.getPracticalSections(fresh.student.variant, true) : null);
     fresh.testUnlocked = !!saved.testUnlocked;
     fresh.testQuestions = Array.isArray(saved.testQuestions) ? saved.testQuestions : [];
     fresh.testCurrentIdx = Number(saved.testCurrentIdx) || 0;
@@ -312,7 +317,8 @@
   // boshqa kompyuterdagi talabalarga ruxsat aynan shu yo'l bilan yetadi.
   function pollTestStatus() {
     if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) return;
-    if (!session.student || session.testUnlocked || session.sections[4].completed) return;
+    // Faqat talaba 4-bo'limda bo'lsa va test hali ochilmagan bo'lsa so'rov yuboriladi (ortiqcha yuklamani oldini olish uchun)
+    if (!session.student || session.activeSection !== 4 || session.testUnlocked || session.sections[4].completed) return;
 
     fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL + "?action=get_test_status&t=" + Date.now())
       .then(res => res.json())
@@ -392,6 +398,7 @@
       percentage: `${pct}%`,
       grade: s4.completed ? gradeObj.grade : "-",
       gradeLabel: s4.completed ? gradeObj.label : "-",
+      variant: (session.student && session.student.variant) ? session.student.variant : 1,
       answers: allAnswers,
       // Jonli holat: server orqali ham, bitta kompyuterdagi BroadcastChannel
       // orqali ham admin panel bir xil ma'lumot olishi uchun
@@ -458,6 +465,8 @@
     const lastName = (lastNameInput ? lastNameInput.value : "").trim();
     const firstName = (firstNameInput ? firstNameInput.value : "").trim();
     const group = (studentGroupSelect ? studentGroupSelect.value : "").trim();
+    const studentVariantSelect = document.getElementById("studentVariantSelect");
+    const chosenVariant = studentVariantSelect ? studentVariantSelect.value : "auto";
 
     if (!lastName) {
       alert("Iltimos, familiyangizni kiriting!");
@@ -475,12 +484,23 @@
       return;
     }
 
+    let variantNum = 1;
+    if (chosenVariant === "auto" || !chosenVariant) {
+      variantNum = Math.floor(Math.random() * (APP_CONFIG.VARIANTS_COUNT || 5)) + 1;
+    } else {
+      variantNum = parseInt(chosenVariant, 10) || 1;
+    }
+
     session.student = {
       lastName: lastName,
       firstName: firstName,
       group: group,
+      variant: variantNum,
       startTime: new Date().toLocaleTimeString("uz-UZ")
     };
+    if (window.getPracticalSections) {
+      session.practicalSections = window.getPracticalSections(variantNum, true);
+    }
 
     saveSession();
     showPlatformView();
@@ -514,6 +534,8 @@
 
     if (studentForm) studentForm.reset();
     if (studentGroupSelect) studentGroupSelect.value = "";
+    const studentVariantSelect = document.getElementById("studentVariantSelect");
+    if (studentVariantSelect) studentVariantSelect.value = "auto";
     showRegisterView();
     if (lastNameInput) lastNameInput.focus();
   }
@@ -533,6 +555,10 @@
 
     if (userNameDisplay) userNameDisplay.textContent = `${session.student.lastName} ${session.student.firstName}`;
     if (userGroupDisplay) userGroupDisplay.textContent = `${session.student.group}-guruh`;
+    const userVariantDisplay = document.getElementById("userVariantDisplay");
+    if (userVariantDisplay && session.student) {
+      userVariantDisplay.textContent = `${session.student.variant || 1}-variant`;
+    }
 
     updateStepIndicators();
     renderCurrentSection();
@@ -595,6 +621,11 @@
     saveSession();
     updateStepIndicators();
     renderCurrentSection();
+
+    // 4-bo'limga o'tganda test ruxsatini darhol tekshiramiz
+    if (secNum === 4) {
+      pollTestStatus();
+    }
   }
 
   // Joriy bo'limni ekranga chizish
@@ -621,11 +652,23 @@
   }
 
   // =========================================================================
+  // =========================================================================
   // AMALIY BO'LIMLAR (1, 2, 3) LOGIKASI
   // =========================================================================
 
+  function getPracticalSectionConfig(secNum) {
+    if (session.practicalSections && session.practicalSections[secNum - 1]) {
+      return session.practicalSections[secNum - 1];
+    }
+    const v = (session.student && session.student.variant) || 1;
+    if (window.getPracticalSections) {
+      return window.getPracticalSections(v, false)[secNum - 1];
+    }
+    return window.PRACTICAL_SECTIONS ? window.PRACTICAL_SECTIONS[secNum - 1] : null;
+  }
+
   function renderPracticalSection(secNum) {
-    const secConfig = window.PRACTICAL_SECTIONS ? window.PRACTICAL_SECTIONS[secNum - 1] : null;
+    const secConfig = getPracticalSectionConfig(secNum);
     if (!secConfig) return;
 
     const secState = session.sections[secNum];
@@ -721,7 +764,7 @@
   // Amaliy bo'limni tasdiqlash va ballni hisoblash
   function submitCurrentPracticalSection() {
     const secNum = session.activeSection;
-    const secConfig = window.PRACTICAL_SECTIONS ? window.PRACTICAL_SECTIONS[secNum - 1] : null;
+    const secConfig = getPracticalSectionConfig(secNum);
     const secState = session.sections[secNum];
     if (!secConfig || secState.completed) return;
 
@@ -1087,6 +1130,10 @@
   function renderFinalSummary() {
     if (resStudentName) resStudentName.textContent = `${session.student.lastName} ${session.student.firstName}`;
     if (resStudentGroup) resStudentGroup.textContent = `${session.student.group}-guruh`;
+    const resStudentVariant = document.getElementById("resStudentVariant");
+    if (resStudentVariant && session.student) {
+      resStudentVariant.textContent = `${session.student.variant || 1}-variant`;
+    }
 
     const s1 = session.sections[1];
     const s2 = session.sections[2];

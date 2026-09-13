@@ -17,14 +17,17 @@ const APP_CONFIG = {
     "26-07"
   ],
 
+  // Amaliy mashqlar variantlari soni
+  VARIANTS_COUNT: 5,
+
   // Test tarkibi: har bir kategoriyadan nechta savol tushishi.
-  // Jami = 12 + 4 + 4 = 20 ta savol. Savollar bankidan (js/questions.js)
+  // Jami = 10 + 5 + 5 = 20 ta savol. Savollar bankidan (js/questions.js)
   // har bir kategoriya ichidan tasodifiy tanlanadi, ya'ni har bir talabaga
   // boshqacha variant tushadi, lekin tuzilishi bir xil bo'ladi.
   TEST_COMPOSITION: {
-    nazariy: 12, // mavzu bo'yicha nazariy savollar
-    olchov: 4,   // axborot o'lchov birliklari
-    sanoq: 4     // sanoq sistemalari (2-lik / 10-lik)
+    nazariy: 10, // mavzu bo'yicha sodda nazariy savollar
+    olchov: 5,   // axborot o'lchov birliklari
+    sanoq: 5     // sanoq sistemalari (2-lik / 10-lik)
   },
   TEST_DURATION_MINUTES: 25, // 25 daqiqa
   
@@ -34,11 +37,11 @@ const APP_CONFIG = {
   // Admin panelga kirish paroli (faqat o'qituvchi biladi)
   ADMIN_PASSWORD: "1207",
 
-  // Real vaqt sozlamalari (millisekundlarda)
-  HEARTBEAT_INTERVAL_MS: 60000,      // Talaba "men shu yerdaman" signali
-  TEST_STATUS_POLL_MS: 20000,        // Talaba test ruxsatini serverdan so'rashi
-  ADMIN_REFRESH_MS: 10000,           // Admin jadvalini yangilash
-  ONLINE_THRESHOLD_MS: 150000,       // Shu vaqtdan keyin talaba "Offline" deb belgilanadi
+  // Real vaqt sozlamalari (millisekundlarda) — Apps Script kvotasini tejash va uzilishlarning oldini olish uchun
+  HEARTBEAT_INTERVAL_MS: 120000,     // Talaba "men shu yerdaman" signali (2 daqiqa)
+  TEST_STATUS_POLL_MS: 30000,        // Talaba test ruxsatini serverdan so'rashi (faqat 4-bo'limda)
+  ADMIN_REFRESH_MS: 12000,           // Admin jadvalini yangilash (12 soniya)
+  ONLINE_THRESHOLD_MS: 240000,       // 4 daqiqa harakatsizlikdan so'nggina "Offline" deb belgilanadi
 
   // LocalStorage kalitlari
   STORAGE_KEYS: {

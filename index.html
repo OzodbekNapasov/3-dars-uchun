@@ -32,6 +32,10 @@
           <span id="userGroupDisplay">26-01-guruh</span>
         </div>
 
+        <div class="user-badge" id="userVariantBadge" style="background: #fef3c7; color: #92400e; border-color: #fde68a;" title="Variant">
+          <span id="userVariantDisplay">1-variant</span>
+        </div>
+
         <div id="currentSectionBadge" class="timer-badge" style="background: #f1f5f9; color: #334155; border-color: #cbd5e1;">
           1-Bo'lim
         </div>
@@ -68,7 +72,7 @@
         </div>
 
         <form id="studentForm" novalidate>
-          <div class="index-grid" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 1.25rem;">
+          <div class="index-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
             <div class="form-group">
               <label class="form-label" for="lastName" style="font-weight: 800; font-size: 0.85rem;">Familiyangiz *</label>
               <input type="text" id="lastName" class="form-input" placeholder="Masalan: Karimov" autocomplete="off" required>
@@ -90,6 +94,18 @@
                 <option value="26-05">26-05-guruh</option>
                 <option value="26-06">26-06-guruh</option>
                 <option value="26-07">26-07-guruh</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="studentVariantSelect" style="font-weight: 800; font-size: 0.85rem;">Variant *</label>
+              <select id="studentVariantSelect" class="form-input" style="height: 42px;">
+                <option value="auto">Tasodifiy (Avto)</option>
+                <option value="1">1-variant</option>
+                <option value="2">2-variant</option>
+                <option value="3">3-variant</option>
+                <option value="4">4-variant</option>
+                <option value="5">5-variant</option>
               </select>
             </div>
           </div>
@@ -276,7 +292,8 @@
           </h2>
           <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1.5rem;">
             <span id="resStudentName" style="font-weight: 800; color: var(--dark);">-</span> | 
-            <span id="resStudentGroup" style="font-weight: 800; color: var(--primary);">-</span>
+            <span id="resStudentGroup" style="font-weight: 800; color: var(--primary);">-</span> |
+            <span id="resStudentVariant" style="font-weight: 800; color: #b45309;">1-variant</span>
           </p>
 
           <!-- 4 ta bo'lim bo'yicha hisobot gridi -->
