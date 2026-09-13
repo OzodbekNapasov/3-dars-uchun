@@ -98,15 +98,22 @@ const ALL_QUESTIONS = [
     id: 13,
     category: "nazariy",
     question: "Kompyuter barcha ma'lumotlarni qaysi sanoq sistemasida qayta ishlaydi?",
-    options: ["Ikkilik (2-lik)", "O'nlik (10-lik)", "Rim sanoq sistemasida", "Harfli sanoq sistemasida"],
+    options: ["Ikkilik (2-lik)", "O'nlik (10-lik)", "Sakkizlik (8-lik)", "O'n oltilik (16-lik)"],
     answer: "Ikkilik (2-lik)"
   },
   {
-    id: 14,
+    id: 52,
     category: "nazariy",
-    question: "Rim raqamlari (I, V, X, L, C, D, M) qanday sanoq sistemasiga kiradi?",
-    options: ["Pozitsiyasiz sanoq sistemasi", "Pozitsiyali sanoq sistemasi", "Ikkilik sanoq sistemasi", "O'n oltilik sanoq sistemasi"],
-    answer: "Pozitsiyasiz sanoq sistemasi"
+    question: "O'nlik sanoq sistemasida qaysi raqamlar ishlatiladi?",
+    options: ["0 dan 9 gacha bo'lgan raqamlar", "Faqat 0 va 1", "1 dan 10 gacha bo'lgan raqamlar", "0 dan 8 gacha bo'lgan raqamlar"],
+    answer: "0 dan 9 gacha bo'lgan raqamlar"
+  },
+  {
+    id: 53,
+    category: "nazariy",
+    question: "Fleshka yoki qattiq disk (HDD/SSD) xotira hajmi ko'pincha qaysi o'lchov birligida belgilanadi?",
+    options: ["Gigabayt (GB) va Terabayt (TB)", "Faqat Bit", "Faqat Bayt", "Gers (Hz)"],
+    answer: "Gigabayt (GB) va Terabayt (TB)"
   },
   {
     id: 15,
