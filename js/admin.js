@@ -38,6 +38,7 @@
   
   const btnRefresh = document.getElementById("btnRefresh");
   const btnClearHistory = document.getElementById("btnClearHistory");
+  const btnToggleHistory = document.getElementById("btnToggleHistory");
   const btnExportExcel = document.getElementById("btnExportExcel");
   const btnExportCsv = document.getElementById("btnExportCsv");
   const btnPrintVedomost = document.getElementById("btnPrintVedomost");
@@ -184,6 +185,10 @@
       btnClearHistory.addEventListener("click", handleClearHistory);
     }
 
+    if (btnToggleHistory) {
+      btnToggleHistory.addEventListener("click", handleToggleHistory);
+    }
+
     if (btnExportExcel) {
       btnExportExcel.addEventListener("click", exportToExcel);
     }
@@ -283,44 +288,55 @@
     }
   }
 
-  // Eski yozuvlarni va keshni tozalash
+  // Talabaning variant raqamini aniqlash (variant xususiyatidan, answers._variant dan yoki savol ID sidan)
+  function getStudentVariant(s) {
+    if (s && s.variant) return Number(s.variant);
+    const ans = (s && s.answers) || {};
+    if (ans._variant) return Number(ans._variant);
+    for (const k of Object.keys(ans)) {
+      const m = k.match(/^v(\d)_/);
+      if (m) return Number(m[1]);
+    }
+    return 1;
+  }
+
+  // Eski yozuvlarni tozalash (Admin paneldagi ko'rinishni yangi dars uchun tozalash, Google Sheets-ga tegilmaydi)
   function handleClearHistory() {
     const confirmClear = confirm(
-      "Admin paneldagi va Google Sheets jadvalidagi barcha eski yozuvlarni tozalamoqchimisiz?\n\n" +
-      "OK — Barcha eski natijalar Google Sheets '3-Dars Arxiv' varag'iga xavfsiz ko'chiriladi va joriy jadval yangidan boshlanadi.\n" +
+      "Admin paneldagi eski yozuvlar tozalansinmi?\n\n" +
+      "OK — Hozirgi dars/guruh uchun admin panel yangidan toza boshlanadi.\n" +
+      "(Barcha eski natijalar Google Sheets jadvalida to'liq saqlanib qoladi)\n\n" +
       "Bekor qilish — O'zgarishsiz qoldirish."
     );
     if (!confirmClear) return;
 
-    allSubmissions = [];
+    const cutoffTs = Date.now();
     try {
+      localStorage.setItem("app_admin_cleared_ts", cutoffTs.toString());
       localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.ALL_SUBMISSIONS);
     } catch (e) {}
 
+    allSubmissions = [];
+
     if (syncChannel) {
       try {
-        syncChannel.postMessage({ type: "ADMIN_CLEAR_HISTORY" });
+        syncChannel.postMessage({ type: "ADMIN_CLEAR_HISTORY", cutoffTs: cutoffTs });
       } catch (e) {}
     }
 
     renderTable();
     updateStats();
+    alert("Admin paneli tozalandi!\nYangi talabalar kirishi bilan jadval to'lib boradi.\n\nEski yozuvlarni qayta ko'rish uchun 'Barchasini ko'rsatish' tugmasidan foydalanishingiz mumkin.");
+  }
 
-    if (APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) {
-      fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "clear_sheet" })
-      }).then(() => {
-        alert("Eski yozuvlar muvaffaqiyatli arxivlandi va jadval tozalandi!");
-      }).catch(err => {
-        console.warn("Google Sheets tozalash xatosi:", err);
-        alert("Lokal panel tozalandi!");
-      });
-    } else {
-      alert("Admin panel tozalandi!");
-    }
+  // Google Sheets-dagi barcha eski yozuvlarni qayta ko'rsatish
+  function handleToggleHistory() {
+    try {
+      localStorage.removeItem("app_admin_cleared_ts");
+    } catch (e) {}
+    if (btnToggleHistory) btnToggleHistory.style.display = "none";
+    fetchServerData();
+    alert("Barcha yozuvlar qayta ko'rsatildi!");
   }
 
   // Local Submissions
@@ -337,8 +353,7 @@
 
   function upsertLocalSubmission(newItem) {
     if (!newItem || !newItem.lastName || !newItem.firstName) return;
-    if (!newItem.variant) newItem.variant = 1;
-    else newItem.variant = Number(newItem.variant) || 1;
+    newItem.variant = getStudentVariant(newItem);
 
     const idx = allSubmissions.findIndex(s => 
       s.group === newItem.group &&
@@ -441,8 +456,16 @@
   // Filtrlangan va saralangan ro'yxat.
   // Saralash bo'lmasa, har 10 soniyalik yangilanishda qatorlar sakrab turadi.
   function getFilteredSubmissions() {
+    const clearedTs = Number(localStorage.getItem("app_admin_cleared_ts")) || 0;
     return allSubmissions
       .filter(s => {
+        // Agar o'qituvchi tozalashni bosgan bo'lsa, tozalash vaqtidan oldingi eski yozuvlar yashiriladi
+        if (clearedTs > 0) {
+          const seenTs = s.lastSeen ? Date.parse(String(s.lastSeen).replace(" ", "T")) : 0;
+          if (seenTs && seenTs < clearedTs) {
+            return false;
+          }
+        }
         // Guruh filtri
         if (currentGroupFilter !== "ALL" && s.group !== currentGroupFilter) {
           return false;
@@ -495,8 +518,14 @@
     if (statAvgScore) {
       statAvgScore.textContent = gradedCount > 0 ? Math.round(sumPercent / gradedCount) + "%" : "0%";
     }
+    const clearedTs = Number(localStorage.getItem("app_admin_cleared_ts")) || 0;
     if (tableCountBadge) {
-      tableCountBadge.textContent = `${list.length} ta talaba`;
+      tableCountBadge.textContent = clearedTs > 0
+        ? `${list.length} ta talaba (eskilari yashirilgan)`
+        : `${list.length} ta talaba`;
+    }
+    if (btnToggleHistory) {
+      btnToggleHistory.style.display = clearedTs > 0 ? "inline-flex" : "none";
     }
   }
 

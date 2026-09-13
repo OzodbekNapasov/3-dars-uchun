@@ -383,6 +383,7 @@
     if (s2.answers) Object.assign(allAnswers, s2.answers);
     if (s3.answers) Object.assign(allAnswers, s3.answers);
     if (s4.answers) Object.assign(allAnswers, s4.answers);
+    allAnswers["_variant"] = (session.student && session.student.variant) ? session.student.variant : 1;
 
     return {
       timestamp: session.student.startTime || new Date().toLocaleString("uz-UZ"),
