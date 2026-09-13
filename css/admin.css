@@ -837,3 +837,246 @@ input:checked + .slider:before {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   TUNGI REJIM (DARK MODE) — O'QITUVCHI ADMIN PANEL
+   ========================================================================== */
+body.dark-mode {
+  --admin-primary: #3b82f6;
+  --admin-primary-dark: #2563eb;
+  --admin-primary-light: rgba(59, 130, 246, 0.15);
+  --admin-success: #10b981;
+  --admin-success-light: rgba(16, 185, 129, 0.15);
+  --admin-warning: #f59e0b;
+  --admin-warning-light: rgba(245, 158, 11, 0.15);
+  --admin-danger: #ef4444;
+  --admin-danger-light: rgba(239, 68, 68, 0.15);
+  --admin-dark: #f8fafc;
+  --admin-text: #e2e8f0;
+  --admin-muted: #94a3b8;
+  --admin-bg: #090d16;
+  --admin-card: #111827;
+  --admin-border: #1e293b;
+  --admin-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .admin-navbar {
+  background: #0d1527;
+  border-bottom-color: #1e293b;
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+}
+
+body.dark-mode .brand-text h1 {
+  color: #ffffff;
+}
+
+body.dark-mode .stat-card {
+  background: #111827;
+  border-color: #1e293b;
+}
+
+body.dark-mode .stat-icon.primary { background: rgba(59, 130, 246, 0.18); color: #60a5fa; }
+body.dark-mode .stat-icon.success { background: rgba(16, 185, 129, 0.18); color: #34d399; }
+body.dark-mode .stat-icon.warning { background: rgba(245, 158, 11, 0.18); color: #fbbf24; }
+body.dark-mode .stat-icon.purple { background: rgba(168, 85, 247, 0.18); color: #c084fc; }
+
+body.dark-mode .control-card,
+body.dark-mode .table-card {
+  background: #111827;
+  border-color: #1e293b;
+}
+
+body.dark-mode .table-header {
+  border-bottom-color: #1e293b;
+}
+
+body.dark-mode .table-header h3 {
+  color: #ffffff;
+}
+
+body.dark-mode .form-select,
+body.dark-mode .form-search {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+body.dark-mode .form-select:focus,
+body.dark-mode .form-search:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+body.dark-mode .btn-outline {
+  background: #1e293b;
+  color: #e2e8f0;
+  border-color: #334155;
+}
+
+body.dark-mode .btn-outline:hover {
+  background: #283548;
+  border-color: #475569;
+  color: #ffffff;
+}
+
+body.dark-mode .test-switch-wrapper {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+body.dark-mode .slider {
+  background-color: #334155;
+}
+
+body.dark-mode .admin-table th {
+  background: #0d1527;
+  color: #94a3b8;
+  border-bottom-color: #1e293b;
+}
+
+body.dark-mode .admin-table td {
+  border-bottom-color: #1e293b;
+  color: #cbd5e1;
+}
+
+body.dark-mode .admin-table tbody tr:hover {
+  background: #152238;
+}
+
+body.dark-mode .badge-group {
+  background: rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+body.dark-mode .badge-score {
+  background: #1e293b;
+  color: #cbd5e1;
+  border-color: #334155;
+}
+
+body.dark-mode .badge-success {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+body.dark-mode .badge-primary {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+body.dark-mode .badge-warning {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+body.dark-mode .badge-danger {
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+body.dark-mode .status-tag.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+}
+
+body.dark-mode .status-tag.finished {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+body.dark-mode .modal-box {
+  background: #111827;
+  border: 1px solid #1e293b;
+  color: #f8fafc;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .modal-head,
+body.dark-mode .modal-foot {
+  border-color: #1e293b;
+}
+
+body.dark-mode .modal-close-btn {
+  color: #94a3b8;
+}
+
+body.dark-mode .modal-close-btn:hover {
+  color: #ffffff;
+}
+
+body.dark-mode .answers-section-title {
+  color: #f8fafc;
+  border-bottom-color: #1e293b;
+}
+
+body.dark-mode .ans-row {
+  background: #0d1527;
+  border-color: #1e293b;
+}
+
+body.dark-mode .ans-prompt {
+  color: #f8fafc;
+}
+
+body.dark-mode .ans-row.is-correct {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+body.dark-mode .ans-row.is-wrong {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+body.dark-mode .ans-row.is-correct .user-val {
+  color: #34d399;
+}
+
+body.dark-mode .ans-row.is-wrong .user-val {
+  color: #f87171;
+}
+
+body.dark-mode .exp-val {
+  color: #34d399;
+}
+
+body.dark-mode .test-answer-row {
+  background: #0d1527;
+  border-color: #1e293b;
+}
+
+body.dark-mode .test-answer-row.is-correct {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+body.dark-mode .test-answer-row.is-wrong {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+body.dark-mode .test-answer-row .tq-text {
+  color: #f8fafc;
+}
+
+body.dark-mode .test-answer-row .tq-vals {
+  color: #94a3b8;
+}
+
+body.dark-mode .auth-box {
+  background: #111827;
+  border: 1px solid #1e293b;
+  color: #f8fafc;
+}
+
+body.dark-mode .auth-box input {
+  background: #0d1527;
+  border-color: #334155;
+  color: #f8fafc;
+}
+

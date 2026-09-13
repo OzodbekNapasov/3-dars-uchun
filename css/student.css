@@ -716,3 +716,148 @@ button.option-item:disabled:hover {
   border-color: rgba(239, 68, 68, 0.5);
   color: #ffffff;
 }
+
+/* ==========================================================================
+   Cyber Bildirishnoma va Tasdiqlash Modali (Custom In-DOM Alert/Confirm)
+   ========================================================================== */
+.cyber-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(4, 7, 15, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  animation: cyberFadeIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes cyberFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cyber-dialog-box {
+  background: #111827;
+  border: 1.5px solid rgba(99, 102, 241, 0.4);
+  border-radius: 20px;
+  max-width: 440px;
+  width: 100%;
+  padding: 2rem 1.75rem 1.75rem;
+  text-align: center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 35px rgba(99, 102, 241, 0.2);
+  animation: cyberScaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes cyberScaleIn {
+  from { transform: scale(0.9) translateY(10px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.cyber-dialog-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1.5px solid rgba(245, 158, 11, 0.4);
+}
+
+.cyber-dialog-icon-wrap svg {
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+}
+
+.cyber-dialog-icon-wrap.is-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.35);
+}
+
+.cyber-dialog-icon-wrap.is-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+}
+
+.cyber-dialog-icon-wrap.is-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 25px rgba(239, 68, 68, 0.35);
+}
+
+.cyber-dialog-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 1.2px;
+  color: #818cf8;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+.cyber-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: #ffffff;
+  margin-bottom: 0.6rem;
+  line-height: 1.3;
+}
+
+.cyber-dialog-message {
+  font-size: 0.92rem;
+  color: #cbd5e1;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.cyber-dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.cyber-dialog-btn-ok {
+  flex: 1;
+  max-width: 220px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  justify-content: center;
+}
+
+.cyber-dialog-btn-cancel {
+  flex: 1;
+  max-width: 180px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.92rem;
+  font-weight: 800;
+  justify-content: center;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1.5px solid #334155;
+}
+
+.cyber-dialog-btn-cancel:hover {
+  background: #273549;
+  border-color: #475569;
+  color: #ffffff;
+}
+

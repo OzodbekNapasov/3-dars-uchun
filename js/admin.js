@@ -38,6 +38,10 @@
   const btnChangePin = document.getElementById("btnChangePin");
   
   const btnRefresh = document.getElementById("btnRefresh");
+  const btnToggleTheme = document.getElementById("btnToggleTheme");
+  const themeIconDark = document.getElementById("themeIconDark");
+  const themeIconLight = document.getElementById("themeIconLight");
+  const themeToggleText = document.getElementById("themeToggleText");
   const btnDeleteSelected = document.getElementById("btnDeleteSelected");
   const selectAllSubmissions = document.getElementById("selectAllSubmissions");
   const selectedCountBadge = document.getElementById("selectedCountBadge");
@@ -81,10 +85,48 @@
   }
 
   // =========================================================================
+  // TUNGI / KUNDUZGI REJIM (Theme switcher)
+  // =========================================================================
+  function initTheme() {
+    let savedTheme = "dark"; // Default: Tungi rejim
+    try {
+      const stored = localStorage.getItem("app_admin_theme");
+      if (stored === "light" || stored === "dark") savedTheme = stored;
+    } catch (e) {}
+    applyTheme(savedTheme);
+
+    if (btnToggleTheme && !btnToggleTheme._bound) {
+      btnToggleTheme._bound = true;
+      btnToggleTheme.addEventListener("click", () => {
+        const isDark = document.body.classList.contains("dark-mode");
+        const newTheme = isDark ? "light" : "dark";
+        applyTheme(newTheme);
+        try {
+          localStorage.setItem("app_admin_theme", newTheme);
+        } catch (e) {}
+      });
+    }
+  }
+
+  function applyTheme(theme) {
+    const isDark = theme === "dark";
+    document.body.classList.toggle("dark-mode", isDark);
+
+    if (themeIconDark) themeIconDark.style.display = isDark ? "none" : "inline-block";
+    if (themeIconLight) themeIconLight.style.display = isDark ? "inline-block" : "none";
+    if (themeToggleText) themeToggleText.textContent = isDark ? "Kunduzgi rejim" : "Tungi rejim";
+    if (btnToggleTheme) {
+      btnToggleTheme.title = isDark ? "Kunduzgi rejimga o'tish" : "Tungi rejimga o'tish";
+    }
+  }
+
+  // =========================================================================
   // PAROL DARVOZASI
   // Talaba admin.html manzilini qo'lda yozib kirsa ham panel ochilmaydi.
   // =========================================================================
   function initAuthGate() {
+    initTheme();
+
     let alreadyIn = false;
     try {
       alreadyIn = sessionStorage.getItem(APP_CONFIG.STORAGE_KEYS.ADMIN_AUTH) === "1";
@@ -122,6 +164,7 @@
 
   // Dastlabki sozlamalarni yuklash
   function initAdmin() {
+    initTheme();
     loadLocalAdminConfig();
     loadLocalSubmissions();
     renderTable();

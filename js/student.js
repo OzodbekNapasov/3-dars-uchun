@@ -112,6 +112,97 @@
   const fullscreenWarningModal = document.getElementById("fullscreenWarningModal");
   const btnResumeFullscreen = document.getElementById("btnResumeFullscreen");
 
+  // Chiroyli Cyber Bildirishnoma va Tasdiqlash Modali (In-DOM, Fullscreendan chiqarmaydi)
+  const cyberDialogModal = document.getElementById("cyberDialogModal");
+  const cyberDialogIconWrap = document.getElementById("cyberDialogIconWrap");
+  const cyberDialogIcon = document.getElementById("cyberDialogIcon");
+  const cyberDialogBadge = document.getElementById("cyberDialogBadge");
+  const cyberDialogTitle = document.getElementById("cyberDialogTitle");
+  const cyberDialogMessage = document.getElementById("cyberDialogMessage");
+  const btnCyberDialogOk = document.getElementById("btnCyberDialogOk");
+  const btnCyberDialogCancel = document.getElementById("btnCyberDialogCancel");
+
+  let currentDialogOkCb = null;
+  let currentDialogCancelCb = null;
+
+  function showCyberAlert(message, title = "Diqqat!", type = "warning", onOk = null) {
+    if (!cyberDialogModal) {
+      if (onOk) onOk();
+      return;
+    }
+    currentDialogOkCb = onOk;
+    currentDialogCancelCb = null;
+
+    if (cyberDialogTitle) cyberDialogTitle.textContent = title;
+    if (cyberDialogMessage) cyberDialogMessage.textContent = message;
+    if (cyberDialogBadge) {
+      cyberDialogBadge.textContent = type === "info" ? "MA'LUMOT" : type === "success" ? "MUVAFFAQIYATLI" : type === "danger" ? "XATOLIK" : "BILDIRISHNOMA";
+    }
+
+    if (cyberDialogIconWrap) {
+      cyberDialogIconWrap.className = "cyber-dialog-icon-wrap " + (type === "info" ? "is-info" : type === "success" ? "is-success" : type === "danger" ? "is-danger" : "");
+    }
+    if (cyberDialogIcon) {
+      const paths = {
+        warning: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>',
+        info: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>',
+        success: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>',
+        danger: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 13.59L15.59 17 12 13.41 8.41 17 7 15.59 10.59 12 7 8.41 8.41 7 12 10.59 15.59 7 17 8.41 13.41 12 17 15.59z"/>'
+      };
+      cyberDialogIcon.innerHTML = paths[type] || paths.warning;
+    }
+
+    if (btnCyberDialogCancel) btnCyberDialogCancel.style.display = "none";
+    if (btnCyberDialogOk) {
+      btnCyberDialogOk.textContent = "Tushundim";
+      setTimeout(() => btnCyberDialogOk.focus(), 50);
+    }
+
+    cyberDialogModal.style.display = "flex";
+  }
+
+  function showCyberConfirm(message, title = "Tasdiqlash", onConfirm = null, onCancel = null, okText = "Tasdiqlash", cancelText = "Bekor qilish") {
+    if (!cyberDialogModal) {
+      if (onConfirm) onConfirm();
+      return;
+    }
+    currentDialogOkCb = onConfirm;
+    currentDialogCancelCb = onCancel;
+
+    if (cyberDialogTitle) cyberDialogTitle.textContent = title;
+    if (cyberDialogMessage) cyberDialogMessage.textContent = message;
+    if (cyberDialogBadge) cyberDialogBadge.textContent = "TASDIQLASH";
+
+    if (cyberDialogIconWrap) {
+      cyberDialogIconWrap.className = "cyber-dialog-icon-wrap is-info";
+    }
+    if (cyberDialogIcon) {
+      cyberDialogIcon.innerHTML = '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>';
+    }
+
+    if (btnCyberDialogCancel) {
+      btnCyberDialogCancel.textContent = cancelText;
+      btnCyberDialogCancel.style.display = "inline-flex";
+    }
+    if (btnCyberDialogOk) {
+      btnCyberDialogOk.textContent = okText;
+      setTimeout(() => btnCyberDialogOk.focus(), 50);
+    }
+
+    cyberDialogModal.style.display = "flex";
+  }
+
+  function closeCyberDialog() {
+    if (cyberDialogModal) {
+      cyberDialogModal.style.display = "none";
+    }
+  }
+
+  // Brauzerning standart alert() ini almashtiramiz — shunda u hech qachon fullscreendan chiqarmaydi
+  window.alert = function (msg) {
+    showCyberAlert(String(msg || ""), "Bildirishnoma", "warning");
+  };
+
   // BroadcastChannel sozlash (Admin va Talaba o'rtasida bir kompyuterda jonli aloqa)
   try {
     if (typeof BroadcastChannel !== "undefined") {
@@ -470,6 +561,28 @@
         });
       });
     }
+
+    if (btnCyberDialogOk) {
+      btnCyberDialogOk.addEventListener("click", () => {
+        closeCyberDialog();
+        if (typeof currentDialogOkCb === "function") {
+          const fn = currentDialogOkCb;
+          currentDialogOkCb = null;
+          fn();
+        }
+      });
+    }
+
+    if (btnCyberDialogCancel) {
+      btnCyberDialogCancel.addEventListener("click", () => {
+        closeCyberDialog();
+        if (typeof currentDialogCancelCb === "function") {
+          const fn = currentDialogCancelCb;
+          currentDialogCancelCb = null;
+          fn();
+        }
+      });
+    }
   }
 
   // 1. Ro'yxatdan o'tish (Login) — Doim tasodifiy variant va To'liq ekran rejimi
@@ -480,18 +593,21 @@
     const group = (studentGroupSelect ? studentGroupSelect.value : "").trim();
 
     if (!lastName) {
-      alert("Iltimos, familiyangizni kiriting!");
-      if (lastNameInput) lastNameInput.focus();
+      showCyberAlert("Iltimos, familiyangizni kiriting!", "Ma'lumot to'liq emas", "warning", () => {
+        if (lastNameInput) lastNameInput.focus();
+      });
       return;
     }
     if (!firstName) {
-      alert("Iltimos, ismingizni kiriting!");
-      if (firstNameInput) firstNameInput.focus();
+      showCyberAlert("Iltimos, ismingizni kiriting!", "Ma'lumot to'liq emas", "warning", () => {
+        if (firstNameInput) firstNameInput.focus();
+      });
       return;
     }
     if (!group) {
-      alert("Iltimos, guruhingizni tanlang!");
-      if (studentGroupSelect) studentGroupSelect.focus();
+      showCyberAlert("Iltimos, guruhingizni tanlang!", "Guruh tanlanmagan", "warning", () => {
+        if (studentGroupSelect) studentGroupSelect.focus();
+      });
       return;
     }
 
@@ -525,30 +641,31 @@
     const warn = session.isAllFinished
       ? "Tizimdan chiqmoqchimisiz? Natijangiz o'qituvchiga allaqachon saqlangan."
       : "Diqqat! Siz hali barcha bo'limlarni yakunlamadingiz.\nChiqsangiz, bu kompyuterdagi javoblaringiz o'chadi va qaytadan boshlashingizga to'g'ri keladi.\n\nHaqiqatan chiqmoqchimisiz?";
-    if (!confirm(warn)) return;
 
-    const leaving = session.student;
+    showCyberConfirm(warn, "Tizimdan chiqish", () => {
+      const leaving = session.student;
 
-    // Oxirgi holatni va chiqish signalini serverga yuboramiz
-    sendToServer();
-    sendLogout(leaving);
+      // Oxirgi holatni va chiqish signalini serverga yuboramiz
+      sendToServer();
+      sendLogout(leaving);
 
-    if (testTimerInterval) {
-      clearInterval(testTimerInterval);
-      testTimerInterval = null;
-    }
+      if (testTimerInterval) {
+        clearInterval(testTimerInterval);
+        testTimerInterval = null;
+      }
 
-    session = createEmptySession();
-    try {
-      localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.STUDENT_SESSION);
-    } catch (e) {}
+      session = createEmptySession();
+      try {
+        localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.STUDENT_SESSION);
+      } catch (e) {}
 
-    hideFullscreenWarning();
+      hideFullscreenWarning();
 
-    if (studentForm) studentForm.reset();
-    if (studentGroupSelect) studentGroupSelect.value = "";
-    showRegisterView();
-    if (lastNameInput) lastNameInput.focus();
+      if (studentForm) studentForm.reset();
+      if (studentGroupSelect) studentGroupSelect.value = "";
+      showRegisterView();
+      if (lastNameInput) lastNameInput.focus();
+    }, null, "Ha, chiqish", "Qolish");
   }
 
   function showRegisterView() {
@@ -623,13 +740,13 @@
     // Agar oldingi bo'limlar bajarilmagan bo'lsa, o'tkazmaymiz
     if (secNum > 1 && secNum <= 4) {
       if (!session.sections[secNum - 1].completed) {
-        alert(`Avval ${secNum - 1}-bo'limni yakunlashingiz kerak!`);
+        showCyberAlert(`Avval ${secNum - 1}-bo'limni yakunlashingiz kerak!`, "Bo'lim qulflangan", "warning");
         return;
       }
     }
 
     if (secNum === 5 && !session.isAllFinished) {
-      alert("Barcha 4 ta bo'limni yakunlaganingizdan so'ng umumiy natija ochiladi.");
+      showCyberAlert("Barcha 4 ta bo'limni yakunlaganingizdan so'ng umumiy natija ochiladi.", "Natijalar kutilmoqda", "info");
       return;
     }
 
@@ -786,34 +903,49 @@
 
     const total = secConfig.questions.length;
     const answeredCount = countAnswered(secConfig, secState);
+
+    const onConfirmFinalize = () => {
+      // Ballarni hisoblash
+      let correctCount = 0;
+      secConfig.questions.forEach(q => {
+        const userVal = secState.answers[q.id] || "";
+        if (window.checkPracticalAnswer && window.checkPracticalAnswer(userVal, q.expectedAnswer)) {
+          correctCount++;
+        }
+      });
+
+      secState.completed = true;
+      secState.correctCount = correctCount;
+      saveSession(true); // Server va adminga uzatish
+
+      // O'quvchiga faqat to'g'ri topilganlar sonini ko'rsatuvchi modal
+      if (modalSecTitle) modalSecTitle.textContent = `${secConfig.title} Yakunlandi!`;
+      if (modalSecScore) modalSecScore.textContent = `${correctCount} / ${total} ta to'g'ri`;
+      if (sectionCompleteModal) sectionCompleteModal.classList.add("active");
+
+      updateStepIndicators();
+      renderPracticalSection(secNum);
+    };
+
     if (answeredCount < total) {
-      const confirmNotAll = confirm(`Siz ${total} ta savoldan ${answeredCount} tasiga javob yozdingiz. Qolganlari xato deb hisoblanadi. Haqiqatan ham bo'limni yakunlamoqchimisiz?`);
-      if (!confirmNotAll) return;
+      showCyberConfirm(
+        `Siz ${total} ta misoldan ${answeredCount} tasiga javob yozdingiz. Qolganlari noto'g'ri deb hisoblanadi.\n\nHaqiqatan ham bo'limni yakunlamoqchimisiz?`,
+        "Bo'limni yakunlash",
+        onConfirmFinalize,
+        null,
+        "Ha, yakunlash",
+        "Davom etish"
+      );
     } else {
-      const confirmSubmit = confirm("Barcha javoblarni tekshirib bo'ldingizmi? Tasdiqlashdan so'ng ushbu bo'lim qulflanadi va qayta o'zgartirib bo'lmaydi.");
-      if (!confirmSubmit) return;
+      showCyberConfirm(
+        "Barcha javoblarni tekshirib bo'ldingizmi?\n\nTasdiqlashdan so'ng ushbu bo'lim qulflanadi va qayta o'zgartirib bo'lmaydi.",
+        "Bo'limni tasdiqlash",
+        onConfirmFinalize,
+        null,
+        "Tasdiqlash",
+        "Bekor qilish"
+      );
     }
-
-    // Ballarni hisoblash
-    let correctCount = 0;
-    secConfig.questions.forEach(q => {
-      const userVal = secState.answers[q.id] || "";
-      if (window.checkPracticalAnswer && window.checkPracticalAnswer(userVal, q.expectedAnswer)) {
-        correctCount++;
-      }
-    });
-
-    secState.completed = true;
-    secState.correctCount = correctCount;
-    saveSession(true); // Server va adminga uzatish
-
-    // O'quvchiga faqat to'g'ri topilganlar sonini ko'rsatuvchi modal
-    if (modalSecTitle) modalSecTitle.textContent = `${secConfig.title} Yakunlandi!`;
-    if (modalSecScore) modalSecScore.textContent = `${correctCount} / ${total} ta to'g'ri`;
-    if (sectionCompleteModal) sectionCompleteModal.classList.add("active");
-
-    updateStepIndicators();
-    renderPracticalSection(secNum);
   }
 
   // =========================================================================
@@ -823,8 +955,9 @@
   function renderTestSection() {
     // 1. Agar oldingi 3 ta bo'lim tugallanmagan bo'lsa
     if (!session.sections[1].completed || !session.sections[2].completed || !session.sections[3].completed) {
-      alert("Oldin 1, 2 va 3-amaliy bo'limlarni yakunlashingiz shart!");
-      switchSection(1);
+      showCyberAlert("Oldin 1, 2 va 3-amaliy bo'limlarni yakunlashingiz shart!", "Ketma-ketlik majburiy", "warning", () => {
+        switchSection(1);
+      });
       return;
     }
 
@@ -901,7 +1034,7 @@
     if (!session.testQuestions || session.testQuestions.length === 0) {
       if (!window.ALL_QUESTIONS || window.ALL_QUESTIONS.length === 0) {
         // Savollar fayli yuklanmagan — taymerni boshlab, bo'sh test ko'rsatmaymiz
-        alert("Test savollari yuklanmadi. Sahifani yangilang yoki o'qituvchiga murojaat qiling.");
+        showCyberAlert("Test savollari yuklanmadi. Sahifani yangilang yoki o'qituvchiga murojaat qiling.", "Xatolik", "danger");
         if (testQuestionText) testQuestionText.textContent = "Savollarni yuklab bo'lmadi.";
         return;
       }
@@ -910,7 +1043,7 @@
     }
 
     // Tugash vaqtini birinchi marta belgilaymiz. Absolyut vaqt tamg'asi bo'lgani uchun
-    // talaba tabni yopib qo'yса ham taymer to'xtamaydi.
+    // talaba tabni yopib qo'ysa ham taymer to'xtamaydi.
     if (!session.testDeadlineTs) {
       const minutes = APP_CONFIG.TEST_DURATION_MINUTES || 25;
       session.testDeadlineTs = Date.now() + minutes * 60 * 1000;
@@ -975,8 +1108,9 @@
       clearInterval(testTimerInterval);
       testTimerInterval = null;
       if (!session.sections[4].completed) {
-        alert("Ajratilgan vaqt tugadi! Test natijalari avtomatik tasdiqlanadi.");
-        submitTestSection(true);
+        showCyberAlert("Ajratilgan vaqt tugadi! Test natijalari avtomatik tasdiqlanadi.", "Vaqt tugadi", "warning", () => {
+          submitTestSection(true);
+        });
       }
     }
   }
@@ -1083,61 +1217,82 @@
     const ansMap = session.sections[4].answers;
     const answeredCount = Object.keys(ansMap).length;
 
+    const executeFinishTest = () => {
+      if (testTimerInterval) {
+        clearInterval(testTimerInterval);
+        testTimerInterval = null;
+      }
+
+      // To'g'ri javoblar sonini hisoblash
+      let correctCount = 0;
+      qList.forEach(q => {
+        if (ansMap[q.id] === q.answer) {
+          correctCount++;
+        }
+      });
+
+      const percent = Math.round((correctCount / qList.length) * 100);
+      const gradeObj = APP_CONFIG.calculateGrade(percent);
+
+      session.sections[4].completed = true;
+      session.sections[4].correctCount = correctCount;
+      session.sections[4].scorePercent = percent;
+      session.sections[4].grade = gradeObj.grade;
+      session.sections[4].gradeLabel = gradeObj.label;
+      session.isAllFinished = true;
+      session.activeSection = 5; // Yakuniy sahifa
+
+      hideFullscreenWarning();
+      saveSession(true); // O'qituvchiga yuborish
+
+      // Yakuniy baho barcha 4 ta bo'lim bo'yicha hisoblanadi
+      const overallCorrect = session.sections[1].correctCount + session.sections[2].correctCount +
+                             session.sections[3].correctCount + correctCount;
+      const overallPossible = maxTotalScore();
+      const overallPercent = Math.round((overallCorrect / overallPossible) * 100);
+      const overallGrade = APP_CONFIG.calculateGrade(overallPercent);
+
+      showCyberAlert(
+        `Test natijasi: ${qList.length} tadan ${correctCount} ta to'g'ri\n` +
+        `Umumiy natija: ${overallPossible} tadan ${overallCorrect} ta (${overallPercent}%)\n` +
+        `Yakuniy baho: ${overallGrade.grade} (${overallGrade.label})`,
+        "Test muvaffaqiyatli yakunlandi!",
+        "success",
+        () => {
+          updateStepIndicators();
+          renderCurrentSection();
+        }
+      );
+
+      updateStepIndicators();
+      renderCurrentSection();
+    };
+
     if (!force) {
       if (answeredCount < qList.length) {
-        const c = confirm(`Siz ${qList.length} ta savoldan ${answeredCount} tasiga javob belgiladingiz. Testni yakunlamoqchimisiz?`);
-        if (!c) return;
+        showCyberConfirm(
+          `Siz ${qList.length} ta savoldan ${answeredCount} tasiga javob belgiladingiz. Qolganlari belgilanmagan deb hisoblanadi.\n\nTestni yakunlashni tasdiqlaysizmi?`,
+          "Testni yakunlash",
+          executeFinishTest,
+          null,
+          "Ha, yakunlash",
+          "Davom etish"
+        );
+        return;
       } else {
-        const c = confirm("Testni yakunlashni tasdiqlaysizmi?");
-        if (!c) return;
+        showCyberConfirm(
+          "Barcha 20 ta test savollariga javob belgilab bo'ldingizmi?\n\nTestni yakunlashni tasdiqlaysizmi?",
+          "Testni yakunlash",
+          executeFinishTest,
+          null,
+          "Ha, yakunlash",
+          "Qayta ko'rish"
+        );
+        return;
       }
     }
 
-    if (testTimerInterval) {
-      clearInterval(testTimerInterval);
-      testTimerInterval = null;
-    }
-
-    // To'g'ri javoblar sonini hisoblash
-    let correctCount = 0;
-    qList.forEach(q => {
-      if (ansMap[q.id] === q.answer) {
-        correctCount++;
-      }
-    });
-
-    const percent = Math.round((correctCount / qList.length) * 100);
-    const gradeObj = APP_CONFIG.calculateGrade(percent);
-
-    session.sections[4].completed = true;
-    session.sections[4].correctCount = correctCount;
-    session.sections[4].scorePercent = percent;
-    session.sections[4].grade = gradeObj.grade;
-    session.sections[4].gradeLabel = gradeObj.label;
-    session.isAllFinished = true;
-    session.activeSection = 5; // Yakuniy sahifa
-
-    hideFullscreenWarning();
-    saveSession(true); // O'qituvchiga yuborish
-
-    // Yakuniy baho barcha 4 ta bo'lim bo'yicha hisoblanadi — shu sababli bu yerda
-    // faqat test natijasini ko'rsatamiz, baho esa umumiy natijadan olinadi
-    // (aks holda talabaga ikki xil baho ko'rinib chalkashlik tug'diradi).
-    const overallCorrect = session.sections[1].correctCount + session.sections[2].correctCount +
-                           session.sections[3].correctCount + correctCount;
-    const overallPossible = maxTotalScore();
-    const overallPercent = Math.round((overallCorrect / overallPossible) * 100);
-    const overallGrade = APP_CONFIG.calculateGrade(overallPercent);
-
-    alert(
-      `Test muvaffaqiyatli yakunlandi!\n` +
-      `Test natijasi: ${qList.length} tadan ${correctCount} ta to'g'ri\n\n` +
-      `Umumiy natija: ${overallPossible} tadan ${overallCorrect} ta (${overallPercent}%)\n` +
-      `Yakuniy baho: ${overallGrade.grade} (${overallGrade.label})`
-    );
-
-    updateStepIndicators();
-    renderCurrentSection();
+    executeFinishTest();
   }
 
   // =========================================================================
