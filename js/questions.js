@@ -18,25 +18,11 @@ const ALL_QUESTIONS = [
     answer: "Bit"
   },
   {
-    id: 2,
-    category: "nazariy",
-    question: "Kompyuter xotirasining asosiy o'lchov birligi nima?",
-    options: ["Bayt", "Bit", "Gers", "Piksel"],
-    answer: "Bayt"
-  },
-  {
     id: 3,
     category: "nazariy",
     question: "1 bayt necha bitga teng?",
     options: ["8 bit", "2 bit", "4 bit", "16 bit"],
     answer: "8 bit"
-  },
-  {
-    id: 4,
-    category: "nazariy",
-    question: "Kompyuter xotirasida bitta harf yoki belgi odatda qancha joy egallaydi?",
-    options: ["1 bayt", "1 bit", "1 KB", "10 bit"],
-    answer: "1 bayt"
   },
   {
     id: 5,
@@ -109,20 +95,6 @@ const ALL_QUESTIONS = [
     answer: "0 dan 9 gacha bo'lgan raqamlar"
   },
   {
-    id: 53,
-    category: "nazariy",
-    question: "Fleshka yoki qattiq disk (HDD/SSD) xotira hajmi ko'pincha qaysi o'lchov birligida belgilanadi?",
-    options: ["Gigabayt (GB) va Terabayt (TB)", "Faqat Bit", "Faqat Bayt", "Gers (Hz)"],
-    answer: "Gigabayt (GB) va Terabayt (TB)"
-  },
-  {
-    id: 15,
-    category: "nazariy",
-    question: "Ikkilik sondagi har bir raqam (0 yoki 1) nima deb ataladi?",
-    options: ["Bit", "Bayt", "Raqamcha", "Nuqta"],
-    answer: "Bit"
-  },
-  {
     id: 16,
     category: "nazariy",
     question: "Ikkilik sanoq sistemasida quyidagi raqamlardan qaysi biri ISHLATILMAYDI?",
@@ -135,13 +107,6 @@ const ALL_QUESTIONS = [
     question: "Kompyuterda matn, rasm va videolar qanday ko'rinishda saqlanadi?",
     options: ["0 va 1 lardan iborat ikkilik kodda", "Faqat so'zlar ko'rinishida", "Rangli piksellarda", "Tovush to'lqinlarida"],
     answer: "0 va 1 lardan iborat ikkilik kodda"
-  },
-  {
-    id: 18,
-    category: "nazariy",
-    question: "Axborot o'lchov birliklari qo'shni birlikka o'tishda necha martaga o'zgaradi?",
-    options: ["1024 martaga", "1000 martaga", "100 martaga", "10 martaga"],
-    answer: "1024 martaga"
   },
 
   // --- O'LCHOV BIRLIKLARI (18 ta sodda hisoblash savollari) ---
