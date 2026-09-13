@@ -335,13 +335,6 @@ const ALL_QUESTIONS = [
     question: "O'nlik sanoq sistemasidagi 8₁₀ soni ikkilikda qanday yoziladi?",
     options: ["1000₂", "111₂", "1001₂", "1010₂"],
     answer: "1000₂"
-  },
-  {
-    id: 51,
-    category: "sanoq",
-    question: "Ikkilik sondagi xona qiymatlari o'ngdan chapga qarab necha martaga oshib boradi?",
-    options: ["2 martaga (1, 2, 4, 8...)", "10 martaga (1, 10, 100...)", "8 martaga", "O'zgarmaydi"],
-    answer: "2 martaga (1, 2, 4, 8...)"
   }
 ];
 
