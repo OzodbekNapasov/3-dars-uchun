@@ -108,6 +108,10 @@
   const modalSecScore = document.getElementById("modalSecScore");
   const btnModalNextSec = document.getElementById("btnModalNextSec");
 
+  // To'liq ekran (Fullscreen) ogohlantirish modali
+  const fullscreenWarningModal = document.getElementById("fullscreenWarningModal");
+  const btnResumeFullscreen = document.getElementById("btnResumeFullscreen");
+
   // BroadcastChannel sozlash (Admin va Talaba o'rtasida bir kompyuterda jonli aloqa)
   try {
     if (typeof BroadcastChannel !== "undefined") {
@@ -458,16 +462,22 @@
         switchSection(nextSec);
       });
     }
+
+    if (btnResumeFullscreen) {
+      btnResumeFullscreen.addEventListener("click", () => {
+        enterFullscreen().then(() => {
+          setTimeout(checkFullscreenEnforcement, 300);
+        });
+      });
+    }
   }
 
-  // 1. Ro'yxatdan o'tish (Login)
+  // 1. Ro'yxatdan o'tish (Login) — Doim tasodifiy variant va To'liq ekran rejimi
   function handleStudentRegister(e) {
     e.preventDefault();
     const lastName = (lastNameInput ? lastNameInput.value : "").trim();
     const firstName = (firstNameInput ? firstNameInput.value : "").trim();
     const group = (studentGroupSelect ? studentGroupSelect.value : "").trim();
-    const studentVariantSelect = document.getElementById("studentVariantSelect");
-    const chosenVariant = studentVariantSelect ? studentVariantSelect.value : "auto";
 
     if (!lastName) {
       alert("Iltimos, familiyangizni kiriting!");
@@ -485,12 +495,8 @@
       return;
     }
 
-    let variantNum = 1;
-    if (chosenVariant === "auto" || !chosenVariant) {
-      variantNum = Math.floor(Math.random() * (APP_CONFIG.VARIANTS_COUNT || 5)) + 1;
-    } else {
-      variantNum = parseInt(chosenVariant, 10) || 1;
-    }
+    // Har doim tasodifiy variant (1..5) biriktiriladi (talaba tanlamaydi)
+    const variantNum = Math.floor(Math.random() * (APP_CONFIG.VARIANTS_COUNT || 5)) + 1;
 
     session.student = {
       lastName: lastName,
@@ -506,6 +512,10 @@
     saveSession();
     showPlatformView();
     pollTestStatus();
+
+    // To'liq ekran rejimiga kirish va tekshirish
+    enterFullscreen().catch(() => {});
+    setTimeout(checkFullscreenEnforcement, 600);
   }
 
   // Tizimdan chiqish — bitta kompyuterda keyingi talaba ishlashi uchun
@@ -533,10 +543,10 @@
       localStorage.removeItem(APP_CONFIG.STORAGE_KEYS.STUDENT_SESSION);
     } catch (e) {}
 
+    hideFullscreenWarning();
+
     if (studentForm) studentForm.reset();
     if (studentGroupSelect) studentGroupSelect.value = "";
-    const studentVariantSelect = document.getElementById("studentVariantSelect");
-    if (studentVariantSelect) studentVariantSelect.value = "auto";
     showRegisterView();
     if (lastNameInput) lastNameInput.focus();
   }
@@ -563,6 +573,11 @@
 
     updateStepIndicators();
     renderCurrentSection();
+
+    // To'liq ekran rejimini tekshirish
+    if (!session.isAllFinished) {
+      setTimeout(checkFullscreenEnforcement, 500);
+    }
   }
 
   // Step indikatorlarini yangilash
@@ -1102,6 +1117,7 @@
     session.isAllFinished = true;
     session.activeSection = 5; // Yakuniy sahifa
 
+    hideFullscreenWarning();
     saveSession(true); // O'qituvchiga yuborish
 
     // Yakuniy baho barcha 4 ta bo'lim bo'yicha hisoblanadi — shu sababli bu yerda
@@ -1160,8 +1176,56 @@
   }
 
   // =========================================================================
-  // ANTI-CHEAT VA XAVFSIZLIK
+  // ANTI-CHEAT VA TO'LIQ EKRAN (FULLSCREEN) NAZORATI
   // =========================================================================
+
+  function isFullscreenActive() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+  }
+
+  function enterFullscreen() {
+    const docEl = document.documentElement;
+    const rfs = docEl.requestFullscreen || docEl.webkitRequestFullscreen || docEl.mozRequestFullScreen || docEl.msRequestFullscreen;
+    if (rfs) {
+      try {
+        const res = rfs.call(docEl);
+        if (res && typeof res.catch === "function") {
+          return res.catch(err => {
+            console.warn("To'liq ekranga o'tish rad etildi:", err);
+          });
+        }
+      } catch (e) {
+        console.warn("Fullscreen error:", e);
+      }
+    }
+    return Promise.resolve();
+  }
+
+  function showFullscreenWarning() {
+    if (fullscreenWarningModal && session.student && !session.isAllFinished) {
+      fullscreenWarningModal.style.display = "flex";
+    }
+  }
+
+  function hideFullscreenWarning() {
+    if (fullscreenWarningModal) {
+      fullscreenWarningModal.style.display = "none";
+    }
+  }
+
+  function checkFullscreenEnforcement() {
+    // Agar talaba hali kirmagan yoki barcha topshiriqlarni yakunlagan bo'lsa — to'sqich kerak emas
+    if (!session.student || session.isAllFinished) {
+      hideFullscreenWarning();
+      return;
+    }
+
+    if (!isFullscreenActive()) {
+      showFullscreenWarning();
+    } else {
+      hideFullscreenWarning();
+    }
+  }
 
   function setupAntiCheat() {
     // Sichqonchaning o'ng tugmasini bloklash
@@ -1180,10 +1244,33 @@
       }
     });
 
-    // Boshqa oynaga o'tish (Tab switch) ogohlantirishi
+    // To'liq ekran o'zgarishini ushlab olish (Esc, F11 va boshqalar bosilganda)
+    ["fullscreenchange", "webkitfullscreenchange", "mozfullscreenchange", "MSFullscreenChange"].forEach(evt => {
+      document.addEventListener(evt, checkFullscreenEnforcement);
+    });
+
+    // Boshqa dastur yoki oynaga o'tganda (Tab/Window switch)
+    window.addEventListener("blur", () => {
+      if (session.student && !session.isAllFinished) {
+        checkFullscreenEnforcement();
+      }
+    });
+
     document.addEventListener("visibilitychange", () => {
-      if (document.hidden && session.student && !session.isAllFinished) {
-        console.warn("Talaba boshqa oynaga o'tdi!");
+      if (session.student && !session.isAllFinished) {
+        if (document.hidden) {
+          console.warn("Talaba boshqa oynaga o'tdi!");
+        }
+        checkFullscreenEnforcement();
+      }
+    });
+
+    // Topshiriq paytida sahifani yopish yoki yangilashdan himoyalash
+    window.addEventListener("beforeunload", (e) => {
+      if (session.student && !session.isAllFinished) {
+        e.preventDefault();
+        e.returnValue = "Topshiriqlar hali yakunlanmagan. Chiqib ketsangiz, natijalaringiz saqlanmasligi mumkin!";
+        return e.returnValue;
       }
     });
   }

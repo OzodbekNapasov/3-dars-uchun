@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3-Dars: Axborot Texnologiyalari — O'quv va Test Platformasi</title>
-  <link rel="stylesheet" href="css/style.css?v=20260911_4">
-  <link rel="stylesheet" href="css/student.css?v=20260911_4">
+  <link rel="stylesheet" href="css/style.css?v=20260913_dark">
+  <link rel="stylesheet" href="css/student.css?v=20260913_dark">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M12 3L1 9l11 6 9-4.91V17h2V9L12 3zm0 12.55L4.47 11 12 6.89 19.53 11 12 15.55zM6 15.5v3.45c0 2.21 2.69 4 6 4s6-1.79 6-4v-3.45c-1.57 1.02-3.66 1.55-6 1.55s-4.43-.53-6-1.55z'/></svg>">
 </head>
 <body oncontextmenu="return false;" oncopy="return false;" oncut="return false;" onpaste="return false;">
@@ -23,28 +23,24 @@
 
       <!-- Sessiya faol bo'lganda ko'rinuvchi talaba ma'lumotlari -->
       <div id="headerMeta" class="header-meta" style="display: none;">
-        <div class="user-badge" title="Talaba">
+        <div class="user-badge user-badge-name" title="Talaba">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           <span id="userNameDisplay">Talaba</span>
         </div>
 
-        <div class="user-badge" style="background: #eef2ff; color: #4338ca; border-color: #c7d2fe;" title="Guruh">
+        <div class="user-badge user-badge-group" title="Guruh">
           <span id="userGroupDisplay">26-01-guruh</span>
         </div>
 
-        <div class="user-badge" id="userVariantBadge" style="background: #fef3c7; color: #92400e; border-color: #fde68a;" title="Variant">
+        <div class="user-badge user-badge-variant" id="userVariantBadge" title="Variant">
           <span id="userVariantDisplay">1-variant</span>
         </div>
 
-        <div id="currentSectionBadge" class="timer-badge" style="background: #f1f5f9; color: #334155; border-color: #cbd5e1;">
+        <div id="currentSectionBadge" class="timer-badge">
           1-Bo'lim
         </div>
       </div>
 
-      <!-- Talaba uchun tugmalar.
-           Bu yerda "Mavzu" (dars.html) va admin panelga havola BO'LMASLIGI kerak:
-           talaba nazariy sahifadan javoblarni ko'chirib olmasligi uchun.
-           dars.html o'zi ishlab turadi — o'qituvchi uni to'g'ridan-to'g'ri ochadi. -->
       <div style="display: flex; align-items: center; gap: 0.5rem; margin-left: auto;">
         <button type="button" id="btnLogout" class="btn-logout" style="display: none;" title="Tizimdan chiqish — keyingi talaba kirishi uchun">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
@@ -58,34 +54,32 @@
 
     <!-- 1-KO'RINISh: TALABA MA'LUMOTLARINI KIRITISH (LOGIN) -->
     <div id="viewRegister" class="view-screen active">
-      <div class="card index-card" style="max-width: 680px; margin: 2rem auto; padding: 2rem 2.25rem;">
-        <div style="text-align: center; margin-bottom: 1.25rem;">
-          <span style="display: inline-block; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 0.2rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; margin-bottom: 0.5rem;">
-            Tibbiyot Texnikumi 1-Kurs — 3-Dars
-          </span>
-          <h2 style="font-size: 1.45rem; color: var(--dark); font-weight: 850; margin-bottom: 0.35rem;">
-            Talaba Identifikatsiyasi
-          </h2>
-          <p style="font-size: 0.88rem; color: var(--text-muted);">
-            Platformaga kirish va amaliy topshiriqlarni boshlash uchun ma'lumotlaringizni to'ldiring:
+      <div class="card index-card cyber-register-card">
+        <div class="register-header">
+          <div class="cyber-badge-wrap">
+            <span class="cyber-badge"><span class="cyber-badge-dot"></span> Tibbiyot Texnikumi 1-Kurs &bull; 3-Dars</span>
+          </div>
+          <h2 class="register-title">Talaba Identifikatsiyasi</h2>
+          <p class="register-desc">
+            Platformaga kirish va topshiriqlarni boshlash uchun ma'lumotlaringizni to'ldiring:
           </p>
         </div>
 
         <form id="studentForm" novalidate>
-          <div class="index-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div class="index-grid register-grid-3">
             <div class="form-group">
-              <label class="form-label" for="lastName" style="font-weight: 800; font-size: 0.85rem;">Familiyangiz *</label>
+              <label class="form-label" for="lastName">Familiyangiz *</label>
               <input type="text" id="lastName" class="form-input" placeholder="Masalan: Karimov" autocomplete="off" required>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="firstName" style="font-weight: 800; font-size: 0.85rem;">Ismingiz *</label>
+              <label class="form-label" for="firstName">Ismingiz *</label>
               <input type="text" id="firstName" class="form-input" placeholder="Masalan: Jasur" autocomplete="off" required>
             </div>
 
             <div class="form-group">
-              <label class="form-label" for="studentGroupSelect" style="font-weight: 800; font-size: 0.85rem;">Guruhingiz *</label>
-              <select id="studentGroupSelect" class="form-input" style="height: 42px;" required>
+              <label class="form-label" for="studentGroupSelect">Guruhingiz *</label>
+              <select id="studentGroupSelect" class="form-input" required>
                 <option value="">Guruhni tanlang...</option>
                 <option value="26-01">26-01-guruh</option>
                 <option value="26-02">26-02-guruh</option>
@@ -96,37 +90,25 @@
                 <option value="26-07">26-07-guruh</option>
               </select>
             </div>
-
-            <div class="form-group">
-              <label class="form-label" for="studentVariantSelect" style="font-weight: 800; font-size: 0.85rem;">Variant *</label>
-              <select id="studentVariantSelect" class="form-input" style="height: 42px;">
-                <option value="auto">Tasodifiy (Avto)</option>
-                <option value="1">1-variant</option>
-                <option value="2">2-variant</option>
-                <option value="3">3-variant</option>
-                <option value="4">4-variant</option>
-                <option value="5">5-variant</option>
-              </select>
-            </div>
           </div>
 
-          <div class="rules-box" style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: 12px; padding: 1.15rem 1.35rem; margin-bottom: 1.35rem;">
-            <h4 style="font-size: 0.95rem; font-weight: 850; color: var(--dark); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem;">
-              <svg class="icon" viewBox="0 0 24 24" style="color: var(--primary);"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-              Platformada ishlash qoidalari:
+          <div class="rules-box cyber-rules-box">
+            <h4 class="rules-title">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+              Platformada ishlash qoidalari va xavfsizlik:
             </h4>
-            <ul style="padding-left: 1.3rem; font-size: 0.84rem; color: #334155; line-height: 1.6;">
-              <li>Platforma <strong>4 ta bo'limdan</strong> iborat: 3 ta amaliy hisoblash va 1 ta yakuniy test.</li>
-              <li>Har bir bo'limdagi savollarga javoblarni yozasiz. Yozish vaqtida to'g'ri yoki xato ekani <strong>ko'rsatilmaydi</strong>.</li>
-              <li>Bo'lim oxirida <strong>"Tasdiqlash"</strong> tugmasini bosganingizdan keyin u qulflanadi va qayta o'zgartirib bo'lmaydi.</li>
-              <li>Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar va yechimlar ko'rsatilmaydi, faqat ballingiz hisoblanadi.</li>
-              <li><strong>4-bo'lim (Test)</strong> faqat o'qituvchi maxsus ruxsat berganida ochiladi.</li>
+            <ul class="rules-list">
+              <li><strong>4 ta bo'lim:</strong> 3 ta amaliy hisoblash topshirig'i va 1 ta yakuniy test sinovi.</li>
+              <li><strong>Tasodifiy variant:</strong> Har bir talabaga tizim tomonidan tasodifiy variant (1..5) avtomatik biriktiriladi.</li>
+              <li><strong class="highlight-warning">🖥️ To'liq ekran (Fullscreen) majburiy:</strong> Topshiriqlar to'liq ekranda bajariladi, chiqish yoki boshqa oynaga o'tish taqiqlanadi!</li>
+              <li><strong>Maxfiylik:</strong> Javoblar to'g'ri/xatoligi ko'rsatilmaydi. Bo'lim tasdiqlangach qayta o'zgartirib bo'lmaydi.</li>
+              <li><strong>4-bo'lim (Test):</strong> Faqat o'qituvchi maxsus PIN-kodi yoki masofaviy ruxsati bilan ochiladi.</li>
             </ul>
           </div>
 
-          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.85rem 1.5rem; font-size: 1rem; border-radius: 10px;">
+          <button type="submit" class="btn btn-primary btn-start-platform">
             <svg class="icon" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-            Platformaga kirish va topshiriqlarni boshlash
+            To'liq ekranda topshiriqlarni boshlash
           </button>
         </form>
       </div>
@@ -215,60 +197,68 @@
         
         <!-- A) Test qulflangan holati -->
         <div id="testLockCard" class="locked-test-screen">
-          <div class="lock-big-icon">
-            <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+          <div class="lock-glow-orb">
+            <div class="lock-big-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </div>
           </div>
-          <h3 style="font-size: 1.35rem; font-weight: 850; color: var(--dark); margin-bottom: 0.35rem;">
-            Test sinovi qulflangan
-          </h3>
-          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; max-width: 420px; margin: 0 auto;">
-            Ushbu bo'lim faqat o'qituvchi maxsus ruxsati bilan ochiladi. O'qituvchi bergan 4 xonali PIN-kodni kiriting yoki o'qituvchi masofadan ochishini kuting:
+          <div class="cyber-lock-badge">
+            <span class="cyber-badge-dot"></span> 4-BO'LIM &bull; YAKUNIY TEST SINOVI
+          </div>
+          <h3 class="lock-title">Test Sinovi Qulflangan</h3>
+          <p class="lock-desc">
+            Ushbu bo'lim faqat o'qituvchi maxsus ruxsati bilan ochiladi. O'qituvchi bergan 4 xonali PIN-kodni kiriting yoki o'qituvchining masofadan ruxsat berishini kuting:
           </p>
 
           <div class="pin-input-group">
             <input type="password" id="testPinInput" class="pin-input-box" maxlength="6" placeholder="••••" autocomplete="off">
-            <button type="button" id="btnVerifyPin" class="btn btn-primary" style="padding: 0 1.25rem;">
-              Kirish &rarr;
+            <button type="button" id="btnVerifyPin" class="btn btn-primary btn-verify-pin">
+              Ruxsat olish &rarr;
             </button>
           </div>
-          <div id="pinErrorMessage" style="color: #dc2626; font-size: 0.85rem; font-weight: 750; min-height: 1.2rem;"></div>
+          <div id="pinErrorMessage" class="pin-error-msg"></div>
+
+          <div class="lock-remote-status">
+            <span class="remote-pulse-dot"></span>
+            <span>O'qituvchi ruxsati kutilmoqda (avtomatik yangilanadi)...</span>
+          </div>
         </div>
 
         <!-- B) Test faol holati -->
         <div id="testActiveCard" style="display: none;">
-          <div class="card" style="padding: 1.25rem 1.6rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-              <div style="font-size: 0.95rem; font-weight: 850; color: var(--dark);">
+          <div class="card test-session-card">
+            <div class="test-top-bar">
+              <div class="test-counter-label">
                 Savol: <span id="testQuestionCounter">1 / 20</span>
               </div>
-              <div class="timer-badge" style="background: #eff6ff; color: #1e40af; border: 1.5px solid #bfdbfe; font-size: 1rem; padding: 0.35rem 0.85rem;">
+              <div class="timer-badge test-timer-box">
                 <svg class="icon" viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.1.8-1.3-4.5-2.7V7z"/></svg>
                 <span id="testTimerDisplay">25:00</span>
               </div>
             </div>
 
             <!-- Progress bar -->
-            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-bottom: 1.2rem;">
-              <div id="testProgressFill" style="width: 5%; height: 100%; background: var(--primary-gradient); transition: width 0.3s ease;"></div>
+            <div class="test-progress-bar">
+              <div id="testProgressFill" class="test-progress-fill"></div>
             </div>
 
             <!-- Savollar palitrasi (1..20) -->
-            <div id="testPalette" class="palette-container" style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 1.25rem;"></div>
+            <div id="testPalette" class="palette-container"></div>
 
             <!-- Savol matni -->
-            <div id="testQuestionText" class="question-text" style="font-size: 1.15rem; font-weight: 850; color: var(--dark); margin-bottom: 1.25rem; line-height: 1.5;">
+            <div id="testQuestionText" class="question-text">
               Savol yuklanmoqda...
             </div>
 
             <!-- 4 ta variant (A, B, C, D) -->
-            <div id="testOptionsContainer" class="options-grid" style="display: grid; grid-template-columns: 1fr; gap: 0.65rem; margin-bottom: 1.5rem;"></div>
+            <div id="testOptionsContainer" class="options-grid test-options-wrap"></div>
 
             <!-- Navigatsiya tugmalari -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
-              <button type="button" id="btnTestPrev" class="btn btn-outline">
+            <div class="test-nav-bar">
+              <button type="button" id="btnTestPrev" class="btn btn-secondary">
                 &larr; Oldingi
               </button>
-              <button type="button" id="btnFinishTest" class="btn btn-danger" style="background: #dc2626; color: white;">
+              <button type="button" id="btnFinishTest" class="btn btn-danger">
                 Testni yakunlash
               </button>
               <button type="button" id="btnTestNext" class="btn btn-primary">
@@ -282,18 +272,18 @@
 
       <!-- 5-KO'RINISh: YAKUNIY UMUMIY NATIJA -->
       <div id="finalSummaryView" style="display: none;">
-        <div class="card" style="max-width: 780px; margin: 1.5rem auto; padding: 2.25rem; text-align: center;">
-          <div style="width: 68px; height: 68px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
-            <svg viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        <div class="card final-summary-card">
+          <div class="summary-check-circle">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
           </div>
 
-          <h2 style="font-size: 1.6rem; font-weight: 850; color: var(--dark); margin-bottom: 0.25rem;">
+          <h2 class="summary-heading">
             Barcha Topshiriqlar Yakunlandi!
           </h2>
-          <p style="font-size: 0.92rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-            <span id="resStudentName" style="font-weight: 800; color: var(--dark);">-</span> | 
-            <span id="resStudentGroup" style="font-weight: 800; color: var(--primary);">-</span> |
-            <span id="resStudentVariant" style="font-weight: 800; color: #b45309;">1-variant</span>
+          <p class="summary-student-line">
+            <span id="resStudentName">-</span> &bull; 
+            <span id="resStudentGroup">-</span> &bull; 
+            <span id="resStudentVariant">1-variant</span>
           </p>
 
           <!-- 4 ta bo'lim bo'yicha hisobot gridi -->
@@ -317,20 +307,20 @@
           </div>
 
           <!-- Umumiy to'plangan ball va Baho -->
-          <div style="background: #f8fafc; border: 1.5px solid var(--border); border-radius: 14px; padding: 1.5rem; margin: 1.5rem 0;">
-            <div style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 0.35rem;">Umumiy natija:</div>
-            <div style="font-size: 2.2rem; font-weight: 900; color: var(--dark); margin-bottom: 0.5rem;">
+          <div class="summary-score-banner">
+            <div class="summary-banner-label">Umumiy natija:</div>
+            <div class="summary-banner-score">
               <span id="resTotalCorrect">-</span> 
-              <span style="font-size: 1.3rem; color: var(--primary); font-weight: 800;">(<span id="resPercent">0%</span>)</span>
+              <span class="summary-banner-pct">(<span id="resPercent">0%</span>)</span>
             </div>
             <div>
-              <span id="resGradeBadge" class="badge badge-success" style="font-size: 1.15rem; padding: 0.4rem 1.2rem;">
+              <span id="resGradeBadge" class="badge badge-success grade-badge-large">
                 5 — A'lo
               </span>
             </div>
           </div>
 
-          <p style="font-size: 0.85rem; color: var(--text-muted);">
+          <p class="summary-footnote">
             * Natijalaringiz o'qituvchi admin paneliga va Google Sheets jadvaliga avtomatik ravishda saqlandi.
           </p>
         </div>
@@ -341,25 +331,47 @@
 
   <!-- Bo'lim Yakunlanganida Chiquvchi Modal -->
   <div id="sectionCompleteModal" class="modal-overlay">
-    <div class="modal-box" style="max-width: 480px; text-align: center; padding: 2rem 1.5rem;">
-      <div style="width: 58px; height: 58px; border-radius: 50%; background: #ecfdf5; color: #10b981; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
-        <svg viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    <div class="modal-box section-modal-box">
+      <div class="modal-complete-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
       </div>
-      <h3 id="modalSecTitle" style="font-size: 1.3rem; font-weight: 850; color: var(--dark); margin-bottom: 0.35rem;">Bo'lim yakunlandi!</h3>
-      <div id="modalSecScore" style="font-size: 1.8rem; font-weight: 900; color: #2563eb; margin: 0.75rem 0;">-</div>
-      <p style="font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.5;">
+      <h3 id="modalSecTitle" class="modal-sec-title">Bo'lim yakunlandi!</h3>
+      <div id="modalSecScore" class="modal-sec-score">-</div>
+      <p class="modal-sec-desc">
         Ushbu bo'lim muvaffaqiyatli saqlandi va qulflanadi. Yonizdagi talabalarga ko'rinmasligi uchun to'g'ri javoblar ko'rsatilmaydi.
       </p>
-      <button type="button" id="btnModalNextSec" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.75rem 1.25rem; font-size: 0.95rem;">
+      <button type="button" id="btnModalNextSec" class="btn btn-primary modal-next-btn">
         Keyingi bo'limga o'tish &rarr;
       </button>
     </div>
   </div>
 
+  <!-- To'liq ekrandan chiqqanda to'suvchi Xavfsizlik Modali (Anti-Cheat Fullscreen Enforcer) -->
+  <div id="fullscreenWarningModal" class="fullscreen-blocker-overlay" style="display: none;">
+    <div class="fullscreen-blocker-box">
+      <div class="blocker-icon-wrap">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <div class="blocker-badge">XAVFSIZLIK TALABI</div>
+      <h2 class="blocker-title">To'liq Ekran Rejimi Majburiy!</h2>
+      <p class="blocker-desc">
+        Siz to'liq ekran rejimidan chiqdingiz yoki boshqa oynaga o'tdingiz.<br>
+        Platforma qoidalariga ko'ra, topshiriqlar faqat <strong>To'liq ekran (Fullscreen)</strong> rejimida bajarilishi shart.
+      </p>
+      <p class="blocker-sub">
+        Davom etish uchun quyidagi tugmani bosing va ekranni to'liq rejimga qaytaring:
+      </p>
+      <button type="button" id="btnResumeFullscreen" class="btn btn-primary btn-resume-fs">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+        To'liq ekranga qaytish
+      </button>
+    </div>
+  </div>
+
   <!-- Skriptlar -->
-  <script src="js/config.js?v=20260911_4"></script>
-  <script src="js/exercises.js?v=20260911_4"></script>
-  <script src="js/questions.js?v=20260911_4"></script>
-  <script src="js/student.js?v=20260911_4"></script>
+  <script src="js/config.js?v=20260913_dark"></script>
+  <script src="js/exercises.js?v=20260913_dark"></script>
+  <script src="js/questions.js?v=20260913_dark"></script>
+  <script src="js/student.js?v=20260913_dark"></script>
 </body>
 </html>
