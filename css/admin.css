@@ -313,6 +313,18 @@ input:checked + .slider:before {
   border-color: #cbd5e1;
 }
 
+.btn-sheets {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1.5px solid #a7f3d0;
+}
+.btn-sheets:hover {
+  background: #d1fae5;
+  border-color: #6ee7b7;
+  color: #047857;
+  transform: translateY(-1px);
+}
+
 .btn:disabled, .btn[disabled] {
   opacity: 0.45;
   cursor: not-allowed !important;
@@ -917,6 +929,18 @@ body.dark-mode .btn-outline:hover {
   background: #283548;
   border-color: #475569;
   color: #ffffff;
+}
+
+body.dark-mode .btn-sheets {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1.5px solid rgba(52, 211, 153, 0.4);
+}
+
+body.dark-mode .btn-sheets:hover {
+  background: rgba(16, 185, 129, 0.28);
+  border-color: #34d399;
+  color: #6ee7b7;
 }
 
 body.dark-mode .test-switch-wrapper {

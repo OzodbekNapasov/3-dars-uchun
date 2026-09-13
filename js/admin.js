@@ -14,6 +14,9 @@
   let syncChannel = null;
   let refreshTimer = null;
   let serverReachable = null; // null = hali urinilmagan
+  let serverTimeOffsetMs = 0; // Server va mijoz kompyuteri soat farqi (millisekundda)
+  let hasServerTimeSync = false;
+  let isFastRetrying = false;
 
   // Parol darvozasi elementlari
   const authGate = document.getElementById("authGate");
@@ -241,6 +244,13 @@
         fetchServerData(() => btnRefresh.classList.remove("loading"));
       });
     }
+
+    // Google Sheets jadvaliga to'g'ridan-to'g'ri o'tish tugmalari
+    const btnGoogleSheetsNav = document.getElementById("btnGoogleSheetsNav");
+    const btnGoogleSheetsControl = document.getElementById("btnGoogleSheetsControl");
+    const sheetsUrl = (APP_CONFIG && APP_CONFIG.GOOGLE_SHEETS_URL) || "https://docs.google.com/spreadsheets/d/1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg/edit";
+    if (btnGoogleSheetsNav) btnGoogleSheetsNav.href = sheetsUrl;
+    if (btnGoogleSheetsControl) btnGoogleSheetsControl.href = sheetsUrl;
 
     if (selectAllSubmissions) {
       selectAllSubmissions.addEventListener("change", (e) => {
@@ -528,6 +538,15 @@
         }
         setConnectionState(true);
         {
+          // Server vaqtini sinxronlash (kompyuter soati farqidan kelib chiqadigan uzilishlarning oldini oladi)
+          if (data.serverTime) {
+            const serverTs = Date.parse(String(data.serverTime).replace(" ", "T"));
+            if (!isNaN(serverTs)) {
+              serverTimeOffsetMs = serverTs - Date.now();
+              hasServerTimeSync = true;
+            }
+          }
+
           if (Array.isArray(data.submissions) && data.submissions.length > 0) {
             data.submissions.forEach(sub => upsertLocalSubmission(sub));
           }
@@ -554,6 +573,15 @@
         // Mavjud keshdagi ma'lumotlar aslo yo'qolmaydi va ko'rinib turadi
         renderTable();
         updateStats();
+
+        // Tarmoq uzilishlarida 3 soniyadan keyin darhol tezkor qayta ulanishga urinish
+        if (!isFastRetrying) {
+          isFastRetrying = true;
+          setTimeout(() => {
+            isFastRetrying = false;
+            fetchServerData();
+          }, 3000);
+        }
         if (callback) callback();
       });
   }
@@ -586,11 +614,16 @@
 
   // Talaba hozir tizimdami? Serverdagi bayroq VA oxirgi faollik vaqti bo'yicha.
   function isStudentOnline(s) {
-    if (!s.online) return false;
-    if (!s.lastSeen) return false;
+    if (s.online === false || String(s.online).toLowerCase() === "offline") return false;
+    if (!s.lastSeen) return !!s.online;
     const seenTs = Date.parse(String(s.lastSeen).replace(" ", "T"));
     if (isNaN(seenTs)) return !!s.online;
-    return (Date.now() - seenTs) < (APP_CONFIG.ONLINE_THRESHOLD_MS || 150000);
+
+    // Server va admin kompyuteri soat farqini inobatga olgan holda hisoblash
+    const currentServerNow = hasServerTimeSync ? (Date.now() + serverTimeOffsetMs) : Date.now();
+    const diff = Math.max(0, currentServerNow - seenTs);
+    const threshold = APP_CONFIG.ONLINE_THRESHOLD_MS || 180000;
+    return diff < threshold;
   }
 
   // Filtrlangan va saralangan ro'yxat.

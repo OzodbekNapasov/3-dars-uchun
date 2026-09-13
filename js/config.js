@@ -6,6 +6,9 @@ const APP_CONFIG = {
   // Google Apps Script Web App havolasi (Ma'lumotlarni yozish va olish uchun)
   GOOGLE_SHEET_WEBAPP_URL: "https://script.google.com/macros/s/AKfycbyGufJOXt7KO1ZZSMUbinL1Vnir9YYzGw5yDuhUrw3bUNj614hgByzxEw7spj6s3VP-cQ/exec",
 
+  // Google Sheets Jadvali (Natijalarni to'g'ridan-to'g'ri ko'rish havolasi)
+  GOOGLE_SHEETS_URL: "https://docs.google.com/spreadsheets/d/1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg/edit",
+
   // Ruxsat etilgan guruhlar
   ALLOWED_GROUPS: [
     "26-01",
@@ -37,11 +40,11 @@ const APP_CONFIG = {
   // Admin panelga kirish paroli (faqat o'qituvchi biladi)
   ADMIN_PASSWORD: "1207",
 
-  // Real vaqt sozlamalari (millisekundlarda) — Apps Script kvotasini tejash va uzilishlarning oldini olish uchun
-  HEARTBEAT_INTERVAL_MS: 120000,     // Talaba "men shu yerdaman" signali (2 daqiqa)
-  TEST_STATUS_POLL_MS: 30000,        // Talaba test ruxsatini serverdan so'rashi (faqat 4-bo'limda)
-  ADMIN_REFRESH_MS: 12000,           // Admin jadvalini yangilash (12 soniya)
-  ONLINE_THRESHOLD_MS: 240000,       // 4 daqiqa harakatsizlikdan so'nggina "Offline" deb belgilanadi
+  // Real vaqt sozlamalari (millisekundlarda) — 100% uzilishsiz jonli monitoring uchun
+  HEARTBEAT_INTERVAL_MS: 30000,      // Talaba "men shu yerdaman" signali (har 30 soniyada)
+  TEST_STATUS_POLL_MS: 20000,        // Talaba test ruxsatini serverdan so'rashi (faqat 4-bo'limda)
+  ADMIN_REFRESH_MS: 8000,            // Admin jadvalini yangilash (8 soniya — uzilishsiz jonli kuzatuv)
+  ONLINE_THRESHOLD_MS: 180000,       // 3 daqiqa (6 ta o'tkazib yuborilgan signal) harakatsizlikdan so'nggina "Offline" deb belgilanadi
 
   // LocalStorage kalitlari
   STORAGE_KEYS: {

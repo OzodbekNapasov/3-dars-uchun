@@ -448,10 +448,29 @@
            `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
   }
 
+  let liveHeartbeatTimer = null;
+  function scheduleLiveHeartbeat(delayMs = 3500) {
+    if (liveHeartbeatTimer) clearTimeout(liveHeartbeatTimer);
+    liveHeartbeatTimer = setTimeout(() => {
+      sendHeartbeat();
+    }, delayMs);
+  }
+
   // Talabaning ayni damdagi holati (admin panelda "Joriy Holat" ustuni)
+  // O'qituvchiga har bir talabaning nechanchi savolda turgani va nechta javob yozgani jonli ko'rinadi
   function buildStatusText() {
     if (session.isAllFinished) return "Yakunlandi";
-    if (session.activeSection === 4) return "Testda";
+    if (session.activeSection === 4) {
+      const qList = session.testQuestions || [];
+      const ansCount = Object.keys((session.sections[4] && session.sections[4].answers) || {}).length;
+      return qList.length > 0 ? `Testda (${ansCount}/${qList.length})` : "Testda";
+    }
+    const secNum = session.activeSection;
+    const secConfig = getPracticalSectionConfig(secNum);
+    if (secConfig) {
+      const ansCount = countAnswered(secConfig, session.sections[secNum]);
+      return `${secNum}-Bo'lim (${ansCount}/${secConfig.questions.length})`;
+    }
     return `${session.activeSection}-Bo'limda`;
   }
 
@@ -848,8 +867,10 @@
           secState.answers[q.id] = e.target.value.trim();
           if (e.target.value.trim()) itemEl.classList.add("is-answered");
           else itemEl.classList.remove("is-answered");
-          saveSession(false); // faqat xotiraga saqlash
+          saveSession(false); // xotiraga saqlash
+          broadcastUpdate(); // mahalliy adminga darhol uzatish (0ms)
           updateAnsweredCountText(secConfig, secState);
+          scheduleLiveHeartbeat(3500); // serverga jonli holatni uzatish
         });
       }
 
@@ -1181,8 +1202,10 @@
         optBtn.addEventListener("click", () => {
           session.sections[4].answers[q.id] = optText;
           saveSession(false);
+          broadcastUpdate(); // mahalliy adminga darhol uzatish (0ms)
           renderTestQuestion();
           renderTestPalette();
+          scheduleLiveHeartbeat(2500); // serverga jonli holatni uzatish
         });
       }
 
