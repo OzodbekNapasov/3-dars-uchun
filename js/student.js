@@ -245,6 +245,15 @@
   // admin panel oxirgi faollik vaqtiga qarab o'zi Offline deb belgilaydi.
   function startBackgroundTasks() {
     sendHeartbeat();
+
+    // Sahifa qayta ochilganda/yangilanganda to'liq natijani bir marta qayta
+    // yuboramiz. Shu tufayli oldin yo'qolgan ball yoki baho talaba F5 bosishi
+    // bilan tiklanadi — javoblar brauzer xotirasida (localStorage) turadi.
+    // (isAllFinished bo'lsa buni sendHeartbeat() ning o'zi bajaradi.)
+    if (!session.isAllFinished && hasAnyProgress()) {
+      sendToServer();
+    }
+
     pollTestStatus();
     if (!heartbeatInterval) {
       heartbeatInterval = setInterval(sendHeartbeat, APP_CONFIG.HEARTBEAT_INTERVAL_MS || 60000);
@@ -481,15 +490,28 @@
       .then(() => { outboxFlushing = false; });
   }
 
+  // Yakuniy natija serverga yetib borgani tasdiqlanganmi?
+  var finalResultAcked = false;
+
+  // Talaba hech bo'lmasa bitta bo'limni yakunlaganmi?
+  function hasAnyProgress() {
+    return [1, 2, 3, 4].some(n => session.sections[n] && session.sections[n].completed);
+  }
+
   // To'liq natijani serverga yuborish (login, bo'lim yakuni, test yakuni)
   function sendToServer() {
     if (!session.student) return;
     var payload = prepareStudentPayload();
+    var isFinal = !!session.isAllFinished;
 
-    sendWithRetry(payload).catch(err => {
-      console.warn("Natijani yuborib bo'lmadi, navbatga qo'yildi:", err);
-      outboxAdd(payload);
-    });
+    sendWithRetry(payload)
+      .then(() => {
+        if (isFinal) finalResultAcked = true;
+      })
+      .catch(err => {
+        console.warn("Natijani yuborib bo'lmadi, navbatga qo'yildi:", err);
+        outboxAdd(payload);
+      });
   }
 
   // "Men shu yerdaman" signali — admin panelda jonli holat ko'rinishi uchun.
@@ -501,6 +523,16 @@
 
     // Avval yuborilmay qolgan natijalar bo'lsa — o'shalar birinchi navbatda
     outboxFlush();
+
+    // MUHIM: heartbeat jadvalda faqat "Joriy Holat" ustunini yangilaydi.
+    // Test yakunlangani haqidagi yozuv shu yo'l bilan tushib, baho ustunlari
+    // esa eski qiymatda qolib ketishi mumkin edi — jadvalda "Yakunlandi",
+    // lekin baho "-" bo'lib turardi. Shuning uchun natija serverda
+    // tasdiqlanmaguncha yengil signal o'rniga TO'LIQ natijani yuboramiz.
+    if (session.isAllFinished && !finalResultAcked) {
+      sendToServer();
+      return;
+    }
 
     sendWithRetry({
       action: "heartbeat",
