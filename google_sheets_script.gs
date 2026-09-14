@@ -89,6 +89,13 @@ function getTargetSheet() {
     // 10-oktabrga aylantirib yuboradi va talabani topib bo'lmay qoladi.
     sheet.getRange(1, 1, sheet.getMaxRows(), NUM_COLS).setNumberFormat("@");
   }
+
+  // Varaqda yetarli ustun bo'lmasa getRange(..., NUM_COLS) xato beradi va
+  // admin panel butunlay bo'sh qolardi. 17-ustun ("Sessiya ID") qo'shilgani
+  // uchun buni HAR SAFAR, jadvalga tegishdan oldin kafolatlaymiz.
+  if (sheet.getMaxColumns() < NUM_COLS) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), NUM_COLS - sheet.getMaxColumns());
+  }
   return sheet;
 }
 
