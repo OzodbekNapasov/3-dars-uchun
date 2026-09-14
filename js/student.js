@@ -239,12 +239,81 @@
     startBackgroundTasks();
   }
 
+  // ---------------------------------------------------------------------
+  // AVTOMATIK YANGILANISH (talabaga Ctrl+Shift+R bostirish kerak emas)
+  // ---------------------------------------------------------------------
+  // Muammo: talaba tabni bir necha soat ochiq qoldiradi. Bu vaqtda o'qituvchi
+  // tuzatish chiqarsa, sahifa umuman qayta yuklanmagani uchun ESKI kod xotirada
+  // ishlab turaveradi.
+  //
+  // Yechim: sahifa ochilganda o'z faylining ETag belgisi eslab qolinadi va
+  // vaqti-vaqti bilan tekshiriladi. Server yangi versiya tarqatgan bo'lsa
+  // ETag o'zgaradi — sahifa o'zini qayta yuklaydi.
+  // Hech qanday versiya raqamini qo'lda yangilab yurish kerak emas.
+
+  var SELF_URL = (document.currentScript && document.currentScript.src) || "js/student.js";
+  var knownBuildTag = null;
+  var updatePending = false;
+  var updateCheckInterval = null;
+
+  function checkForUpdate() {
+    fetch(SELF_URL, { method: "HEAD", cache: "no-store" })
+      .then(res => {
+        var tag = res.headers.get("ETag") || res.headers.get("Last-Modified");
+        if (!tag) return;
+        if (knownBuildTag === null) {
+          knownBuildTag = tag; // birinchi o'lchov — solishtirish uchun asos
+          return;
+        }
+        if (tag !== knownBuildTag) {
+          updatePending = true;
+          applyUpdateIfSafe();
+        }
+      })
+      .catch(() => {}); // tarmoq uzilishi — keyingi urinishda tekshiriladi
+  }
+
+  // Qayta yuklashni faqat XAVFSIZ paytda bajaramiz.
+  // Talaba ish jarayonida bo'lsa uzmaymiz: javoblari localStorage da saqlansa
+  // ham, qayta yuklash to'liq ekran rejimidan chiqarib, "ekrandan chiqdingiz"
+  // ogohlantirishini keltirib chiqaradi. Shu sababli talaba chiqqanda yoki
+  // hali kirmagan bo'lsa yangilaymiz — dars boshida barcha kompyuterlar
+  // aynan shu holatda turadi.
+  function applyUpdateIfSafe() {
+    if (!updatePending) return false;
+    if (session.student) return false; // ishlayotgan talabani uzmaymiz
+    if (!markReloadAllowed()) return false;
+    location.reload();
+    return true;
+  }
+
+  // Qayta yuklanish TSIKLIGA qarshi himoya.
+  // Agar ETag biror sababga ko'ra beqaror bo'lib qolsa, 30 ta kompyuter
+  // to'xtovsiz qayta yuklanib, darsni butunlay buzib yuborishi mumkin edi.
+  // Shu sababli 1 daqiqada bittadan ko'p qayta yuklanishga yo'l qo'ymaymiz.
+  function markReloadAllowed() {
+    try {
+      var last = Number(sessionStorage.getItem("app_last_auto_reload")) || 0;
+      if (Date.now() - last < 60000) {
+        console.warn("Avtomatik yangilanish o'tkazib yuborildi (juda tez-tez).");
+        return false;
+      }
+      sessionStorage.setItem("app_last_auto_reload", String(Date.now()));
+    } catch (e) {}
+    return true;
+  }
+
   // Fon jarayonlari: jonli holat signali va test ruxsatini kuzatish
   // Eslatma: oyna yopilganda "logout" yubormaymiz — sahifa yangilanganda ham
   // ishga tushib, talabani noto'g'ri "Offline" qilib qo'yardi. Buning o'rniga
   // admin panel oxirgi faollik vaqtiga qarab o'zi Offline deb belgilaydi.
   function startBackgroundTasks() {
     sendHeartbeat();
+
+    checkForUpdate();
+    if (!updateCheckInterval) {
+      updateCheckInterval = setInterval(checkForUpdate, APP_CONFIG.UPDATE_CHECK_MS || 60000);
+    }
 
     // Sahifa qayta ochilganda/yangilanganda to'liq natijani bir marta qayta
     // yuboramiz. Shu tufayli oldin yo'qolgan ball yoki baho talaba F5 bosishi
@@ -842,6 +911,11 @@
       if (studentGroupSelect) studentGroupSelect.value = "";
       showRegisterView();
       if (lastNameInput) lastNameInput.focus();
+
+      // Kompyuter bo'shadi — kutilayotgan yangilanish bo'lsa shu yerda qo'llaymiz,
+      // shunda keyingi talaba allaqachon yangi kod bilan ishlaydi.
+      // 5 soniya kutamiz: yuqoridagi chiqish yozuvlari serverga yetib ulgursin.
+      setTimeout(applyUpdateIfSafe, 5000);
     }, null, "Ha, chiqish", "Qolish");
   }
 

@@ -165,6 +165,39 @@
     initAdmin();
   }
 
+  // ---------------------------------------------------------------------
+  // AVTOMATIK YANGILANISH
+  // ---------------------------------------------------------------------
+  // Sahifa ochilganda o'z faylining ETag belgisi eslab qolinadi. Server yangi
+  // versiya tarqatsa ETag o'zgaradi va panel o'zini qayta yuklaydi — qo'lda
+  // Ctrl+Shift+R bosish kerak emas. Versiya raqamini yuritish ham shart emas.
+  var SELF_URL = (document.currentScript && document.currentScript.src) || "js/admin.js";
+  var knownBuildTag = null;
+
+  function checkForUpdate() {
+    fetch(SELF_URL, { method: "HEAD", cache: "no-store" })
+      .then(res => {
+        var tag = res.headers.get("ETag") || res.headers.get("Last-Modified");
+        if (!tag) return;
+        if (knownBuildTag === null) {
+          knownBuildTag = tag;
+          return;
+        }
+        if (tag !== knownBuildTag && canAutoReload()) location.reload();
+      })
+      .catch(() => {});
+  }
+
+  // Qayta yuklanish tsikliga qarshi himoya (1 daqiqada bir martadan ko'p emas)
+  function canAutoReload() {
+    try {
+      var last = Number(sessionStorage.getItem("app_last_auto_reload")) || 0;
+      if (Date.now() - last < 60000) return false;
+      sessionStorage.setItem("app_last_auto_reload", String(Date.now()));
+    } catch (e) {}
+    return true;
+  }
+
   // Dastlabki sozlamalarni yuklash
   function initAdmin() {
     initTheme();
@@ -180,6 +213,11 @@
     if (!refreshTimer) {
       refreshTimer = setInterval(fetchServerData, APP_CONFIG.ADMIN_REFRESH_MS || 10000);
     }
+
+    // Yangi versiya chiqqanini kuzatish — admin paneli ham eski kod bilan
+    // ochiq qolib ketmasligi uchun o'zini qayta yuklaydi.
+    checkForUpdate();
+    setInterval(checkForUpdate, APP_CONFIG.UPDATE_CHECK_MS || 60000);
 
     // Jadvaldagi "Javoblar" tugmalari uchun bitta umumiy hodisa (event delegation).
     // Ilgari har qatorga inline onclick yozilardi va apostrofli ismlarda

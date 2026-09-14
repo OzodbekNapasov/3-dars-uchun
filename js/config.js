@@ -44,6 +44,7 @@ const APP_CONFIG = {
   HEARTBEAT_INTERVAL_MS: 30000,      // Talaba "men shu yerdaman" signali (har 30 soniyada)
   TEST_STATUS_POLL_MS: 20000,        // Talaba test ruxsatini serverdan so'rashi (faqat 4-bo'limda)
   ADMIN_REFRESH_MS: 8000,            // Admin jadvalini yangilash (8 soniya — uzilishsiz jonli kuzatuv)
+  UPDATE_CHECK_MS: 60000,            // Yangi versiya chiqqanini tekshirish (sahifa o'zini qayta yuklaydi)
   ONLINE_THRESHOLD_MS: 180000,       // 3 daqiqa (6 ta o'tkazib yuborilgan signal) harakatsizlikdan so'nggina "Offline" deb belgilanadi
 
   // LocalStorage kalitlari
