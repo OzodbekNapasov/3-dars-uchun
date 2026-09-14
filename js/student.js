@@ -355,37 +355,161 @@
     } catch (e) {}
   }
 
-  // Google Sheets Apps Script ga har qanday ma'lumotni yuborish.
-  // Content-Type: text/plain — brauzer CORS preflight so'ramasligi uchun
-  // (Apps Script baribir tanani JSON deb o'qiy oladi).
-  function postToServer(payload) {
-    if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) return;
-    fetch(APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL, {
+  // ---------------------------------------------------------------------
+  // SERVER BILAN ALOQA
+  // ---------------------------------------------------------------------
+  // Ilgari bu yerda `mode: "no-cors"` bilan POST ishlatilardi. U ishlaganday
+  // ko'rinadi, lekin brauzer javobni O'QIY OLMAYDI — ya'ni server so'rovni
+  // rad etgan bo'lsa ham sahifa buni bilmaydi va qayta urinmaydi.
+  // Apps Script navbati to'lganda (25+ talaba bir vaqtda yozganda) so'rovlar
+  // jimgina yo'qolib, talaba admin panelda umuman ko'rinmay qolardi.
+  //
+  // Endi ma'lumot GET orqali yuboriladi: Apps Script GET javobiga CORS ruxsati
+  // qo'shadi, shu sababli javobni o'qib, muvaffaqiyatsizlikda qayta urina olamiz.
+
+  var MAX_GET_URL_LEN = 7000;
+
+  function buildQuery(params) {
+    return Object.keys(params)
+      .filter(k => params[k] !== undefined && params[k] !== null)
+      .map(k => {
+        var v = params[k];
+        if (typeof v === "object") v = JSON.stringify(v);
+        return encodeURIComponent(k) + "=" + encodeURIComponent(String(v));
+      })
+      .join("&");
+  }
+
+  // Bitta urinish. Javob o'qilsa Promise<obyekt>, aks holda reject.
+  function sendOnce(params) {
+    var base = APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL;
+    var url = base + "?" + buildQuery(params) + "&t=" + Date.now();
+
+    if (url.length <= MAX_GET_URL_LEN) {
+      return fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          if (!data || data.status !== "success") {
+            throw new Error((data && (data.error || data.message)) || "Server rad etdi");
+          }
+          return data;
+        });
+    }
+
+    // Juda uzun javoblar uchun zaxira yo'l (GET havolasiga sig'maydi).
+    // Content-Type: text/plain — brauzer CORS preflight so'ramasligi uchun.
+    return fetch(base, {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    }).catch(err => {
-      console.warn("Serverga yuborishda vaqtincha xatolik (Keshda saqlandi):", err);
+      body: JSON.stringify(params)
+    }).then(() => ({ status: "success", blind: true }));
+  }
+
+  // Qayta urinishlar bilan yuborish. Kechikishlar tasodifiy ("jitter") —
+  // aks holda 25 ta talaba bir vaqtda qayta urinib, navbatni yana to'ldiradi.
+  var RETRY_DELAYS_MS = [2000, 6000, 15000];
+
+  function sendWithRetry(params, attempt) {
+    attempt = attempt || 0;
+    if (!APP_CONFIG.GOOGLE_SHEET_WEBAPP_URL) return Promise.reject(new Error("URL yo'q"));
+
+    return sendOnce(params).catch(err => {
+      if (attempt >= RETRY_DELAYS_MS.length) throw err;
+      var wait = RETRY_DELAYS_MS[attempt] + Math.floor(Math.random() * 2000);
+      return new Promise(resolve => setTimeout(resolve, wait))
+        .then(() => sendWithRetry(params, attempt + 1));
     });
   }
 
-  // To'liq natijani serverga yuborish
-  function sendToServer() {
-    if (!session.student) return;
-    postToServer(prepareStudentPayload());
+  // --- Yuborilmay qolgan yakuniy natijalar navbati ("outbox") ---
+  // Baho — eng muhim ma'lumot. Agar u yuborilmasa localStorage ga tushadi va
+  // keyingi har bir signalda qayta yuborishga urinib ko'riladi. Talaba sahifani
+  // yangilasa yoki internet uzilib-ulansa ham baho oxir-oqibat yetib boradi.
+  var OUTBOX_KEY = "app_student_outbox_v3";
+
+  function outboxRead() {
+    try {
+      var raw = localStorage.getItem(OUTBOX_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) {
+      return [];
+    }
   }
 
-  // "Men shu yerdaman" signali — admin panelda jonli holat ko'rinishi uchun
+  function outboxWrite(arr) {
+    try {
+      localStorage.setItem(OUTBOX_KEY, JSON.stringify(arr.slice(-5)));
+    } catch (e) {}
+  }
+
+  function outboxAdd(params) {
+    var arr = outboxRead();
+    // Bitta talabaning eski yuborilmagan natijasini yangisi bilan almashtiramiz
+    arr = arr.filter(p => !(p.group === params.group &&
+                            p.lastName === params.lastName &&
+                            p.firstName === params.firstName));
+    arr.push(params);
+    outboxWrite(arr);
+  }
+
+  // Diqqat: outboxRead() localStorage dan HAR SAFAR yangi obyektlar qaytaradi,
+  // shuning uchun obyektni `===` bilan emas, maydonlari bo'yicha qidiramiz.
+  function outboxRemove(params) {
+    outboxWrite(outboxRead().filter(p =>
+      !(p.group === params.group &&
+        p.lastName === params.lastName &&
+        p.firstName === params.firstName &&
+        p.statusText === params.statusText)));
+  }
+
+  var outboxFlushing = false;
+  function outboxFlush() {
+    if (outboxFlushing) return;
+    var pending = outboxRead();
+    if (pending.length === 0) return;
+
+    outboxFlushing = true;
+    var item = pending[0];
+    sendOnce(item)
+      .then(() => {
+        outboxRemove(item);
+        console.info("Kechiktirilgan natija serverga yetkazildi.");
+      })
+      .catch(() => {})
+      .then(() => { outboxFlushing = false; });
+  }
+
+  // To'liq natijani serverga yuborish (login, bo'lim yakuni, test yakuni)
+  function sendToServer() {
+    if (!session.student) return;
+    var payload = prepareStudentPayload();
+
+    sendWithRetry(payload).catch(err => {
+      console.warn("Natijani yuborib bo'lmadi, navbatga qo'yildi:", err);
+      outboxAdd(payload);
+    });
+  }
+
+  // "Men shu yerdaman" signali — admin panelda jonli holat ko'rinishi uchun.
+  // Server tomonda bu signal endi talaba qatorini o'zi ocha oladi, ya'ni
+  // login yozuvi yo'qolgan bo'lsa ham talaba admin panelda paydo bo'ladi.
   function sendHeartbeat() {
     if (!session.student) return;
     broadcastUpdate(); // bitta kompyuterdagi admin oynasi uchun
-    postToServer({
+
+    // Avval yuborilmay qolgan natijalar bo'lsa — o'shalar birinchi navbatda
+    outboxFlush();
+
+    sendWithRetry({
       action: "heartbeat",
       group: session.student.group,
       lastName: session.student.lastName,
       firstName: session.student.firstName,
       statusText: buildStatusText()
+    }).catch(err => {
+      console.warn("Jonli signal yuborilmadi:", err);
     });
   }
 
@@ -399,12 +523,12 @@
       lastSeen: formatLocalTimestamp(new Date())
     }));
 
-    postToServer({
+    sendWithRetry({
       action: "logout",
       group: student.group,
       lastName: student.lastName,
       firstName: student.firstName
-    });
+    }).catch(() => {});
   }
 
   // O'qituvchi testni masofadan ochganini serverdan tekshirish.
@@ -449,7 +573,7 @@
   }
 
   let liveHeartbeatTimer = null;
-  function scheduleLiveHeartbeat(delayMs = 3500) {
+  function scheduleLiveHeartbeat(delayMs = 12000) {
     if (liveHeartbeatTimer) clearTimeout(liveHeartbeatTimer);
     liveHeartbeatTimer = setTimeout(() => {
       sendHeartbeat();
@@ -638,7 +762,9 @@
       firstName: firstName,
       group: group,
       variant: variantNum,
-      startTime: new Date().toLocaleTimeString("uz-UZ")
+      // Sana ham yoziladi: ilgari faqat "10:44:51" ko'rinishida edi va jadvalda
+      // qaysi kunning natijasi ekanini ajratib bo'lmasdi.
+      startTime: formatLocalTimestamp(new Date())
     };
     if (window.getPracticalSections) {
       session.practicalSections = window.getPracticalSections(variantNum, true);
@@ -870,7 +996,12 @@
           saveSession(false); // xotiraga saqlash
           broadcastUpdate(); // mahalliy adminga darhol uzatish (0ms)
           updateAnsweredCountText(secConfig, secState);
-          scheduleLiveHeartbeat(3500); // serverga jonli holatni uzatish
+          // Serverga jonli holatni uzatish. DIQQAT: bu qiymatni kichraytirmang!
+          // Ilgari 3.5 s edi — 25 ta talaba javob yozayotganda sekundiga ~7 ta
+          // so'rov hosil bo'lib, Apps Script navbatini to'ldirib yuborardi va
+          // natijalar jimgina yo'qolardi. Mahalliy admin oynasi baribir
+          // yuqoridagi broadcastUpdate() orqali 0 ms da yangilanadi.
+          scheduleLiveHeartbeat(12000);
         });
       }
 

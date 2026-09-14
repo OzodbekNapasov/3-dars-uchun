@@ -24,6 +24,10 @@ var SPREADSHEET_ID = "1T-6iFLM-2fjs4RYOoTIyh9A6f3LnFF_OpVJFx-tqtXg";
 var SHEET_NAME = "3-Dars Natijalar";
 var TIMEZONE = "Asia/Tashkent";
 
+// Deploy tekshiruvi uchun. Brauzerda /exec ni ochganda shu raqam ko'rinishi kerak.
+// Agar eski raqam chiqsa — qayta deploy qilinmagan.
+var SCRIPT_VERSION = "2026-09-14-lock-fix";
+
 // Ustunlar tartibi (1-dan boshlab). Bitta joyda turgani uchun o'zgartirish oson.
 var COL = {
   TIMESTAMP: 1,
@@ -115,24 +119,149 @@ function ensureHeaders(sheet) {
   }
 }
 
-/** Talaba qatorini Guruh + Familiya + Ism bo'yicha qidiradi. Topilmasa -1. */
-function findStudentRow(sheet, lastName, firstName, group) {
+// =========================================================================
+// QATOR INDEKSI KESHI
+// =========================================================================
+// Ilgari HAR BIR so'rovda butun jadval (78+ qator) o'qilardi va bu script
+// lock ichida bajarilardi. 25 ta talaba bir vaqtda yozganda navbat to'lib,
+// waitLock(30000) timeout bo'lib, ma'lumot JIMGINA yo'qolardi.
+// Endi talabaning qator raqami keshda saqlanadi: mavjud talabani yangilash
+// uchun jadvalni umuman skanerlash ham, lock olish ham kerak emas.
+
+var ROW_CACHE_TTL = 21600; // 6 soat (Apps Script keshi uchun maksimal)
+
+function studentKeyOf(group, lastName, firstName) {
+  return [
+    String(group).trim().toLowerCase(),
+    String(lastName).trim().toLowerCase(),
+    String(firstName).trim().toLowerCase()
+  ].join("|");
+}
+
+function rowCacheKey(key) {
+  // Kesh kaliti 250 belgidan oshmasligi va bo'sh joy bo'lmasligi kerak
+  return ("r3_" + key).replace(/\s+/g, "_").substring(0, 240);
+}
+
+/**
+ * Jadvalni skanerlab qatorni qidiradi (faqat keshda bo'lmaganda).
+ * fromRow — qaysi qatordan boshlab qidirish (2 = boshidan).
+ * Lock ichida biz faqat "oxirgi skanerdan keyin qo'shilgan" qatorlarni
+ * tekshiramiz, shuning uchun lock juda qisqa ushlab turiladi.
+ */
+function scanStudentRow(sheet, key, fromRow) {
+  fromRow = fromRow || 2;
   var lastRow = sheet.getLastRow();
-  if (lastRow <= 1) return -1;
+  if (lastRow < fromRow) return -1;
 
-  var data = sheet.getRange(2, COL.GROUP, lastRow - 1, 3).getValues(); // Guruh, Familiya, Ism
-  var g = String(group).trim().toLowerCase();
-  var l = String(lastName).trim().toLowerCase();
-  var f = String(firstName).trim().toLowerCase();
-
+  var count = lastRow - fromRow + 1;
+  var data = sheet.getRange(fromRow, COL.GROUP, count, 3).getValues(); // Guruh, Familiya, Ism
   for (var i = 0; i < data.length; i++) {
-    if (String(data[i][0]).trim().toLowerCase() === g &&
-        String(data[i][1]).trim().toLowerCase() === l &&
-        String(data[i][2]).trim().toLowerCase() === f) {
-      return i + 2; // 1-based, sarlavhadan keyin
+    if (studentKeyOf(data[i][0], data[i][1], data[i][2]) === key) {
+      return i + fromRow;
     }
   }
   return -1;
+}
+
+/**
+ * Talaba qatorini topadi. Avval keshdan oladi va 3 katakni o'qib tasdiqlaydi
+ * (bu to'liq skanerlashdan ~20 barobar arzon). Tasdiqlanmasa qayta skanerlaydi.
+ */
+function findStudentRow(sheet, lastName, firstName, group) {
+  var key = studentKeyOf(group, lastName, firstName);
+  var cache = CacheService.getScriptCache();
+  var ck = rowCacheKey(key);
+
+  var cached = null;
+  try {
+    cached = cache.get(ck);
+  } catch (e) {}
+
+  if (cached) {
+    var row = Number(cached);
+    if (row > 1 && row <= sheet.getLastRow()) {
+      var probe = sheet.getRange(row, COL.GROUP, 1, 3).getValues()[0];
+      if (studentKeyOf(probe[0], probe[1], probe[2]) === key) {
+        return row; // Kesh to'g'ri — jadval skanerlanmadi
+      }
+    }
+  }
+
+  // Skanerlash paytidagi oxirgi qatorni eslab qolamiz: lock ichida faqat
+  // shundan keyin qo'shilganlarini qayta tekshirish yetarli bo'ladi.
+  lastScannedRow = sheet.getLastRow();
+
+  var found = scanStudentRow(sheet, key, 2);
+  if (found > 1) {
+    try {
+      cache.put(ck, String(found), ROW_CACHE_TTL);
+    } catch (e) {}
+  }
+  return found;
+}
+
+// findStudentRow() eng oxirgi marta jadvalni qayergacha skanerlaganini eslab
+// qoladi (bitta so'rov = bitta bajarilish, shu sababli global xavfsiz).
+var lastScannedRow = 1;
+
+/** Yangi talaba uchun qator ochadi. Faqat SHU yerda lock kerak. */
+function createStudentRow(sheet, lastName, firstName, group, rowValues) {
+  var lock = LockService.getScriptLock();
+  try {
+    // Dars boshida 25-30 talaba bir vaqtda kiradi. Lock ichidagi ish ataylab
+    // juda qisqa (bir necha qator o'qish + 2 ta yozuv), shuning uchun bu
+    // navbat tez bo'shaydi. Timeout bo'lsa ham talaba yo'qolmaydi:
+    // sahifa qayta urinadi va 30 soniyalik heartbeat qatorni baribir ochadi.
+    lock.waitLock(25000);
+  } catch (lockErr) {
+    return -1;
+  }
+
+  try {
+    var key = studentKeyOf(group, lastName, firstName);
+
+    // Lock kutayotganda boshqa so'rov shu talabaga qator ochib qo'ygan
+    // bo'lishi mumkin. Butun jadvalni emas, faqat YANGI qatorlarni tekshiramiz.
+    var existing = scanStudentRow(sheet, key, Math.max(2, lastScannedRow + 1));
+    if (existing > 1) {
+      try {
+        CacheService.getScriptCache().put(rowCacheKey(key), String(existing), ROW_CACHE_TTL);
+      } catch (e) {}
+      return existing;
+    }
+
+    ensureHeaders(sheet);
+
+    // MUHIM: bu yerda `getLastRow() + 1` ni ISHLATIB BO'LMAYDI.
+    // Apps Script jadval ma'lumotlarini bajarilish ichida keshlaydi: sheet
+    // obyekti lock olinishidan OLDIN ochilgani uchun getLastRow() eskirgan
+    // qiymatni qaytarishi mumkin. Ikki talaba bir vaqtda kirganda ikkalasi
+    // ham bitta qatorni hisoblab, biri ikkinchisining ustiga yozib yuborardi.
+    // appendRow() esa atomar — doim haqiqiy oxirgi qatordan keyin qo'shadi.
+    sheet.appendRow(rowValues);
+    var targetRow = sheet.getLastRow();
+
+    // appendRow matn formatini kafolatlamaydi, shuning uchun qatorni "@" ga
+    // o'tkazib qiymatlarni qayta yozamiz. Aks holda Sheets "26-01" ni sanaga,
+    // "10/10" ni 10-oktabrga aylantiradi va keyingi safar talabani topa olmay,
+    // har bo'lim uchun yangi qator ochib yuboradi.
+    var rowRange = sheet.getRange(targetRow, 1, 1, NUM_COLS);
+    rowRange.setNumberFormat("@");
+    rowRange.setValues([rowValues]);
+    sheet.getRange(targetRow, COL.STATUS, 1, 8).setHorizontalAlignment("center");
+
+    // Lock ichida yozganimizni darhol tasdiqlaymiz.
+    SpreadsheetApp.flush();
+
+    try {
+      CacheService.getScriptCache().put(rowCacheKey(key), String(targetRow), ROW_CACHE_TTL);
+    } catch (e) {}
+
+    return targetRow;
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function jsonOut(obj) {
@@ -157,32 +286,43 @@ function parseRequest(e) {
   return (e && e.parameter) || {};
 }
 
+/** To'liq natija qatorini tayyorlaydi (16 ta ustun). */
+function buildRowValues(data, group, lastName, firstName, now) {
+  return [
+    data.timestamp || now,
+    group,
+    lastName,
+    firstName,
+    data.statusText || "Faol",
+    data.sec1Score !== undefined ? String(data.sec1Score) : "-",
+    data.sec2Score !== undefined ? String(data.sec2Score) : "-",
+    data.sec3Score !== undefined ? String(data.sec3Score) : "-",
+    data.testScore !== undefined ? String(data.testScore) : "-",
+    data.totalCorrect !== undefined ? String(data.totalCorrect) : "-",
+    data.percentage !== undefined ? String(data.percentage) : "-",
+    data.grade !== undefined ? String(data.grade) : "-",
+    data.gradeLabel || "-",
+    typeof data.answers === "object" ? JSON.stringify(data.answers) : (data.answers || ""),
+    now,
+    "Online"
+  ];
+}
+
 // =========================================================================
 // YOZISH (doPost)
 // =========================================================================
 
 function doPost(e) {
-  var lock = LockService.getScriptLock();
-  try {
-    // Bir vaqtda 20+ talaba yozganda qatorlar aralashib ketmasligi uchun
-    lock.waitLock(30000);
-  } catch (lockErr) {
-    return jsonOut({ status: "error", error: "Server band, birozdan keyin urinib ko'ring" });
-  }
-
   try {
     var data = parseRequest(e);
     var props = PropertiesService.getScriptProperties();
 
-    // --- Admin buyrug'i: testni ochish / yopish ---
+    // --- Admin buyrug'i: testni ochish / yopish (jadvalga tegmaydi) ---
     if (data.action === "set_test_status") {
       props.setProperty("TEST_UNLOCKED", data.unlocked ? "true" : "false");
       if (data.pin) props.setProperty("TEACHER_PIN", String(data.pin));
       return jsonOut({ status: "success", unlocked: !!data.unlocked });
     }
-
-    var sheet = getTargetSheet();
-    ensureHeaders(sheet);
 
     var lastName = String(data.lastName || "").trim();
     var firstName = String(data.firstName || "").trim();
@@ -192,65 +332,66 @@ function doPost(e) {
       return jsonOut({ status: "ignored", message: "Ism yoki familiya bo'sh" });
     }
 
-    var existingRow = findStudentRow(sheet, lastName, firstName, group);
+    var sheet = getTargetSheet();
     var now = nowString();
+    var existingRow = findStudentRow(sheet, lastName, firstName, group);
 
-    // --- Yengil buyruqlar: heartbeat va logout (butun qatorni qayta yozmaydi) ---
+    // --- Yengil buyruqlar: heartbeat va logout ---
     if (data.action === "heartbeat" || data.action === "logout") {
       if (existingRow < 2) {
-        return jsonOut({ status: "ignored", message: "Talaba topilmadi" });
+        // MUHIM: ilgari bu yerda "ignored" qaytarilardi. Natijada login paytidagi
+        // yagona to'liq yozuv yo'qolsa, talaba butun dars davomida admin panelda
+        // KO'RINMAY qolardi. Endi heartbeat qatorni o'zi ochadi — tizim o'zini tuzatadi.
+        if (data.action === "logout") {
+          return jsonOut({ status: "ignored", message: "Talaba topilmadi" });
+        }
+        existingRow = createStudentRow(
+          sheet, lastName, firstName, group,
+          buildRowValues(data, group, lastName, firstName, now)
+        );
+        if (existingRow < 2) {
+          return jsonOut({ status: "error", error: "Server band, qator ochilmadi" });
+        }
+        return jsonOut({ status: "success", action: data.action, created: true, row: existingRow });
       }
+
+      // Mavjud qatorni yangilash — lock KERAK EMAS, chunki har bir talaba
+      // faqat o'z qatoriga yozadi va qatorlar bir-biriga tegmaydi.
+      // Aynan shu narsa navbatni bo'shatib, ma'lumot yo'qolishini to'xtatadi.
       var isOnline = data.action === "heartbeat";
 
       // Bu yerda ham matn formati shart: "2026-09-09 22:59:57" ni Sheets
       // sana-vaqt obyektiga aylantirib yuboradi.
-      var seenCell = sheet.getRange(existingRow, COL.LAST_SEEN);
-      seenCell.setNumberFormat("@");
-      seenCell.setValue(now);
+      var seenRange = sheet.getRange(existingRow, COL.LAST_SEEN, 1, 2);
+      seenRange.setNumberFormat("@");
+      seenRange.setValues([[now, isOnline ? "Online" : "Offline"]]);
 
-      sheet.getRange(existingRow, COL.ONLINE).setValue(isOnline ? "Online" : "Offline");
       if (isOnline && data.statusText) {
         sheet.getRange(existingRow, COL.STATUS).setValue(data.statusText);
       }
-      return jsonOut({ status: "success", action: data.action });
+      return jsonOut({ status: "success", action: data.action, row: existingRow });
     }
 
-    // --- To'liq natija yozuvi ---
-    var rowValues = [
-      data.timestamp || now,
-      group,
-      lastName,
-      firstName,
-      data.statusText || "Faol",
-      data.sec1Score !== undefined ? String(data.sec1Score) : "-",
-      data.sec2Score !== undefined ? String(data.sec2Score) : "-",
-      data.sec3Score !== undefined ? String(data.sec3Score) : "-",
-      data.testScore !== undefined ? String(data.testScore) : "-",
-      data.totalCorrect !== undefined ? String(data.totalCorrect) : "-",
-      data.percentage !== undefined ? String(data.percentage) : "-",
-      data.grade !== undefined ? String(data.grade) : "-",
-      data.gradeLabel || "-",
-      typeof data.answers === "object" ? JSON.stringify(data.answers) : (data.answers || ""),
-      now,
-      "Online"
-    ];
+    // --- To'liq natija yozuvi (login, bo'lim yakuni, test yakuni) ---
+    var rowValues = buildRowValues(data, group, lastName, firstName, now);
 
-    var targetRow = (existingRow > 1) ? existingRow : sheet.getLastRow() + 1;
-    var rowRange = sheet.getRange(targetRow, 1, 1, NUM_COLS);
+    if (existingRow < 2) {
+      var newRow = createStudentRow(sheet, lastName, firstName, group, rowValues);
+      if (newRow < 2) {
+        return jsonOut({ status: "error", error: "Server band, qator ochilmadi" });
+      }
+      return jsonOut({ status: "success", message: "Natija saqlandi!", created: true, row: newRow });
+    }
 
-    // Yozishdan OLDIN qatorni matn formatiga o'tkazamiz.
-    // Bo'lmasa Sheets "26-01" ni sanaga, "10/10" ni 10-oktabrga aylantiradi va
-    // keyingi safar talabani topa olmay, har bo'lim uchun yangi qator ochib yuboradi.
+    // Mavjud qator — lock kerak emas.
+    var rowRange = sheet.getRange(existingRow, 1, 1, NUM_COLS);
     rowRange.setNumberFormat("@");
     rowRange.setValues([rowValues]);
-    sheet.getRange(targetRow, COL.STATUS, 1, 8).setHorizontalAlignment("center");
 
-    return jsonOut({ status: "success", message: "Natija saqlandi!" });
+    return jsonOut({ status: "success", message: "Natija saqlandi!", row: existingRow });
 
   } catch (error) {
     return jsonOut({ status: "error", error: error.toString() });
-  } finally {
-    lock.releaseLock();
   }
 }
 
@@ -275,7 +416,15 @@ function doGet(e) {
       });
     }
 
-    // 2. Admin panel: barcha natijalar
+    // 2. Talaba kompyuteri: heartbeat / logout / to'liq natijani GET orqali yuborish.
+    // GET javobini brauzer CORS tufayli O'QIY OLADI (POST + no-cors da o'qib bo'lmaydi).
+    // Shu sababli talaba sahifasi xatoni ko'radi va qayta urina oladi.
+    if (action === "heartbeat" || action === "logout" || action === "save_result") {
+      var res = doPost(e);
+      return res;
+    }
+
+    // 3. Admin panel: barcha natijalar
     if (action === "get_submissions") {
       var sheet = getTargetSheet();
       ensureHeaders(sheet);
@@ -329,7 +478,7 @@ function doGet(e) {
       });
     }
 
-    // 3. GET orqali ham yozish (sendBeacon / zaxira yo'li)
+    // 4. GET orqali ham yozish (sendBeacon / zaxira yo'li)
     if (e && e.parameter && (e.parameter.lastName || e.parameter.firstName)) {
       return doPost(e);
     }
@@ -337,7 +486,7 @@ function doGet(e) {
     return jsonOut({
       status: "success",
       message: "3-Dars Webhook tayyor",
-      version: "2026-09-09",
+      version: SCRIPT_VERSION,
       spreadsheetId: SPREADSHEET_ID
     });
 
