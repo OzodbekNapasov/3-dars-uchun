@@ -26,7 +26,7 @@ var TIMEZONE = "Asia/Tashkent";
 
 // Deploy tekshiruvi uchun. Brauzerda /exec ni ochganda shu raqam ko'rinishi kerak.
 // Agar eski raqam chiqsa — qayta deploy qilinmagan.
-var SCRIPT_VERSION = "2026-09-14-lock-fix";
+var SCRIPT_VERSION = "2026-09-14-attempt-rows";
 
 // Ustunlar tartibi (1-dan boshlab). Bitta joyda turgani uchun o'zgartirish oson.
 var COL = {
@@ -45,9 +45,10 @@ var COL = {
   GRADE_LABEL: 13,
   ANSWERS: 14,
   LAST_SEEN: 15,
-  ONLINE: 16
+  ONLINE: 16,
+  SESSION: 17
 };
-var NUM_COLS = 16;
+var NUM_COLS = 17;
 
 var HEADERS = [
   "Vaqt (Toshkent)",
@@ -65,7 +66,8 @@ var HEADERS = [
   "Baho Nomi",
   "Batafsil Javoblar",
   "Oxirgi faollik",
-  "Holat"
+  "Holat",
+  "Sessiya ID"
 ];
 
 function getTargetSheet() {
@@ -130,12 +132,28 @@ function ensureHeaders(sheet) {
 
 var ROW_CACHE_TTL = 21600; // 6 soat (Apps Script keshi uchun maksimal)
 
-function studentKeyOf(group, lastName, firstName) {
+// Talabani ISM bo'yicha emas, SESSIYA bo'yicha aniqlaymiz.
+//
+// Ilgari kalit faqat "guruh|familiya|ism" edi. Oqibati: bir talaba keyingi
+// darsda yoki qayta urinishda shu nom bilan kirsa, jadvaldan ESKI qatori
+// topilib, oldingi natijasi ustiga yozib yuborilardi. O'qituvchi esa yangi
+// qator kutib, "natija kelib tushmadi" deb o'ylardi.
+//
+// Endi har bir kirish (sessiya) o'z qatorini oladi: eski natija saqlanib
+// qoladi, yangisi pastga qo'shiladi. Bo'lim yakunlari va heartbeat esa
+// sessiya ID bir xil bo'lgani uchun baribir AYNI qatorni yangilaydi.
+function studentKeyOf(group, lastName, firstName, sessionId) {
   return [
     String(group).trim().toLowerCase(),
     String(lastName).trim().toLowerCase(),
-    String(firstName).trim().toLowerCase()
+    String(firstName).trim().toLowerCase(),
+    String(sessionId || "").trim().toLowerCase()
   ].join("|");
+}
+
+/** Sessiya ID siz kalit — eski (yangilanmagan) sahifalar bilan moslik uchun. */
+function nameKeyOf(group, lastName, firstName) {
+  return studentKeyOf(group, lastName, firstName, "");
 }
 
 function rowCacheKey(key) {
@@ -149,27 +167,44 @@ function rowCacheKey(key) {
  * Lock ichida biz faqat "oxirgi skanerdan keyin qo'shilgan" qatorlarni
  * tekshiramiz, shuning uchun lock juda qisqa ushlab turiladi.
  */
-function scanStudentRow(sheet, key, fromRow) {
+function scanStudentRow(sheet, group, lastName, firstName, sessionId, fromRow) {
   fromRow = fromRow || 2;
   var lastRow = sheet.getLastRow();
   if (lastRow < fromRow) return -1;
 
   var count = lastRow - fromRow + 1;
-  var data = sheet.getRange(fromRow, COL.GROUP, count, 3).getValues(); // Guruh, Familiya, Ism
-  for (var i = 0; i < data.length; i++) {
-    if (studentKeyOf(data[i][0], data[i][1], data[i][2]) === key) {
-      return i + fromRow;
+
+  // Ikkita alohida o'qish: kerakli ustunlar (2-4 va 17) qo'shni emas.
+  // 2..17 oralig'ini butunlay o'qish 4 o'rniga 16 ustunni tortardi — jadval
+  // o'sgan sari bu behuda yuk bo'lardi.
+  var names = sheet.getRange(fromRow, COL.GROUP, count, 3).getValues();   // Guruh, Familiya, Ism
+  var sessions = sheet.getRange(fromRow, COL.SESSION, count, 1).getValues();
+
+  var wanted = String(sessionId || "").trim().toLowerCase();
+  var nameKey = nameKeyOf(group, lastName, firstName);
+  var found = -1;
+
+  for (var i = 0; i < names.length; i++) {
+    if (nameKeyOf(names[i][0], names[i][1], names[i][2]) !== nameKey) continue;
+
+    if (wanted) {
+      // Aynan shu sessiya qatorimi?
+      if (String(sessions[i][0] || "").trim().toLowerCase() === wanted) return i + fromRow;
+    } else {
+      // Sessiya ID kelmadi (eski sahifa) — shu talabaning ENG OXIRGI qatorini
+      // olamiz, shunda eski sahifa ham o'zining joriy qatorini yangilaydi.
+      found = i + fromRow;
     }
   }
-  return -1;
+  return found;
 }
 
 /**
  * Talaba qatorini topadi. Avval keshdan oladi va 3 katakni o'qib tasdiqlaydi
  * (bu to'liq skanerlashdan ~20 barobar arzon). Tasdiqlanmasa qayta skanerlaydi.
  */
-function findStudentRow(sheet, lastName, firstName, group) {
-  var key = studentKeyOf(group, lastName, firstName);
+function findStudentRow(sheet, lastName, firstName, group, sessionId) {
+  var key = studentKeyOf(group, lastName, firstName, sessionId);
   var cache = CacheService.getScriptCache();
   var ck = rowCacheKey(key);
 
@@ -182,7 +217,13 @@ function findStudentRow(sheet, lastName, firstName, group) {
     var row = Number(cached);
     if (row > 1 && row <= sheet.getLastRow()) {
       var probe = sheet.getRange(row, COL.GROUP, 1, 3).getValues()[0];
-      if (studentKeyOf(probe[0], probe[1], probe[2]) === key) {
+      // Sessiya ID kelmagan bo'lsa (eski sahifa) faqat ism bo'yicha tasdiqlaymiz,
+      // aks holda kesh doim "noto'g'ri" deb topilib, har so'rovda butun jadval
+      // skanerlanardi.
+      var okByName = nameKeyOf(probe[0], probe[1], probe[2]) === nameKeyOf(group, lastName, firstName);
+      var okBySession = !sessionId ||
+        studentKeyOf(probe[0], probe[1], probe[2], sheet.getRange(row, COL.SESSION).getValue()) === key;
+      if (okByName && okBySession) {
         return row; // Kesh to'g'ri — jadval skanerlanmadi
       }
     }
@@ -192,7 +233,7 @@ function findStudentRow(sheet, lastName, firstName, group) {
   // shundan keyin qo'shilganlarini qayta tekshirish yetarli bo'ladi.
   lastScannedRow = sheet.getLastRow();
 
-  var found = scanStudentRow(sheet, key, 2);
+  var found = scanStudentRow(sheet, group, lastName, firstName, sessionId, 2);
   if (found > 1) {
     try {
       cache.put(ck, String(found), ROW_CACHE_TTL);
@@ -206,7 +247,7 @@ function findStudentRow(sheet, lastName, firstName, group) {
 var lastScannedRow = 1;
 
 /** Yangi talaba uchun qator ochadi. Faqat SHU yerda lock kerak. */
-function createStudentRow(sheet, lastName, firstName, group, rowValues) {
+function createStudentRow(sheet, lastName, firstName, group, sessionId, rowValues) {
   var lock = LockService.getScriptLock();
   try {
     // Dars boshida 25-30 talaba bir vaqtda kiradi. Lock ichidagi ish ataylab
@@ -219,11 +260,12 @@ function createStudentRow(sheet, lastName, firstName, group, rowValues) {
   }
 
   try {
-    var key = studentKeyOf(group, lastName, firstName);
+    var key = studentKeyOf(group, lastName, firstName, sessionId);
 
     // Lock kutayotganda boshqa so'rov shu talabaga qator ochib qo'ygan
     // bo'lishi mumkin. Butun jadvalni emas, faqat YANGI qatorlarni tekshiramiz.
-    var existing = scanStudentRow(sheet, key, Math.max(2, lastScannedRow + 1));
+    var existing = scanStudentRow(sheet, group, lastName, firstName, sessionId,
+                                  Math.max(2, lastScannedRow + 1));
     if (existing > 1) {
       try {
         CacheService.getScriptCache().put(rowCacheKey(key), String(existing), ROW_CACHE_TTL);
@@ -287,7 +329,7 @@ function parseRequest(e) {
 }
 
 /** To'liq natija qatorini tayyorlaydi (16 ta ustun). */
-function buildRowValues(data, group, lastName, firstName, now) {
+function buildRowValues(data, group, lastName, firstName, now, sessionId) {
   return [
     data.timestamp || now,
     group,
@@ -304,7 +346,8 @@ function buildRowValues(data, group, lastName, firstName, now) {
     data.gradeLabel || "-",
     typeof data.answers === "object" ? JSON.stringify(data.answers) : (data.answers || ""),
     now,
-    "Online"
+    "Online",
+    String(sessionId || "")
   ];
 }
 
@@ -327,6 +370,9 @@ function doPost(e) {
     var lastName = String(data.lastName || "").trim();
     var firstName = String(data.firstName || "").trim();
     var group = String(data.group || "").trim();
+    // Har bir kirish (urinish) uchun talaba sahifasi yaratadigan ID.
+    // Bo'sh bo'lishi mumkin — sahifa hali yangilanmagan bo'lsa.
+    var sessionId = String(data.sessionId || "").trim();
 
     if (!lastName || !firstName) {
       return jsonOut({ status: "ignored", message: "Ism yoki familiya bo'sh" });
@@ -334,7 +380,7 @@ function doPost(e) {
 
     var sheet = getTargetSheet();
     var now = nowString();
-    var existingRow = findStudentRow(sheet, lastName, firstName, group);
+    var existingRow = findStudentRow(sheet, lastName, firstName, group, sessionId);
 
     // --- Yengil buyruqlar: heartbeat va logout ---
     if (data.action === "heartbeat" || data.action === "logout") {
@@ -346,8 +392,8 @@ function doPost(e) {
           return jsonOut({ status: "ignored", message: "Talaba topilmadi" });
         }
         existingRow = createStudentRow(
-          sheet, lastName, firstName, group,
-          buildRowValues(data, group, lastName, firstName, now)
+          sheet, lastName, firstName, group, sessionId,
+          buildRowValues(data, group, lastName, firstName, now, sessionId)
         );
         if (existingRow < 2) {
           return jsonOut({ status: "error", error: "Server band, qator ochilmadi" });
@@ -373,10 +419,10 @@ function doPost(e) {
     }
 
     // --- To'liq natija yozuvi (login, bo'lim yakuni, test yakuni) ---
-    var rowValues = buildRowValues(data, group, lastName, firstName, now);
+    var rowValues = buildRowValues(data, group, lastName, firstName, now, sessionId);
 
     if (existingRow < 2) {
-      var newRow = createStudentRow(sheet, lastName, firstName, group, rowValues);
+      var newRow = createStudentRow(sheet, lastName, firstName, group, sessionId, rowValues);
       if (newRow < 2) {
         return jsonOut({ status: "error", error: "Server band, qator ochilmadi" });
       }
@@ -384,6 +430,13 @@ function doPost(e) {
     }
 
     // Mavjud qator — lock kerak emas.
+    // Eski sahifa sessiya ID yubormaydi; qatordagi mavjud ID ni o'chirib
+    // yubormaslik uchun uni saqlab qolamiz (aks holda qator "egasiz" bo'lib,
+    // keyingi so'rovda yangi qator ochilib ketardi).
+    if (!sessionId) {
+      rowValues[COL.SESSION - 1] = String(sheet.getRange(existingRow, COL.SESSION).getValue() || "");
+    }
+
     var rowRange = sheet.getRange(existingRow, 1, 1, NUM_COLS);
     rowRange.setNumberFormat("@");
     rowRange.setValues([rowValues]);
@@ -464,7 +517,8 @@ function doGet(e) {
             gradeLabel: String(row[COL.GRADE_LABEL - 1] || ""),
             answers: ans,
             lastSeen: String(lastSeen || ""),
-            online: String(row[COL.ONLINE - 1] || "") === "Online"
+            online: String(row[COL.ONLINE - 1] || "") === "Online",
+            sessionId: String(row[COL.SESSION - 1] || "")
           });
         }
       }

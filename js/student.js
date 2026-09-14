@@ -369,6 +369,7 @@
     const fresh = createEmptySession();
     fresh.student = saved.student;
     if (!fresh.student.variant) fresh.student.variant = 1;
+    if (!fresh.student.sessionId) fresh.student.sessionId = legacySessionId(fresh.student);
     fresh.activeSection = Number(saved.activeSection) || 1;
     fresh.practicalSections = Array.isArray(saved.practicalSections) && saved.practicalSections.length > 0
       ? saved.practicalSections
@@ -608,6 +609,7 @@
       group: session.student.group,
       lastName: session.student.lastName,
       firstName: session.student.firstName,
+      sessionId: session.student.sessionId || "",
       statusText: buildStatusText()
     }).catch(err => {
       console.warn("Jonli signal yuborilmadi:", err);
@@ -628,7 +630,8 @@
       action: "logout",
       group: student.group,
       lastName: student.lastName,
-      firstName: student.firstName
+      firstName: student.firstName,
+      sessionId: student.sessionId || ""
     }).catch(() => {});
   }
 
@@ -664,6 +667,19 @@
         }
       })
       .catch(() => {});
+  }
+
+  // Bitta kirish (urinish) uchun takrorlanmas ID.
+  // Vaqt + tasodifiy qism: bir vaqtda kirgan 30 ta talabada ham to'qnashmaydi.
+  function newSessionId() {
+    return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  // Yangilanishdan OLDIN kirgan talabalarning sessiyasida ID yo'q.
+  // Ularga startTime asosida O'ZGARMAS ID beramiz: sahifa qayta yuklansa ham
+  // bir xil chiqadi, ya'ni talaba o'rtada ikkinchi qatorga sakrab ketmaydi.
+  function legacySessionId(student) {
+    return "eski-" + String(student.startTime || "").replace(/[^0-9]/g, "").slice(-12);
   }
 
   // Serverdagi "Oxirgi faollik" ustuni bilan bir xil format: "YYYY-MM-DD HH:MM:SS"
@@ -729,6 +745,7 @@
       group: session.student.group,
       lastName: session.student.lastName,
       firstName: session.student.firstName,
+      sessionId: session.student.sessionId || "",
       statusText: buildStatusText(),
       sec1Score: s1.completed ? `${s1.correctCount}/${sectionTotal(1)}` : "-",
       sec2Score: s2.completed ? `${s2.correctCount}/${sectionTotal(2)}` : "-",
@@ -865,7 +882,11 @@
       variant: variantNum,
       // Sana ham yoziladi: ilgari faqat "10:44:51" ko'rinishida edi va jadvalda
       // qaysi kunning natijasi ekanini ajratib bo'lmasdi.
-      startTime: formatLocalTimestamp(new Date())
+      startTime: formatLocalTimestamp(new Date()),
+      // Har bir kirish uchun yangi ID. Jadvalda talaba shu ID bo'yicha
+      // topiladi, shuning uchun qayta kirganda oldingi natija ustiga
+      // yozilmaydi — pastga yangi qator qo'shiladi.
+      sessionId: newSessionId()
     };
     if (window.getPracticalSections) {
       session.practicalSections = window.getPracticalSections(variantNum, true);

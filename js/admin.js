@@ -543,11 +543,11 @@
     if (!newItem || !newItem.lastName || !newItem.firstName) return;
     newItem.variant = getStudentVariant(newItem);
 
-    const idx = allSubmissions.findIndex(s => 
-      s.group === newItem.group &&
-      s.lastName.toLowerCase() === newItem.lastName.toLowerCase() &&
-      s.firstName.toLowerCase() === newItem.firstName.toLowerCase()
-    );
+    // MUHIM: sessiya ID ham solishtiriladi. Aks holda bir talabaning ikkita
+    // urinishi mahalliy ro'yxatda bitta yozuvga qo'shilib ketardi va serverda
+    // ikki qator bo'lsa ham panelda bittasi ko'rinardi.
+    const newKey = studentKey(newItem);
+    const idx = allSubmissions.findIndex(s => studentKey(s) === newKey);
     if (idx >= 0) {
       allSubmissions[idx] = Object.assign({}, allSubmissions[idx], newItem);
     } else {
@@ -641,8 +641,16 @@
     }
   }
 
-  // Talabani bir xilda aniqlaydigan kalit (guruh + familiya + ism)
+  // Bitta YOZUVNI aniqlaydigan kalit.
+  // Sessiya ID ham kiradi: bir talaba ikki marta kirsa ikkita alohida qator
+  // bo'ladi va ularni alohida ko'rish/o'chirish mumkin. ID bo'lmasa (yangilanish
+  // oldidagi eski yozuvlar) faqat ism ishlatiladi.
   function studentKey(s) {
+    return nameOnlyKey(s) + "|" + String(s.sessionId || "").trim().toLowerCase();
+  }
+
+  // Sessiyasiz kalit — "bu qatorlar bitta talabaga tegishlimi?" degan savol uchun
+  function nameOnlyKey(s) {
     return [
       String(s.group || "").trim().toLowerCase(),
       String(s.lastName || "").trim().toLowerCase(),
@@ -698,15 +706,21 @@
         if (byGroup !== 0) return byGroup;
         const byLast = String(a.lastName || "").localeCompare(String(b.lastName || ""), "uz");
         if (byLast !== 0) return byLast;
-        return String(a.firstName || "").localeCompare(String(b.firstName || ""), "uz");
+        const byFirst = String(a.firstName || "").localeCompare(String(b.firstName || ""), "uz");
+        if (byFirst !== 0) return byFirst;
+        // Bitta talabaning bir nechta urinishi — eskisidan yangisiga qarab
+        return String(a.timestamp || "").localeCompare(String(b.timestamp || ""));
       });
   }
 
   // Statistikani hisoblash
   function updateStats() {
     const list = getFilteredSubmissions();
-    if (statTotalStudents) statTotalStudents.textContent = list.length;
-    
+    // "Jami talabalar" — yozuvlar soni emas, ALOHIDA talabalar soni.
+    // Bir talaba ikki marta kirsa ikkita qator bo'ladi, lekin u bitta talaba.
+    const uniqueStudents = new Set(list.map(nameOnlyKey)).size;
+    if (statTotalStudents) statTotalStudents.textContent = uniqueStudents;
+
     let topCount = 0;
     let sumPercent = 0;
     let gradedCount = 0;
@@ -766,8 +780,24 @@
       return;
     }
 
+    // Bir talaba bir necha marta kirgan bo'lsa, qatorlarni ajratib ko'rsatish
+    // uchun urinish raqamini oldindan hisoblab olamiz.
+    const attemptTotals = {};
+    list.forEach(s => {
+      const n = nameOnlyKey(s);
+      attemptTotals[n] = (attemptTotals[n] || 0) + 1;
+    });
+    const attemptSeen = {};
+
     let html = "";
     list.forEach((s, idx) => {
+      const nameKey = nameOnlyKey(s);
+      attemptSeen[nameKey] = (attemptSeen[nameKey] || 0) + 1;
+      const attemptNo = attemptSeen[nameKey];
+      const attemptBadge = attemptTotals[nameKey] > 1
+        ? `<div style="font-size: 0.7rem; font-weight: 800; color: #92400e;">${attemptNo}-urinish · ${escapeHtml(String(s.timestamp || "").split(" ")[0] || "")}</div>`
+        : "";
+
       // Talaba testni yakunlamaguncha baho qo'yilmaydi ("-" bo'lib turadi)
       const gradeNum = Number(s.grade);
       const hasGrade = !isNaN(gradeNum) && gradeNum >= 2;
@@ -795,6 +825,7 @@
           <td><span class="badge badge-group">${escapeHtml(s.group || "-")}</span></td>
           <td>
             <div style="font-weight: 850; color: var(--admin-dark);">${escapeHtml(s.lastName)} ${escapeHtml(s.firstName)}</div>
+            ${attemptBadge}
           </td>
           <td style="text-align: center;">
             <span class="badge badge-group" style="background: #fef3c7; color: #92400e; border-color: #fde68a; font-weight: 800;">
